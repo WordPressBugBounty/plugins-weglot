@@ -4,7 +4,7 @@ Tags: translate, multilingual, language, translation, localization, multilingual
 Requires at least: 4.5
 Tested up to: 6.5
 Requires PHP: 7.0
-Stable tag: 4.2.8
+Stable tag: 4.2.9
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -259,6 +259,7 @@ If you decide to stop using Weglot, your website will no longer be translated. A
 7. Join +60k brand going multilingual with Weglot
 8. Create translation rules and avoid repetitive editing tasks
 
+
 == Upgrade Notice ==
 
 See changelog for upgrade changes.
@@ -266,16 +267,25 @@ See changelog for upgrade changes.
 
 == Changelog ==
 
-= 4.2.8 (30/07/2024) =
-*Improvement: Add filter to prevent validation button check: Implemented a new filter to disable the validation button check.
-*Improvement: Add rel=nofollow to URLs containing Weglot parameters for auto-redirect: Enhanced SEO by adding rel=nofollow to URLs that include Weglot parameters.
-*Improvement: Improve detection of checkout and cart URLs: Enhanced the detection mechanism for checkout and cart URLs for better accuracy.
-*Improvement: Enhance Algolia compatibility: Improved integration and compatibility with Algolia search functionality.
-*Improvement: Add filter to change home directory to translated URL: Introduced a new filter to modify the home directory to its translated URL.
-*Bug: Fix underscore template parsing: Resolved issues with the parsing of underscore templates.
-*Bug: Fix deprecated preg_match() usage: Corrected the deprecated use of preg_match() to comply with the latest PHP standards.
-*Bug: Fix deprecated strpos() usage: Addressed the deprecated use of strpos() to prevent warnings in the latest PHP versions.
-*Bug: Fix deprecated json_decode() usage: Fixed the deprecated use of json_decode() to ensure compatibility with current PHP versions.
+2024-09-30 - version 4.2.9
+* Dev - PHPStan level 6 improvement.
+* Update - named mousedown eventlistener to allow to remove it.
+* Added - Filter to prevent access to specific role.
+
+= 4.2.9 (22/10/2024) =
+* Feature: Add filter to enable dynamic features from Weglot.
+* Fix: Resolve dynamic declaration deprecation warning.
+* Quality: Improve PHPStan to level 6.
+* Improvement: Named mousedown event listener for proper removal.
+* Improvement: Add filter to restrict access for specific roles.
+* Improvement: Add translate="no" attribute to disable browser translation.
+* Improvement: Enable translation of video src attribute by default.
+* Improvement: Remove "URL Translate" banner in WP Admin.
+* Improvement: Support adding tel: links as external links.
+* Improvement: Add option to return 404 for excluded pages.
+* Improvement: Add check for weglot-private header in requests.
+* Improvement: Wrap pageviews scripts in a function to avoid conflicts with other scripts.
+
 = Older versions =
 
 Our complete changelog is located in the `changelog.md` file in the plugin folder.
