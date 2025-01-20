@@ -92,7 +92,10 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 			}
 		}
 
-		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] ) {
+		//check if is elementor preview.
+		$elementor_preview = filter_input(INPUT_GET, 'elementor-preview', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] || $elementor_preview) {
 			return;
 		}
 
@@ -183,6 +186,10 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 			return;
 		}
 
+		$manage_trailing_slash = apply_filters('manage_trailing_slash', false);
+		if($manage_trailing_slash){
+			$this->manage_trailing_slash();
+		}
 		$this->check_need_to_redirect();
 
 		do_action( 'weglot_init_before_translate_page' );
@@ -236,6 +243,29 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	}
 
 	/**
+	 * @return boolean
+	 * @throws Exception
+	 * @since 2.0
+	 * @version 2.1.0
+	 */
+	public function check_custom_redirect($current_url) {
+		$custom_redirect_exclude = $this->option_services->get_option_custom_settings('custom_redirect_exclude');
+
+		foreach ($custom_redirect_exclude as $language => $urls) {
+			if (in_array($current_url, $urls)) {
+				// Replace only the language part in the URL
+				$pattern = '/\/' . preg_quote($this->current_language->getInternalCode(), '/') . '\//';
+				$replacement = '/' . $language . '/';
+				$updated_url = preg_replace($pattern, $replacement, $current_url, 1); // Replace only the first occurrence
+
+				return $updated_url; // Return the updated URL
+			}
+		}
+
+		return false; // Return false if not found
+	}
+
+	/**
 	 * @return void
 	 * @version 2.1.0
 	 * @since 2.0
@@ -279,6 +309,51 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		$_SERVER['REQUEST_URI'] = sanitize_url( $this->request_url_services->get_weglot_url()->getPathPrefix() .
 												$this->request_url_services->get_weglot_url()->getPathAndQuery() );
 
+	}
+
+	/**
+	 * @return void
+	 * @since 2.0
+	 */
+
+	public function manage_trailing_slash() {
+		if(empty($_SERVER['REQUEST_URI'])){
+			return;
+		}
+		$request_uri = esc_url_raw($_SERVER['REQUEST_URI']);
+		$current_language_code = $this->current_language->getExternalCode();
+		if (!preg_match('#^/' . preg_quote($current_language_code, '#') . '(/|$)#', $request_uri)) {
+			$request_uri = '/' . $current_language_code . $request_uri;
+		}
+
+		if (strpos($request_uri, '?') !== false) {
+			[$path, $query] = explode('?', $request_uri, 2);
+
+			if (!$this->ends_with_slash($path)) {
+				$path .= '/';
+
+				$new_request_uri = $path . '?' . $query;
+
+				wp_safe_redirect($new_request_uri);
+				exit;
+			}
+		} else {
+			if (!$this->ends_with_slash($request_uri)) {
+				$new_request_uri = $request_uri . '/';
+
+				wp_safe_redirect($new_request_uri);
+				exit;
+			}
+		}
+	}
+
+	/**
+	 * @return bool
+	 * @since 2.0
+	 *
+	 */
+	private function ends_with_slash($string) {
+		return substr($string, -1) === '/';
 	}
 
 	/**
@@ -379,6 +454,14 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.3.0
 	 */
 	public function enqueue_switcher_templatefile() {
+
+		$show_switcher = $this->request_url_services->get_weglot_url()->getExcludeOption( $this->current_language, 'language_button_displayed' );
+		$is_excluded = $this->request_url_services->get_weglot_url()->getExcludeOption( $this->current_language, 'exclusion_behavior' );
+
+		if($is_excluded && !$show_switcher){
+			return;
+		}
+
 		$settings      = $this->option_services->get_options();
 		$template_file = array();
 
@@ -421,6 +504,10 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function weglot_dynamics() {
+
+		if(weglot_get_current_language() === weglot_get_original_language()) {
+			return;
+		}
 		$add_dynamics = apply_filters( 'weglot_translate_dynamics', false );
 
 		if ( $add_dynamics ) {
@@ -462,12 +549,16 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$default_whitelist = [
 					[ 'value' => '.wp-block-woocommerce-cart' ],
 					[ 'value' => '.wc-block-checkout' ],
-					[ 'value' => '.wp-block-woocommerce-mini-cart-contents' ]
+					[ 'value' => '.wp-block-woocommerce-mini-cart-contents' ],
+					[ 'value' => '.wisepops-popup' ],
+					[ 'value' => '.wisepops-tab' ],
 				];
 				$default_dynamics  = [
 					[ 'value' => '.wp-block-woocommerce-cart' ],
 					[ 'value' => '.wc-block-checkout' ],
-					[ 'value' => '.wp-block-woocommerce-mini-cart-contents' ]
+					[ 'value' => '.wp-block-woocommerce-mini-cart-contents' ],
+					[ 'value' => '.wisepops-popup' ],
+					[ 'value' => '.wisepops-tab' ],
 				];
 
 				$default_proxify_iframes  = [
@@ -479,14 +570,14 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				?>
 				<script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
 				<script>
-					Weglot.on("initialized", () => Weglot.switchTo("<?php echo esc_js( weglot_get_current_language() ); ?>"))
-
 					Weglot.initialize({
 						api_key: '<?php echo esc_js( $api_key ); ?>',
 						whitelist: <?php echo wp_json_encode( $whitelist ); ?>,
 						dynamics: <?php echo wp_json_encode( $dynamics ); ?>,
 						proxify_iframes: <?php echo wp_json_encode( $proxify_iframes ); ?>,
-						hide_switcher: true
+						hide_switcher: true,
+						language_to: '<?php echo esc_js( weglot_get_current_language() ); ?>',
+						auto_switch: true
 					});
 				</script>
 				<?php

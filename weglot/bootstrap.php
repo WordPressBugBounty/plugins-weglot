@@ -145,6 +145,19 @@ function weglot_init() {
 		return;
 	}
 
+	if (version_compare(PHP_VERSION, '7.4', '<')) {
+		add_action( 'admin_notices', array( '\WeglotWP\Notices\Php_Weglot', 'admin_notice' ) );
+	}
+
+	if (version_compare(PHP_VERSION, '7.4', '<')) {
+		add_action('admin_notices', function () {
+			if (!get_transient('weglot_php_version_notice')) {
+				add_action('admin_notices', array('\WeglotWP\Notices\Php_Weglot', 'admin_notice'));
+				set_transient('weglot_php_version_notice', true, DAY_IN_SECONDS);
+			}
+		});
+	}
+
 	if ( ! function_exists( 'curl_version' ) || ! function_exists( 'curl_exec' ) ) {
 		add_action( 'admin_notices', array( '\WeglotWP\Notices\Curl_Weglot', 'admin_notice' ) );
 	}

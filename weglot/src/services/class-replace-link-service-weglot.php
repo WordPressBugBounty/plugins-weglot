@@ -56,12 +56,38 @@ class Replace_Link_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function replace_url( $url, $language, $evenExcluded = true ) {
-		$replaced_url = apply_filters( 'weglot_replace_url', $this->request_url_services->create_url_object( $url )->getForLanguage( $language, $evenExcluded ), $url, $language );
-		if ( $replaced_url ) {
-			return $replaced_url;
-		} else {
-			return $url;
+		$replaced_url = apply_filters('weglot_replace_url', $this->request_url_services->create_url_object($url)->getForLanguage($language, $evenExcluded), $url, $language);
+
+		// Parse the URL to separate the path and query
+		$parsed_url = wp_parse_url($replaced_url);
+
+		if (!empty($parsed_url['path'])) {
+			// Check if the path ends without a trailing slash
+			if (substr($parsed_url['path'], -1) !== '/') {
+				// Check if there's a query in the URL
+				if (isset($parsed_url['query'])) {
+					// Add trailing slash to the path only if a query exists
+					$parsed_url['path'] = preg_replace('/(\?.*)$/', '/$1', $url);
+				} else {
+					// No query, simply add the trailing slash
+					$parsed_url['path'] .= '/';
+				}
+			}
 		}
+
+		// Rebuild the URL with the updated path
+		if (isset($parsed_url['scheme']) && isset($parsed_url['host'])) {
+			$replaced_url = $parsed_url['scheme'] . '://' . $parsed_url['host'] . $parsed_url['path'];
+		} else {
+			// Handle cases where the URL does not have a host (e.g., relative URLs)
+			$replaced_url = $parsed_url['path'];
+		}
+		if (!empty($parsed_url['query'])) {
+			$replaced_url .= '?' . $parsed_url['query'];
+		}
+
+
+		return $replaced_url;
 	}
 
 	/**

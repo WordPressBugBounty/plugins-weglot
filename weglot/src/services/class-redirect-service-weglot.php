@@ -160,7 +160,6 @@ class Redirect_Service_Weglot {
 			return;
 		}
 
-		//return;
 		// We retrieve the best language based on navigator languages and destination languages.
 		$navigator_languages            = $this->get_navigator_languages();
 		$destination_languages_external = $this->language_services->get_destination_languages_external( $this->request_url_services->is_allowed_private() );

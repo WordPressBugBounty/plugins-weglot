@@ -11,10 +11,6 @@ use Weglot\Client\Api\TranslateEntry;
 use Weglot\Client\Client;
 use Weglot\Client\Factory\Translate as TranslateFactory;
 
-/**
- * Class Translate
- * @package Weglot\Client\Endpoint
- */
 class CdnTranslate extends Endpoint
 {
     const METHOD = 'POST';
@@ -25,18 +21,13 @@ class CdnTranslate extends Endpoint
      */
     protected $translateEntry;
 
-    /**
-     * Translate constructor.
-     * @param TranslateEntry $translateEntry
-     * @param Client $client
-     */
     public function __construct(TranslateEntry $translateEntry, Client $client)
     {
         $this->setTranslateEntry($translateEntry);
         $currentHost = $client->getOptions()['host'];
-        if($currentHost) {
-            $cdnHost = str_replace('https://api.weglot.' , 'https://cdn-api-weglot.' , $currentHost);
-            $client->setOptions(array('host' => $cdnHost ));
+        if ($currentHost) {
+            $cdnHost = str_replace('https://api.weglot.', 'https://cdn-api-weglot.', $currentHost);
+            $client->setOptions(['host' => $cdnHost]);
         }
         parent::__construct($client);
     }
@@ -50,7 +41,6 @@ class CdnTranslate extends Endpoint
     }
 
     /**
-     * @param TranslateEntry $translateEntry
      * @return $this
      */
     public function setTranslateEntry(TranslateEntry $translateEntry)
@@ -62,6 +52,7 @@ class CdnTranslate extends Endpoint
 
     /**
      * @return TranslateEntry
+     *
      * @throws ApiError
      * @throws InputAndOutputCountMatchException
      * @throws InvalidWordTypeException
@@ -73,16 +64,16 @@ class CdnTranslate extends Endpoint
         $asArray = $this->translateEntry->jsonSerialize();
         if (!empty($asArray['words'])) {
             list($rawBody, $httpStatusCode) = $this->request($asArray, false);
-            if ($httpStatusCode !== 200) {
+            if (200 !== $httpStatusCode) {
                 throw new ApiError($rawBody, $asArray);
             }
             $response = json_decode($rawBody, true);
-        }
-        else {
-            throw new ApiError("Empty words passed", $asArray);
+        } else {
+            throw new ApiError('Empty words passed', $asArray);
         }
 
         $factory = new TranslateFactory($response);
+
         return $factory->handle();
     }
 }

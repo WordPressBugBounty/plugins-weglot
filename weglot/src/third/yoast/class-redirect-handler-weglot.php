@@ -1,7 +1,7 @@
 <?php
 
 use WeglotWP\Services\Language_Service_Weglot;
-use WeglotWP\Services\Request_Url_Service_Weglot;
+use Yoast\WP\SEO\Premium\Initializers\Redirect_Handler;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Override Yoast Premium
  */
-class Redirect_Handler_Weglot extends \WPSEO_Redirect_Handler {
+class Redirect_Handler_Weglot extends Redirect_Handler {
 
 	/**
 	 * The options where the URL redirects are stored.

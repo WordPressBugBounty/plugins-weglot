@@ -84,7 +84,7 @@ function weglot_get_current_language_code_from_custom_language() {
 
 /**
  * Get destination language with filters
- * @return string
+ * @return array
  * @throws Exception
  * @since 2.0
  */
@@ -94,8 +94,9 @@ function weglot_get_destination_languages() {
 
 /**
  * Get Request Url Service
+ * @return object
+ * @throws Exception
  * @since 2.0
- * @return Request_Url_Service_Weglot
  */
 function weglot_get_request_url_service() {
 	return Context_Weglot::weglot_get_context()->get_service( 'Request_Url_Service_Weglot' );

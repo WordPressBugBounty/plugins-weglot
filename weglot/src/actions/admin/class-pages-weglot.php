@@ -105,7 +105,7 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 				'id'     => 'weglot-dashboard',
 				'parent' => 'weglot',
 				'title'  => __( 'Weglot dashboard', 'weglot' ),
-				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/languages/', array('weglot') ),
+				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/languages/' ),
 				'meta'   => array(
 					'target' => '_blank',
 				),
@@ -117,7 +117,7 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 				'id'     => 'weglot-visual-editor',
 				'parent' => 'weglot',
 				'title'  => __( 'Edit with visual editor', 'weglot' ),
-				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?url='.$url_to_edit.'&mode=translations', array('weglot') ),
+				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?url='.$url_to_edit.'&mode=translations' ),
 				'meta'   => array(
 					'target' => '_blank',
 				),

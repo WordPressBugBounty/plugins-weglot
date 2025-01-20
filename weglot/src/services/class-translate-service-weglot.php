@@ -192,7 +192,19 @@ class Translate_Service_Weglot {
 				if ( 'xml' === $type || 'json' === $type ) {
 					return $content;
 				} else {
-					return $this->weglot_render_dom( $content, $canonical );
+					//we check if we need to translate some forced child
+					$translate_inside_exclusions_blocks   = $this->option_services->get_translate_inside_exclusions_blocks();
+					if(0 < count($translate_inside_exclusions_blocks)){
+						add_filter('weglot_parser_whitelist', function ($whitelist) {
+							$translate_inside_exclusions_blocks = $this->option_services->get_translate_inside_exclusions_blocks();
+							return array_merge($whitelist, $translate_inside_exclusions_blocks);
+						});
+						$parser = $this->parser_services->get_parser();
+						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
+						return $this->weglot_render_dom( $translated_content, $canonical );
+					}else{
+						return $this->weglot_render_dom( $content, $canonical );
+					}
 				}
 			}
 		}

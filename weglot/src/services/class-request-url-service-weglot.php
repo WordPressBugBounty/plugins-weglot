@@ -52,21 +52,29 @@ class Request_Url_Service_Weglot {
 	 * @return Url
 	 */
 	public function create_url_object( $url ) {
-		// Define the default path to check
 		$default_path = '/';
-		// Apply the filter to allow modification of the path to check
-		$path_to_check = apply_filters('custom_path_to_check', $default_path);
-		// Parse the URL path
-		$parsed_url_path = wp_parse_url($url, PHP_URL_PATH);
+		$use_custom_path = apply_filters('use_custom_path_for_path_check', false);
 
-		// Check if the URL path is valid and contains the specified path
-		$contains_path = $parsed_url_path !== null && strpos($parsed_url_path, $path_to_check) !== false;
+		if ($use_custom_path) {
+			// Apply the filter to allow modification of the path to check
+			$path_to_check = apply_filters('custom_path_to_check', $default_path);
 
-		if ($contains_path) {
-			$home_directory = $this->get_home_wordpress_directory($path_to_check);
+			// Parse the URL path
+			$parsed_url_path = wp_parse_url($url, PHP_URL_PATH);
+
+			// Check if the URL path is valid and contains the specified path
+			$contains_path = $parsed_url_path !== null && strpos($parsed_url_path, $path_to_check) !== false;
+
+			if ($contains_path) {
+				$home_directory = $this->get_home_wordpress_directory($path_to_check);
+			} else {
+				$home_directory = $this->get_home_wordpress_directory();
+			}
 		} else {
+			// Default behavior if the filter is not set or returns false
 			$home_directory = $this->get_home_wordpress_directory();
 		}
+
 
 		return new Url(
 			$url,
@@ -179,8 +187,12 @@ class Request_Url_Service_Weglot {
 			$parsed_url = parse_url($opt_home); // phpcs:ignore
 			$path = $parsed_url['path'] ?? '/';
 
-			if (empty($allow_custom_path)) {
-				return '';
+			$use_custom_path = apply_filters('use_custom_path_for_path_check', false);
+
+			if ($use_custom_path) {
+				if (empty($allow_custom_path)) {
+					return '';
+				}
 			}
 
 			return $path;
@@ -250,12 +262,11 @@ class Request_Url_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function is_allowed_private() {
-		$headers = getallheaders();
+
 		if ( current_user_can( 'administrator' )
 		     || strpos( $this->get_full_url(), 'weglot-private=1' ) !== false
 		     || isset( $_COOKIE['weglot_allow_private'] )
 		     || ( isset( $_SERVER['HTTP_USER_AGENT'] ) && strpos( sanitize_text_field( $_SERVER['HTTP_USER_AGENT'] ), "Weglot Visual Editor" ) !== false ) //phpcs:ignore
-		     || ( isset( $headers['weglot-private'] ) && $headers['weglot-private'] == 1 ) //phpcs:ignore
 		) {
 			return true;
 		}

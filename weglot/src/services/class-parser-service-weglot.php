@@ -82,6 +82,7 @@ class Parser_Service_Weglot {
 			array()
 		);
 		$custom_switchers = $this->option_services->get_switchers_editor_button();
+		$translate_inside_exclusions_blocks   = $this->option_services->get_translate_inside_exclusions_blocks();
 		$config           = apply_filters( 'weglot_parser_config_provider', new ServerConfigProvider() );
 		if ( ! ( $config instanceof ConfigProviderInterface ) ) {
 			$config = new ServerConfigProvider();
@@ -92,7 +93,7 @@ class Parser_Service_Weglot {
 		}
 
 		$client = $this->get_client();
-		$parser = new Parser( $client, $config, $exclude_blocks, $custom_switchers, $whitelist_blocks );
+		$parser = new Parser( $client, $config, $exclude_blocks, $custom_switchers, $whitelist_blocks, $translate_inside_exclusions_blocks );
 
 		$parser->getDomCheckerProvider()->addCheckers( $this->dom_checkers_services->get_dom_checkers() );
 		$parser->getRegexCheckerProvider()->addCheckers( $this->regex_checkers_services->get_regex_checkers() );

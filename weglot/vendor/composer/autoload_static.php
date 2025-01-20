@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInite82c3bddc85956592d04af02f25675a9
+class ComposerStaticInitf7cf0405611cef835974c302d59a0286
 {
     public static $files = array (
         '6c200413eed8aeea54dbaf934a31b127' => __DIR__ . '/..' . '/weglot/simplehtmldom/src/simple_html_dom.php',
@@ -14,6 +14,7 @@ class ComposerStaticInite82c3bddc85956592d04af02f25675a9
         'W' => 
         array (
             'Weglot\\' => 7,
+            'WeglotLanguages\\' => 16,
         ),
         'P' => 
         array (
@@ -23,16 +24,16 @@ class ComposerStaticInite82c3bddc85956592d04af02f25675a9
         array (
             'Morphism\\' => 9,
         ),
-        'L' => 
-        array (
-            'Languages\\' => 10,
-        ),
     );
 
     public static $prefixDirsPsr4 = array (
         'Weglot\\' => 
         array (
             0 => __DIR__ . '/..' . '/weglot/weglot-php/src',
+        ),
+        'WeglotLanguages\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/weglot/weglot-php/node_modules/@weglot/languages/dist',
         ),
         'Psr\\Cache\\' => 
         array (
@@ -41,10 +42,6 @@ class ComposerStaticInite82c3bddc85956592d04af02f25675a9
         'Morphism\\' => 
         array (
             0 => __DIR__ . '/..' . '/gmulti/morphism-php/lib',
-        ),
-        'Languages\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/weglot/weglot-php/node_modules/@weglot/languages/dist',
         ),
     );
 
@@ -66,10 +63,10 @@ class ComposerStaticInite82c3bddc85956592d04af02f25675a9
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInite82c3bddc85956592d04af02f25675a9::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInite82c3bddc85956592d04af02f25675a9::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInite82c3bddc85956592d04af02f25675a9::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInite82c3bddc85956592d04af02f25675a9::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$classMap;
 
         }, null, ClassLoader::class);
     }

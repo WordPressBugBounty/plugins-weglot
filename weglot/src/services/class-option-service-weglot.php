@@ -690,6 +690,26 @@ class Option_Service_Weglot {
 	 * @throws Exception
 	 * @since 2.0
 	 */
+	public function get_translate_inside_exclusions_blocks(){
+
+		$inside_exclusions_blocks = $this->get_option( 'translate_inside_exclusions' );
+
+		if(empty($inside_exclusions_blocks)){
+			return [];
+		}
+		if(count($inside_exclusions_blocks) > 0){
+			$transformed_array = array_map(function ($item) {
+				return $item['value'];
+			}, $inside_exclusions_blocks);
+		}
+		return apply_filters( 'weglot_inside_exclusions_block', $transformed_array );
+	}
+
+	/**
+	 * @return array<int,string>
+	 * @throws Exception
+	 * @since 2.0
+	 */
 	public function get_exclude_blocks() {
 		$exclude_blocks = $this->get_option( 'exclude_blocks' );
 

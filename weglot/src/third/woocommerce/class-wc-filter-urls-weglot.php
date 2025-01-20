@@ -192,19 +192,18 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 	/**
 	 * Redirect URL Lost password for WooCommerce
 	 *
-	 * @param mixed $url
 	 *
 	 * @return void
 	 * @throws Exception
 	 * @version 2.0.4
 	 * @since 2.0
 	 */
-	public function woocommerce_filter_reset_password( $url ) {
+	public function woocommerce_filter_reset_password() {
 		/** @var Language_Service_Weglot $language_service */
 		$language_service = weglot_get_service( 'Language_Service_Weglot' );
 
 		if ( $this->request_url_services->get_current_language() === $language_service->get_original_language() ) {
-			exit;
+			return;
 		}
 
 		$url_redirect = add_query_arg( 'reset-link-sent', 'true', wc_get_account_endpoint_url( 'lost-password' ) );

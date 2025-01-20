@@ -22,7 +22,7 @@
       	}
     ],
     "require": {
-        "weglot/weglot-php": "1.7.3",
+        "weglot/weglot-php": "^1.7.3",
         "gmulti/morphism-php": "dev-dev-bugfix"
     },
 	"repositories": [

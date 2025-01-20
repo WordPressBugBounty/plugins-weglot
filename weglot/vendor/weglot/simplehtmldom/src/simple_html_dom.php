@@ -492,8 +492,12 @@ class simple_html_dom_node
         return $ret . $this->_[WG_HDOM_INFO_ENDSPACE] . '>';
     }
 
-    // find elements by css selector
-    //PaperG - added ability for find to lowercase the value of the selector.
+    /**
+     * find elements by css selector
+     * PaperG - added ability for find to lowercase the value of the selector.
+     *
+     * @phpstan-return ($idx is null ? array<simple_html_dom_node> : simple_html_dom_node|array{}|null)
+     */
     public function find($selector, $idx=null, $lowercase=false)
     {
         $selectors = $this->parse_selector($selector);
@@ -780,7 +784,11 @@ class simple_html_dom_node
     public function __get($name)
     {
         if (isset($this->attr[$name])) {
-            return $this->convert_text($this->attr[$name]);
+            if (\is_string($this->attr[$name])) {
+                return $this->convert_text($this->attr[$name]);
+            }
+
+            return $this->attr[$name];
         }
         switch ($name) {
             case 'outertext': return $this->outertext();
@@ -1237,8 +1245,12 @@ class simple_html_dom
         return $ret;
     }
 
-    // find dom node by css selector
-    // Paperg - allow us to specify that we want case insensitive testing of the value of the selector.
+    /**
+     * find dom node by css selector
+     * Paperg - allow us to specify that we want case insensitive testing of the value of the selector.
+     *
+     * @phpstan-return ($idx is null ? array<simple_html_dom_node> : simple_html_dom_node|array{}|null)
+     */
     public function find($selector, $idx=null, $lowercase=false)
     {
         return $this->root->find($selector, $idx, $lowercase);

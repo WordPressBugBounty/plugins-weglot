@@ -94,24 +94,24 @@
         },
         {
             "name": "weglot/simplehtmldom",
-            "version": "0.8.1",
-            "version_normalized": "0.8.1.0",
+            "version": "0.8.3",
+            "version_normalized": "0.8.3.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:weglot/simple_html_dom.git",
-                "reference": "2e76bfd5cd19e12c41f55767a49ccc19438f0313"
+                "reference": "9c713eae0665a41511c9d02ae5c00b560c64927e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/simple_html_dom/zipball/2e76bfd5cd19e12c41f55767a49ccc19438f0313",
-                "reference": "2e76bfd5cd19e12c41f55767a49ccc19438f0313",
+                "url": "https://api.github.com/repos/weglot/simple_html_dom/zipball/9c713eae0665a41511c9d02ae5c00b560c64927e",
+                "reference": "9c713eae0665a41511c9d02ae5c00b560c64927e",
                 "shasum": ""
             },
             "require": {
                 "ext-iconv": "*",
                 "php": ">=5.3.0"
             },
-            "time": "2024-10-15T13:40:48+00:00",
+            "time": "2024-12-13T10:16:55+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -139,7 +139,7 @@
                 "simple"
             ],
             "support": {
-                "source": "https://github.com/weglot/simple_html_dom/tree/0.8.1"
+                "source": "https://github.com/weglot/simple_html_dom/tree/0.8.3"
             },
             "install-path": "../weglot/simplehtmldom"
         },
@@ -188,38 +188,59 @@
         },
         {
             "name": "weglot/weglot-php",
-            "version": "1.7.3",
-            "version_normalized": "1.7.3.0",
+            "version": "1.8.3",
+            "version_normalized": "1.8.3.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:weglot/weglot-php.git",
-                "reference": "b2df18e4249488161a1c30412657aca9aafda795"
+                "reference": "9727c559197a7b1cb7a43475cf9f66ae445fe17e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/b2df18e4249488161a1c30412657aca9aafda795",
-                "reference": "b2df18e4249488161a1c30412657aca9aafda795",
+                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/9727c559197a7b1cb7a43475cf9f66ae445fe17e",
+                "reference": "9727c559197a7b1cb7a43475cf9f66ae445fe17e",
                 "shasum": ""
             },
             "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
                 "php": ">=5.6",
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "weglot/simplehtmldom": "^0.8",
                 "weglot/translation-definitions": "^2.0"
             },
             "require-dev": {
+                "friendsofphp/php-cs-fixer": "^2 || ^3.64",
                 "phpstan/phpstan": "^1.11",
                 "phpstan/phpstan-deprecation-rules": "^1.1",
-                "vlucas/phpdotenv": "^2.4"
+                "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5 || ^8.5 || ^9.6 || ^10.5 || ^11.4",
+                "symfony/cache": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1",
+                "symfony/dotenv": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1"
             },
-            "time": "2024-09-13T15:19:53+00:00",
+            "time": "2024-11-26T14:50:47+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "Weglot\\": "src/",
-                    "Languages\\": "node_modules/@weglot/languages/dist/"
+                    "WeglotLanguages\\": "node_modules/@weglot/languages/dist/"
                 }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Weglot\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "cs": [
+                    "vendor/bin/php-cs-fixer fix"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan"
+                ],
+                "test": [
+                    "vendor/bin/phpunit tests"
+                ]
             },
             "license": [
                 "MIT"

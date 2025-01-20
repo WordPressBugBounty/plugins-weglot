@@ -7,7 +7,9 @@
 *Author URI: https://weglot.com/
 *Text Domain: weglot
 *Domain Path: /languages/
-*Version: 4.2.9
+*WC requires at least: 4.0
+*WC tested up to: 9.3
+*Version: 4.3.0
 */
 
 /**
@@ -22,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '4.2.9' );
+define( 'WEGLOT_VERSION', '4.3.0' );
 define( 'WEGLOT_PHP_MIN', '5.6' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -48,6 +50,7 @@ if ( ! function_exists( 'is_plugin_active' ) ) {
 }
 
 // Compatibility Yoast premium Redirection
+$dir_yoast = plugin_dir_path( __DIR__ ) . 'wordpress-seo';
 $dir_yoast_premium = plugin_dir_path( __DIR__ ) . 'wordpress-seo-premium';
 if ( file_exists( $dir_yoast_premium . '/wp-seo-premium.php' ) ) {
 
@@ -55,16 +58,16 @@ if ( file_exists( $dir_yoast_premium . '/wp-seo-premium.php' ) ) {
 		return;
 	}
 
-	$yoast_plugin_data        = get_plugin_data( $dir_yoast_premium . '/wp-seo-premium.php' );
-	$dir_yoast_premium_inside = $dir_yoast_premium . '/premium/';
-
+	$yoast_plugin_data        = get_plugin_data( $dir_yoast_premium . '/wp-seo-premium.php', true, false );
+	$dir_yoast_premium_inside = $dir_yoast_premium . '/';
+	$dir_yoast_inside = $dir_yoast . '/';
 	// Override yoast redirect
 	if (
 		! is_admin() &&
 		version_compare( $yoast_plugin_data['Version'], '7.1.0', '>=' ) &&
 		is_plugin_active( 'wordpress-seo-premium/wp-seo-premium.php' ) &&
 		file_exists( $dir_yoast_premium_inside ) &&
-		file_exists( $dir_yoast_premium_inside . 'classes/redirect/redirect-handler.php' ) &&
+		file_exists( $dir_yoast_premium_inside . 'src/initializers/redirect-handler.php' ) &&
 		file_exists( $dir_yoast_premium_inside . 'classes/redirect/redirect-util.php' )
 	) {
 		require_once __DIR__ . '/weglot-autoload.php';

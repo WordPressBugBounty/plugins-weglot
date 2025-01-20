@@ -110,6 +110,10 @@ class Schema_Option_V3 {
 	/**
 	 * @var string
 	 */
+	public $translate_inside_exclusions;
+	/**
+	 * @var string
+	 */
 	public $has_first_settings;
 	/**
 	 * @var string
@@ -190,12 +194,13 @@ class Schema_Option_V3 {
 					}
 					foreach ( $languages as $item ) {
 						$destinations[] = array(
-							'language_to'       => $item['language_to'],
-							'custom_code'       => $item['custom_code'],
-							'custom_name'       => $item['custom_name'],
-							'custom_local_name' => $item['custom_local_name'],
-							'public'            => $item['enabled'],
+							'language_to'       => isset($item['language_to']) ? $item['language_to'] : null,
+							'custom_code'       => isset($item['custom_code']) ? $item['custom_code'] : null,
+							'custom_name'       => isset($item['custom_name']) ? $item['custom_name'] : null,
+							'custom_local_name' => isset($item['custom_local_name']) ? $item['custom_local_name'] : null,
+							'public'            => isset($item['enabled']) ? $item['enabled'] : null,
 						);
+
 					}
 
 					return $destinations;
@@ -253,6 +258,7 @@ class Schema_Option_V3 {
 			'active_search'             => 'custom_settings.translate_search',
 			'translate_amp'             => 'custom_settings.translate_amp',
 			'wp_user_version'           => 'custom_settings.wp_user_version',
+			'translate_inside_exclusions'           => 'custom_settings.translate_inside_exclusions',
 			'has_first_settings'        => 'has_first_settings',
 			'show_box_first_settings'   => 'show_box_first_settings',
 			'custom_urls'               => (object) array(
