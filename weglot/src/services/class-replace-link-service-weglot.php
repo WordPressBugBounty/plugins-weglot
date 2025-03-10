@@ -55,37 +55,38 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_url( $url, $language, $evenExcluded = true ) {
+	public function replace_url($url, $language, $evenExcluded = true) {
 		$replaced_url = apply_filters('weglot_replace_url', $this->request_url_services->create_url_object($url)->getForLanguage($language, $evenExcluded), $url, $language);
 
-		// Parse the URL to separate the path and query
+		// Parse the URL to separate the path, query, and fragment
 		$parsed_url = wp_parse_url($replaced_url);
 
 		if (!empty($parsed_url['path'])) {
 			// Check if the path ends without a trailing slash
-			if (substr($parsed_url['path'], -1) !== '/') {
-				// Check if there's a query in the URL
-				if (isset($parsed_url['query'])) {
-					// Add trailing slash to the path only if a query exists
-					$parsed_url['path'] = preg_replace('/(\?.*)$/', '/$1', $url);
-				} else {
-					// No query, simply add the trailing slash
-					$parsed_url['path'] .= '/';
-				}
+
+			$should_add_trailing_slash = apply_filters( 'weglot_add_trailing_slash', true );
+			if ( $should_add_trailing_slash && substr( $parsed_url['path'], -1 ) !== '/' ) {
+				$parsed_url['path'] .= '/';
 			}
 		}
 
-		// Rebuild the URL with the updated path
+		// Rebuild the URL with all parts (path, query, fragment, etc.)
+		$replaced_url = '';
 		if (isset($parsed_url['scheme']) && isset($parsed_url['host'])) {
-			$replaced_url = $parsed_url['scheme'] . '://' . $parsed_url['host'] . $parsed_url['path'];
-		} else {
-			// Handle cases where the URL does not have a host (e.g., relative URLs)
-			$replaced_url = $parsed_url['path'];
+			$replaced_url .= $parsed_url['scheme'] . '://' . $parsed_url['host'];
 		}
+
+		if (!empty($parsed_url['path'])) {
+			$replaced_url .= $parsed_url['path'];
+		}
+
 		if (!empty($parsed_url['query'])) {
 			$replaced_url .= '?' . $parsed_url['query'];
 		}
 
+		if (!empty($parsed_url['fragment'])) {
+			$replaced_url .= '#' . $parsed_url['fragment'];
+		}
 
 		return $replaced_url;
 	}

@@ -170,6 +170,7 @@ class Translate_Service_Weglot {
 
 		$type      = apply_filters( 'weglot_type_treat_page', $type );
 		$canonical = $this->get_canonical_url_from_content( $content );
+		$force_request_url = apply_filters( 'weglot_get_current_canonical_url', false );
 
 		$weglot_force_translate_cart = apply_filters( 'weglot_force_translate_cart', false );
 		if( $weglot_force_translate_cart){
@@ -200,7 +201,12 @@ class Translate_Service_Weglot {
 							return array_merge($whitelist, $translate_inside_exclusions_blocks);
 						});
 						$parser = $this->parser_services->get_parser();
-						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
+						if($force_request_url){
+							$request_url = $this->request_url_services->get_current_canonical_url();
+							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
+						}else{
+							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
+						}
 						return $this->weglot_render_dom( $translated_content, $canonical );
 					}else{
 						return $this->weglot_render_dom( $content, $canonical );
@@ -229,8 +235,12 @@ class Translate_Service_Weglot {
 
 					return apply_filters( 'weglot_xml_treat_page', $translated_content );
 				case 'html':
-					$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
-					$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
+					if($force_request_url){
+						$request_url = $this->request_url_services->get_current_canonical_url();
+						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
+					}else{
+						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
+					}					$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
 					$translated_content = $this->replace_url_services->proxify_url( $translated_content );
 					$translated_content = $this->disable_automated_translation_services( $translated_content );
 

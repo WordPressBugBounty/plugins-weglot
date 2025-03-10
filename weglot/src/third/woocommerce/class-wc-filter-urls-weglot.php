@@ -199,6 +199,13 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function woocommerce_filter_reset_password() {
+
+		$reset_link_sent = apply_filters( 'weglot_redirect_woocommerce_filter_reset_password', true );
+
+		if( ! $reset_link_sent ){
+			return;
+		}
+
 		/** @var Language_Service_Weglot $language_service */
 		$language_service = weglot_get_service( 'Language_Service_Weglot' );
 

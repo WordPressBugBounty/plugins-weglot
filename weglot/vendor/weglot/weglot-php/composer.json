@@ -65,7 +65,8 @@
         "ext-json": "*",
         "psr/cache": "^1.0 || ^2.0 || ^3.0",
         "weglot/simplehtmldom": "^0.8",
-        "weglot/translation-definitions": "^2.0"
+        "weglot/translation-definitions": "^2.0",
+        "symfony/polyfill-php80": "^1.31"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^2 || ^3.64",

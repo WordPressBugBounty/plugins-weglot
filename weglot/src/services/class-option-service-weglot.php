@@ -10,6 +10,7 @@ use Exception;
 use http\Env\Request;
 use Morphism\Morphism;
 use Weglot\Util\Regex;
+use Weglot\Util\Regex\RegexEnum;
 use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Schema_Option_V3;
 use WeglotWP\Helpers\Helper_Flag_Type;
@@ -53,6 +54,8 @@ class Option_Service_Weglot {
 		'auto_switch_fallback'    => null,
 		'excluded_blocks'         => array(),
 		'excluded_paths'          => array(),
+		'custom_css'  => '',
+		'switchers'        => array(),
 		'custom_settings'         => array(
 			'translate_email'  => false,
 			'translate_amp'    => false,
@@ -653,15 +656,22 @@ class Option_Service_Weglot {
 	 */
 	public function get_switchers_editor_button() {
 		$options = $this->get_options();
-		if (
-			array_key_exists( 'custom_settings', $options ) &&
-			is_array( $options['custom_settings'] ) &&
-			! empty( $options['custom_settings']['switchers'] )
-		) {
-			return $options['custom_settings']['switchers'];
+
+		if (!empty($options['switchers']) && is_array($options['switchers'])) {
+			return $options['switchers'];
 		}
 
-		return array();
+		if (
+			array_key_exists('custom_settings', $options) &&
+			is_array($options['custom_settings']) &&
+			!empty($options['custom_settings']['switchers'])
+		) {
+			$options['switchers'] = $options['custom_settings']['switchers'];
+			return $options['switchers'];
+		}
+
+		// If neither exists, return an empty array
+		return [];
 	}
 
 	/**
@@ -795,7 +805,7 @@ class Option_Service_Weglot {
 					}
 					$regex          = new Regex( $item['type'], $request_url_services->url_to_relative( $item['value'] ) );
 					$exclude_urls[] = array(
-						$regex->getRegex(),
+						$regex,
 						$excluded_languages,
 						$item['exclusion_behavior'],
 						$item['language_button_displayed'],
@@ -804,16 +814,17 @@ class Option_Service_Weglot {
 			}
 		}
 
-		$exclude_urls[] = array( '/wp-login.php', null );
-		$exclude_urls[] = array( '/sitemaps_xsl.xsl', null );
-		$exclude_urls[] = array( '/sitemaps.xml', null );
-		$exclude_urls[] = array( '/wp-cron.php', null );
-		$exclude_urls[] = array( '/wp-comments-post.php', null );
-		$exclude_urls[] = array( '/ct_template', null ); // Compatibility Oxygen
-		$exclude_urls[] = array( '/main-sitemap.xsl', null ); // SEO by Rank Math
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/wp-login.php'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/sitemaps_xsl.xsl'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/sitemaps.xml'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/wp-cron.php'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/wp-comments-post.php'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/ct_template'), null );
+		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/main-sitemap.xsl'), null );
 
 		if ( ! weglot_get_translate_amp_translation() ) {
-			$exclude_urls[] = array( weglot_get_service( 'Amp_Service_Weglot' )->get_regex(), null );
+			$amp_regex = weglot_get_service( 'Amp_Service_Weglot' )->get_regex();
+			$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, $amp_regex), null );
 		}
 
 		return apply_filters( 'weglot_exclude_urls', $exclude_urls );

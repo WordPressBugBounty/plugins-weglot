@@ -1,10 +1,4 @@
 <?php
-/**
- * @author Remy Berda
- * User: remy
- * Date: 12/06/2019
- * Time: 16:52
- */
 
 namespace Weglot\Parser\Check\Regex;
 

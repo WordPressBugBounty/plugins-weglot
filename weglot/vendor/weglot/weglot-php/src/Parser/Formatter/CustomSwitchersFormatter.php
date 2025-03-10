@@ -80,26 +80,20 @@ class CustomSwitchersFormatter
             $location = !empty($switcher['location']) ? $switcher['location'] : '';
             if (!empty($location) && !isset($switcher['template'])) {
                 // we check if we find the target location
-                if ($dom->find($location['target']) && \is_array($dom->find($location['target']))) {
-                    foreach ($dom->find($location['target']) as $target) {
+                $targets = $dom->find($location['target']);
+                if ($targets) {
+                    foreach ($targets as $target) {
                         // for each target we check if we have an associate sibling or we put the switcher into him
                         if (empty($location['sibling'])) {
                             $target->innertext .= '<div data-wg-position="'.$location['target'].'"></div>';
                         } else {
                             // we try to find the sibling
-                            if ($dom->find($location['target'].' '.$location['sibling'])) {
+                            $siblings = $dom->find($location['target'].' '.$location['sibling']);
+                            if ($siblings) {
                                 // we check if the sibling is a parent of the target location and we put the switche before
-                                foreach ($dom->find($location['target'].' '.$location['sibling']) as $sibling) {
+                                foreach ($siblings as $sibling) {
                                     if (\is_object($sibling)) {
                                         $sibling->outertext = '<div data-wg-position="'.$location['target'].' '.$location['sibling'].'"></div>'.$sibling->outertext;
-                                    }
-                                }
-                            } else {
-                                if (!empty($dom->find($location['sibling']))) {
-                                    foreach ($dom->find($location['sibling'], 0) as $sibling) {
-                                        if (\is_object($sibling)) {
-                                            $sibling->outertext = '<div data-wg-position="'.$location['target'].' '.$location['sibling'].'"></div>'.$sibling->outertext;
-                                        }
                                     }
                                 }
                             }
@@ -107,7 +101,7 @@ class CustomSwitchersFormatter
                     }
                 } else {
                     if (!empty($location['sibling'])) {
-                        $temp_switcher .= '<div data-wg-position="'.$location['target'].(!empty($location['sibling']) ? ' '.$location['sibling'] : '').'" data-wg-ajax="true"></div>';
+                        $temp_switcher .= '<div data-wg-position="'.$location['target'].$location['sibling'].'" data-wg-ajax="true"></div>';
                     } else {
                         $temp_switcher .= '<div data-wg-position="'.$location['target'].'" data-wg-ajax="true"></div>';
                     }

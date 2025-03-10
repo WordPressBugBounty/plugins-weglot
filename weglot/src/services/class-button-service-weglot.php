@@ -237,8 +237,12 @@ class Button_Service_Weglot {
 			}
 
 			if ( $link_button ) {
-				$button_html .= sprintf( '<li data-l="' . $language->getExternalCode() . '" class="wg-li weglot-lang weglot-language %s" data-code-language="%s" role="option">', $flag_class . $language->getInternalCode(), $language->getInternalCode() );
-				$name        = $this->get_name_with_language_entry( $language, $switcher );
+				$button_html .= sprintf(
+					'<li data-l="' . $language->getExternalCode() . '" class="wg-li weglot-lang weglot-language %s" data-code-language="%s" role="option">',
+					$flag_class . $language->getInternalCode(),
+					$language->getInternalCode()
+				);
+				$name = $this->get_name_with_language_entry( $language, $switcher );
 
 				if ( $this->option_services->get_option( 'auto_redirect' ) ) {
 					$is_orig = $language === $this->language_services->get_original_language() ? 'true' : 'false';
@@ -249,21 +253,31 @@ class Button_Service_Weglot {
 					}
 				}
 
-				$wg_original_no_follow     = apply_filters( 'weglot_autoredirect_no_follow', false );
+				$wg_original_no_follow = apply_filters( 'weglot_autoredirect_no_follow', false );
 
-				if(strpos( $link_button, 'wg-choose-original' ) !== false && $wg_original_no_follow){
+				// Check if $add_class contains "weglot-preview"
+				if ( strpos( $add_class, 'weglot-preview' ) === false ) {
+					if ( strpos( $link_button, 'wg-choose-original' ) !== false && $wg_original_no_follow ) {
+						$button_html .= sprintf(
+							'<a rel="nofollow" title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
+							esc_url( $link_button ),
+							esc_html( $name )
+						);
+					} else {
+						$button_html .= sprintf(
+							'<a title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
+							esc_url( $link_button ),
+							esc_html( $name )
+						);
+					}
+				} else {
+					// If "weglot-preview" is in $add_class, use a <span> instead
 					$button_html .= sprintf(
-						'<a rel="nofollow" title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
-						esc_url( $link_button ),
-						esc_html( $name )
-					);
-				}else{
-					$button_html .= sprintf(
-						'<a title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
-						esc_url( $link_button ),
+						'<span title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="">%s</span>',
 						esc_html( $name )
 					);
 				}
+
 				$button_html .= '</li>';
 			}
 		}

@@ -27,7 +27,7 @@ class DomCheckerProvider
         'bdo',
         'cite',
         'kbd',
-        'q', 'u',
+        'q', 'u', 'mark',
     ];
 
     const DEFAULT_CHECKERS_NAMESPACE = '\\Weglot\\Parser\\Check\\Dom\\';

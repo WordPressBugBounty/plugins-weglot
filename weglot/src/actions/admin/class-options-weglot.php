@@ -127,10 +127,13 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 					if ( is_array( $options_menu ) ) {
 						if ( ! empty( $options_menu ) ) {
 							foreach ( $options_menu as $key => $menu ) {
-								if ( $options['custom_settings']['button_style']['is_dropdown'] ) {
-									$options_menu[ $key ]['dropdown'] = 1;
-								} else {
-									$options_menu[ $key ]['dropdown'] = 0;
+								// Ensure $menu is an array before modifying
+								if ( is_array( $menu ) ) {
+									if ( $options['custom_settings']['button_style']['is_dropdown'] ) {
+										$options_menu[ $key ]['dropdown'] = 1;
+									} else {
+										$options_menu[ $key ]['dropdown'] = 0;
+									}
 								}
 							}
 						}
@@ -188,7 +191,16 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 			$options['custom_settings']['button_style']['with_name']   = $default_options['custom_settings']['button_style']['with_name'];
 		}
 
-		$options['custom_settings']['button_style']['custom_css'] = isset( $options['custom_settings']['button_style']['custom_css'] ) ? stripcslashes( $options['custom_settings']['button_style']['custom_css'] ) : '';
+		// Prioritize custom_css from options : custom_css, fallback to button_style : custom_css if needed
+		if (!empty($options['custom_css'])) {
+			$options['custom_settings']['button_style']['custom_css'] = stripcslashes($options['custom_css']);
+		}
+		elseif (!isset($options['custom_css']) && !empty($options['custom_settings']['button_style']['custom_css'])) {
+			$options['custom_css'] = stripcslashes($options['custom_settings']['button_style']['custom_css']);
+		}
+		else {
+			$options['custom_settings']['button_style']['custom_css'] = isset($options['custom_settings']['button_style']['custom_css']) ? stripcslashes($options['custom_settings']['button_style']['custom_css']) : '';
+		}
 
 		$options['custom_settings']['button_style']['flag_type'] = isset( $options['custom_settings']['button_style']['flag_type'] ) ? $options['custom_settings']['button_style']['flag_type'] : Helper_Flag_Type::RECTANGLE_MAT;
 
@@ -203,11 +215,14 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 
 		$options['auto_switch'] = isset( $options['auto_switch'] );
 
-		if(!empty($switchers)){
-			foreach ( $switchers as $switcher ) {
-				$options['custom_settings']['switchers'][] = $switcher;
-			}
+		// Ensure options:custom_settings:switchers is set correctly
+		$options['custom_settings']['switchers'] = !empty($switchers) ? $switchers : [];
+
+		// Ensure $options['switchers'] is also updated if it's empty but custom_settings['switchers'] is not
+		if (empty($options['switchers']) && !empty($options['custom_settings']['switchers'])) {
+			$options['switchers'] = $options['custom_settings']['switchers'];
 		}
+
 		return $options;
 	}
 }

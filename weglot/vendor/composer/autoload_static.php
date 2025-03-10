@@ -4,9 +4,10 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf7cf0405611cef835974c302d59a0286
+class ComposerStaticInit347476d5dc17c01d9b7780c54be449f9
 {
     public static $files = array (
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '6c200413eed8aeea54dbaf934a31b127' => __DIR__ . '/..' . '/weglot/simplehtmldom/src/simple_html_dom.php',
     );
 
@@ -15,6 +16,10 @@ class ComposerStaticInitf7cf0405611cef835974c302d59a0286
         array (
             'Weglot\\' => 7,
             'WeglotLanguages\\' => 16,
+        ),
+        'S' => 
+        array (
+            'Symfony\\Polyfill\\Php80\\' => 23,
         ),
         'P' => 
         array (
@@ -34,6 +39,10 @@ class ComposerStaticInitf7cf0405611cef835974c302d59a0286
         'WeglotLanguages\\' => 
         array (
             0 => __DIR__ . '/..' . '/weglot/weglot-php/node_modules/@weglot/languages/dist',
+        ),
+        'Symfony\\Polyfill\\Php80\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
         'Psr\\Cache\\' => 
         array (
@@ -56,17 +65,22 @@ class ComposerStaticInitf7cf0405611cef835974c302d59a0286
     );
 
     public static $classMap = array (
+        'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'PhpToken' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/PhpToken.php',
+        'Stringable' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Stringable.php',
+        'UnhandledMatchError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/UnhandledMatchError.php',
+        'ValueError' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/ValueError.php',
         'Weglot\\TranslationDefinitions' => __DIR__ . '/..' . '/weglot/translation-definitions/index.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf7cf0405611cef835974c302d59a0286::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit347476d5dc17c01d9b7780c54be449f9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit347476d5dc17c01d9b7780c54be449f9::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit347476d5dc17c01d9b7780c54be449f9::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit347476d5dc17c01d9b7780c54be449f9::$classMap;
 
         }, null, ClassLoader::class);
     }

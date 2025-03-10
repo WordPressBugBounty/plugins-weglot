@@ -194,12 +194,32 @@ class Client
     }
 
     /**
+     * Recursively converts an array or string to UTF-8 encoding.
+     *
+     * @param mixed $data the data to convert to UTF-8 encoding
+     *
+     * @return mixed the data with all string values converted to UTF-8 encoding
+     */
+    public function recursivelyConvertToUtf8($data)
+    {
+        if (\is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->recursivelyConvertToUtf8($value);
+            }
+        } elseif (\is_string($data)) {
+            return mb_convert_encoding($data, 'UTF-8', 'auto');
+        }
+
+        return $data;
+    }
+
+    /**
      * Make the API call and return the response.
      *
-     * @param string               $method   Method to use for given endpoint
-     * @param string               $endpoint Endpoint to hit on API
-     * @param array<string, mixed> $body     Body content of the request as array
-     * @param bool                 $asArray  To only get the body decoded
+     * @param string               $method   method to use for given endpoint
+     * @param string               $endpoint endpoint to hit on API
+     * @param array<string, mixed> $body     body content of the request as an array
+     * @param bool                 $asArray  to only get the body decoded
      *
      * @return ($asArray is true ? array<mixed> : array{string, int, array<string, string>})
      *
@@ -214,6 +234,18 @@ class Client
             } else {
                 $urlParams = ['api_key' => $this->apiKey, 'v' => $this->version];
             }
+
+            // Check JSON encoding validity before make API call
+            $jsonBody = json_encode($body);
+            if (false === $jsonBody) {
+                // Attempt to convert data to UTF-8.
+                $body = $this->recursivelyConvertToUtf8($body);
+                $jsonBody = json_encode($body);
+                if (false === $jsonBody) {
+                    throw new \Exception('JSON encoding error: '.json_last_error_msg());
+                }
+            }
+
             list($rawBody, $httpStatusCode, $httpHeader) = $this->getHttpClient()->request(
                 $method,
                 $this->makeAbsUrl($endpoint),

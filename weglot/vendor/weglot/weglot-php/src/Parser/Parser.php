@@ -357,6 +357,7 @@ class Parser
      * @param string $languageTo
      * @param array  $extraKeys
      * @param string $canonical
+     * @param string $requestUrl
      *
      * @return string
      *
@@ -366,7 +367,7 @@ class Parser
      * @throws MissingRequiredParamException
      * @throws MissingWordsOutputException
      */
-    public function translate($source, $languageFrom, $languageTo, $extraKeys = [], $canonical = '')
+    public function translate($source, $languageFrom, $languageTo, $extraKeys = [], $canonical = '', $requestUrl = '')
     {
         // setters
         $this
@@ -388,10 +389,9 @@ class Parser
             return $source;
         }
 
-        $translated = $this->apiTranslate($title, $canonical);
-        $source = $this->formatters($source, $translated, $tree);
+        $translated = $this->apiTranslate($title, $canonical, $requestUrl);
 
-        return $source;
+        return $this->formatters($source, $translated, $tree);
     }
 
     /**
@@ -504,6 +504,7 @@ class Parser
     /**
      * @param string $title
      * @param string $canonical
+     * @param string $requestUrl
      *
      * @return TranslateEntry
      *
@@ -513,7 +514,7 @@ class Parser
      * @throws MissingRequiredParamException
      * @throws MissingWordsOutputException
      */
-    protected function apiTranslate($title = null, $canonical = '')
+    protected function apiTranslate($title = null, $canonical = '', $requestUrl = '')
     {
         // Translate endpoint parameters
         $params = [
@@ -530,6 +531,11 @@ class Parser
             $params['title'] = $title;
         }
         $params = array_merge($params, $this->getConfigProvider()->asArray());
+
+        // if not empty we use this request_url (from WordPress)
+        if (!empty($requestUrl)) {
+            $params['request_url'] = $requestUrl;
+        }
 
         try {
             $translate = new TranslateEntry($params);

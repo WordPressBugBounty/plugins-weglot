@@ -108,7 +108,13 @@ class Request_Url_Service_Weglot {
 			$this->init_weglot_url();
 		}
 
-		return $this->weglot_url;
+		/**
+		 * Filter the Weglot URL object before it is returned.
+		 *
+		 * @param $weglot_url
+		 */
+		return apply_filters( 'weglot_url_object', $this->weglot_url );
+
 	}
 
 	/**
@@ -272,6 +278,70 @@ class Request_Url_Service_Weglot {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns the canonical URL for the current page.
+	 *
+	 * @return string The canonical URL.
+	 */
+	public function get_current_canonical_url() {
+		// If this is a singular post or page.
+		if ( is_singular() ) {
+			$url = get_permalink( get_queried_object_id() );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		// If this is a post type archive.
+		if ( is_post_type_archive() ) {
+			$post_type = get_query_var( 'post_type' );
+			// If multiple post types are set, take the first.
+			if ( is_array( $post_type ) ) {
+				$post_type = reset( $post_type );
+			}
+			$url = get_post_type_archive_link( $post_type );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		// Additional checks for archive types, if needed.
+		if ( is_category() ) {
+			$cat_id = get_query_var( 'cat' );
+			$url    = get_category_link( $cat_id );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		if ( is_tag() ) {
+			$tag_id = get_query_var( 'tag_id' );
+			$url    = get_tag_link( $tag_id );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		if ( is_author() ) {
+			$author_id = get_query_var( 'author' );
+			$url       = get_author_posts_url( $author_id );
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		// For search results, you might want to include the search query.
+		if ( is_search() ) {
+			return add_query_arg( 's', get_search_query(), home_url( '/' ) );
+		}
+
+		// For date archives (year, month, day), a canonical URL might be less straightforward.
+		// You could build something here if needed. For now, we fall back to home_url.
+
+		// If nothing else matches, fall back to the home URL.
+		return home_url( '/' );
 	}
 }
 

@@ -93,6 +93,89 @@
             "install-path": "../psr/cache"
         },
         {
+            "name": "symfony/polyfill-php80",
+            "version": "v1.31.0",
+            "version_normalized": "1.31.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php80.git",
+                "reference": "60328e362d4c2c802a54fcbf04f9d3fb892b4cf8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/60328e362d4c2c802a54fcbf04f9d3fb892b4cf8",
+                "reference": "60328e362d4c2c802a54fcbf04f9d3fb892b4cf8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "time": "2024-09-09T11:45:10+00:00",
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php80\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ion Bazan",
+                    "email": "ion.bazan@gmail.com"
+                },
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.0+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.31.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "install-path": "../symfony/polyfill-php80"
+        },
+        {
             "name": "weglot/simplehtmldom",
             "version": "0.8.3",
             "version_normalized": "0.8.3.0",
@@ -188,17 +271,17 @@
         },
         {
             "name": "weglot/weglot-php",
-            "version": "1.8.3",
-            "version_normalized": "1.8.3.0",
+            "version": "1.8.8",
+            "version_normalized": "1.8.8.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:weglot/weglot-php.git",
-                "reference": "9727c559197a7b1cb7a43475cf9f66ae445fe17e"
+                "reference": "0c267ac3eb73ecba82cd58cb576f61a866a90bfd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/9727c559197a7b1cb7a43475cf9f66ae445fe17e",
-                "reference": "9727c559197a7b1cb7a43475cf9f66ae445fe17e",
+                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/0c267ac3eb73ecba82cd58cb576f61a866a90bfd",
+                "reference": "0c267ac3eb73ecba82cd58cb576f61a866a90bfd",
                 "shasum": ""
             },
             "require": {
@@ -206,6 +289,7 @@
                 "ext-json": "*",
                 "php": ">=5.6",
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
+                "symfony/polyfill-php80": "^1.31",
                 "weglot/simplehtmldom": "^0.8",
                 "weglot/translation-definitions": "^2.0"
             },
@@ -217,7 +301,7 @@
                 "symfony/cache": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1",
                 "symfony/dotenv": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1"
             },
-            "time": "2024-11-26T14:50:47+00:00",
+            "time": "2025-03-07T07:41:52+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

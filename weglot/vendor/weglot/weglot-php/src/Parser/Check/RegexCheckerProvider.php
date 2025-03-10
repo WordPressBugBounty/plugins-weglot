@@ -87,11 +87,18 @@ class RegexCheckerProvider
      */
     protected function loadDefaultCheckers()
     {
+        $jsonKeys = ['description', 'name', 'headline', 'articleSection', 'text'];
+
+        // Dynamically extend keys for WordPress
+        if (\function_exists('apply_filters')) {
+            $jsonKeys = apply_filters('list_json_ld_keys', $jsonKeys);
+        }
+
         /* Add JSON LD checker */
         if (!str_contains(implode(',', $this->parser->getExcludeBlocks()), 'application/ld+json')
            && !str_contains(implode(',', $this->parser->getExcludeBlocks()), '.wg-ldjson')
         ) {
-            $this->addChecker(new RegexChecker("#<script type=('|\")application\/ld\+json('|\")([^\>]+?)?>(.*?)<\/script>#s", SourceType::SOURCE_JSON, 4, ['description',  'name', 'headline', 'articleSection', 'text']));
+            $this->addChecker(new RegexChecker("#<script type=('|\")application\/ld\+json('|\")([^\>]+?)?>(.*?)<\/script>#s", SourceType::SOURCE_JSON, 4, $jsonKeys));
         }
 
         /* Add HTML template checker */

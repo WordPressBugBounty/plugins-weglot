@@ -1,15 +1,16 @@
 <?php
 /*
-*Plugin Name: Weglot Translate
-*Plugin URI: http://wordpress.org/plugins/weglot/
-*Description: Translate your website into multiple languages in minutes without doing any coding. Fully SEO compatible.
-*Author: Weglot Translate team
-*Author URI: https://weglot.com/
-*Text Domain: weglot
-*Domain Path: /languages/
-*WC requires at least: 4.0
-*WC tested up to: 9.3
-*Version: 4.3.0
+* Plugin Name: Weglot Translate
+* Plugin URI: http://wordpress.org/plugins/weglot/
+* Description: Translate your website into multiple languages in minutes without doing any coding. Fully SEO compatible.
+* Author: Weglot Translate team
+* Author URI: https://weglot.com/
+* Text Domain: weglot
+* Domain Path: /languages/
+* Woo: 18734003994087:a9b22cd146b2b968b88bba3360c23eed
+* WC requires at least: 4.0
+* WC tested up to: 9.5
+* Version: 4.3.1
 */
 
 /**
@@ -24,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '4.3.0' );
+define( 'WEGLOT_VERSION', '4.3.1' );
 define( 'WEGLOT_PHP_MIN', '5.6' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -331,4 +332,13 @@ add_action( 'plugins_loaded', 'weglot_plugin_loaded' , $priority);
 $dir_wp_rocket = plugin_dir_path( __DIR__ ) . 'wp-rocket';
 if ( file_exists( $dir_wp_rocket . '/wp-rocket.php' ) ) {
 	include_once __DIR__ . '/src/third/wprocket/wp-rocket-weglot.php';
+}
+
+// Ensure WooCommerce is active before adding compatibility and add compatibility with HPOS WooCommerce
+if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins' ) ) ) ) {
+	add_action( 'before_woocommerce_init', function() {
+		if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+		}
+	} );
 }

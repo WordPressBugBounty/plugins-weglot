@@ -67,7 +67,8 @@ class Generate_Switcher_Service_Weglot {
 	 * @since 2.3.0
 	 */
 	public function render_default_button( $dom ) {
-		if ( strpos( $dom, 'weglot-language' ) !== false ) {
+		$force_js_render_switcher = apply_filters('force_js_render_switcher', false);
+		if ( strpos( $dom, 'weglot-language' ) !== false || $force_js_render_switcher) {
 			return $dom;
 		}
 

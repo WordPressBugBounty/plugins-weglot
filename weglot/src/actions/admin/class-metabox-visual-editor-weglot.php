@@ -208,9 +208,9 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 		$wg_path       = $this->request_url_services->create_url_object( $path );
 		$organization_slug = $this->option_services->get_option('organization_slug');
 		$project_slug = $this->option_services->get_option('project_slug');
-		$visual_editor = esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=translations&url='.$wg_path->getUrl(), array('weglot') );
-		$visual_exclusion = esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=exclusions&url='.$wg_path->getUrl(), array('weglot') );
-		$url_exclusion = esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/settings/exclusions#excluded-urls', array('weglot') );
+		$visual_editor = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=translations&url='.$wg_path->getUrl();
+		$visual_exclusion = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=exclusions&url='.$wg_path->getUrl();
+		$url_exclusion = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/settings/exclusions#excluded-urls';
 
 		if ( $list ) {
 			echo '<a class="components-button is-secondary" href="' . esc_url( $visual_editor ) . '" target="_blank">Edit translations</a><br /><br />';

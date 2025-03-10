@@ -143,6 +143,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				'wcfm_ajax_controller', // wcfm_ajax_controller.
 				'jet_ajax_search', // jet_ajax_search.
 				'woofc_update_qty', // jet_ajax_search.
+				'et_fb_ajax_save', // save divi builder.
 			)
 		);
 
@@ -317,10 +318,36 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 */
 
 	public function manage_trailing_slash() {
-		if(empty($_SERVER['REQUEST_URI'])){
+		if (empty($_SERVER['REQUEST_URI'])) {
 			return;
 		}
+
 		$request_uri = esc_url_raw($_SERVER['REQUEST_URI']);
+
+		// Define URLs to skip, and allow filtering
+		$excluded_urls = apply_filters('custom_trailing_slash_exclusions', [
+			'/robots.txt',                 // Robots file
+			'/sitemap_index.xml',          // Main Yoast SEO sitemap
+			'/wp-sitemap.xml',             // WordPress core sitemap
+			'/favicon.ico',                // Favicon
+			'/apple-touch-icon.png',       // Apple Touch Icon
+			'/apple-touch-icon-precomposed.png', // Apple Touch Icon
+			'/crossdomain.xml',            // Flash cross-domain policy
+			'/ads.txt',                    // Ads.txt for ad networks
+			'/humans.txt',                 // Humans.txt (sometimes used for credits)
+			'/browserconfig.xml',          // Windows tile settings
+			'/site.webmanifest',           // Web App Manifest
+		]);
+
+
+
+		// Check if request URI matches any excluded URLs
+		foreach ($excluded_urls as $excluded_url) {
+			if (strpos($request_uri, $excluded_url) === 0) {
+				return;
+			}
+		}
+
 		$current_language_code = $this->current_language->getExternalCode();
 		if (!preg_match('#^/' . preg_quote($current_language_code, '#') . '(/|$)#', $request_uri)) {
 			$request_uri = '/' . $current_language_code . $request_uri;
@@ -440,11 +467,12 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 
 		$settings['original_path'] = $this->request_url_services->get_weglot_url()->getPath();
 		$settings                  = $this->feature_flags_services->generate_feature_flags( $settings );
-		if ( ! empty( $settings['custom_settings']['switchers'] ) ) {
-			echo '<script type="application/json" id="weglot-data">';
-			echo wp_json_encode( $settings );
-			echo '</script>';
+		if(empty($settings['custom_settings']['switchers'])){
+			$settings['custom_settings']['switchers'][0] = $this->switcher_default_options();
 		}
+		echo '<script type="application/json" id="weglot-data">';
+		echo wp_json_encode( $settings );
+		echo '</script>';
 	}
 
 	/**
@@ -493,7 +521,118 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					);
 				}
 			}
+		}else{
+			$force_js_render_switcher = apply_filters('force_js_render_switcher', false);
+			if( $force_js_render_switcher ){
+				$filename_esc_js = esc_attr( 'weglot-switcher-default-js' );
+				$filename_esc_css = esc_attr( 'weglot-switcher-default-css' );
+				$template_default = $this->get_template_hash('default');
+				$css_to_load = esc_url( Helper_API::ROOT_CDN_BASE ) . '/weglot.min.css';
+				$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . $template_default['name'] . '.' . $template_default['hash'] ) . '.min.js';
+
+				wp_enqueue_style(
+					$filename_esc_css,      // Handle name
+					$css_to_load,         // CSS file URL
+					array(),      // Dependencies
+					8,         // Version (null to avoid adding a version number)
+					'screen'         // Media
+				);
+
+				wp_enqueue_script(
+					$filename_esc_js, // Handle name
+					$file_to_load, // Script URL
+					array(), // Dependencies (none in this case)
+					null, // Version (null to avoid adding a version number)
+					true // Load in the footer
+				);
+			}
 		}
+	}
+
+
+	/**
+	 * @param string $template_name
+	 * @return array|null
+	 * @throws Exception
+	 * @since 2.3.0
+	 */
+	public function get_template_hash($template_name) {
+		// Transient key based on the template name
+		$transient_key = 'template_hash_' . sanitize_key($template_name);
+
+		// Check if the data exists in the transient
+		$template_data = get_transient($transient_key);
+		if ($template_data !== false) {
+			// Return the data if found in transient
+			return $template_data;
+		}
+
+		// Fetch JSON data from the URL
+		$url = esc_url(Helper_API::get_tpl_switchers_url() . 'versions.json');
+
+		if ( ! function_exists( 'vip_safe_wp_remote_get' ) ) {
+			function vip_safe_wp_remote_get( $url, $args = [] ) {
+				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+				return wp_remote_get( $url, $args );
+			}
+		}
+
+		$response = Helper_API::get_remote_content($url);
+
+		// Check if the request was successful
+		if (is_wp_error($response)) {
+			return null; // Return null on failure
+		}
+
+		$body = wp_remote_retrieve_body($response);
+		$data = json_decode($body, true);
+
+		// Check if templates exist and are an array
+		if (!isset($data['templates']) || !is_array($data['templates'])) {
+			return null;
+		}
+
+		// Search for the template by name
+		foreach ($data['templates'] as $template) {
+			if ($template['name'] === $template_name) {
+				// Save the result in a transient for 1 week (7 days)
+				set_transient($transient_key, $template, WEEK_IN_SECONDS);
+				return $template;
+			}
+		}
+
+		// Return null if not found
+		return null;
+	}
+
+	/**
+	 * @return array
+	 * @throws \Exception
+	 * @version 2.3.0
+	 * @since 2.0
+	 */
+	public function switcher_default_options(){
+
+		$is_dropdown = $this->option_services->get_option_button( 'is_dropdown' );
+		$with_name = $this->option_services->get_option_button( 'with_name' );
+		$is_fullname = $this->option_services->get_option_button( 'is_fullname' );
+		$with_flags = $this->option_services->get_option_button( 'with_flags' );
+		$flag_type = $this->option_services->get_option_button( 'flag_type' );
+
+		$template_hash = $this->get_template_hash('default');
+		$hash = $template_hash ? $template_hash['hash'] : '';
+
+		return array(
+			'templates' => array('name' => 'default', 'hash' => $hash),
+			'location' => array(),
+			'style' => array(
+				'with_flags' => $with_flags,
+				'flag_type' => $flag_type,
+				'with_name' => $with_name,
+				'full_name' => $is_fullname,
+				'is_dropdown' => $is_dropdown,
+			),
+		);
 	}
 
 	/**
@@ -505,9 +644,6 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function weglot_dynamics() {
 
-		if(weglot_get_current_language() === weglot_get_original_language()) {
-			return;
-		}
 		$add_dynamics = apply_filters( 'weglot_translate_dynamics', false );
 
 		if ( $add_dynamics ) {
@@ -567,6 +703,8 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$whitelist = apply_filters( 'weglot_whitelist_selectors', $default_whitelist );
 				$dynamics  = apply_filters( 'weglot_dynamics_selectors', $default_dynamics );
 				$proxify_iframes  = apply_filters( 'weglot_proxify_iframes', $default_proxify_iframes );
+				$js_autoswitch     = apply_filters( 'weglot_autoredirect_js', false );
+				$hide_switcher     = apply_filters( 'weglot_hide_switcher_js', true );
 				?>
 				<script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
 				<script>
@@ -575,9 +713,9 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 						whitelist: <?php echo wp_json_encode( $whitelist ); ?>,
 						dynamics: <?php echo wp_json_encode( $dynamics ); ?>,
 						proxify_iframes: <?php echo wp_json_encode( $proxify_iframes ); ?>,
-						hide_switcher: true,
+						hide_switcher: <?php echo $hide_switcher ? 'true' : 'false'; ?>,
 						language_to: '<?php echo esc_js( weglot_get_current_language() ); ?>',
-						auto_switch: true
+						auto_switch: <?php echo $js_autoswitch ? 'true' : 'false'; ?>
 					});
 				</script>
 				<?php

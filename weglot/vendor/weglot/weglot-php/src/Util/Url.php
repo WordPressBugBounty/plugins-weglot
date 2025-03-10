@@ -5,7 +5,7 @@ namespace Weglot\Util;
 use Weglot\Client\Api\LanguageEntry;
 
 /**
- * @phpstan-type ExcludedUrl = array{string, mixed}
+ * @phpstan-type ExcludedUrl = array{Regex, mixed}
  * @phpstan-type CustomUrl = array<string, string>
  */
 class Url
@@ -100,6 +100,19 @@ class Url
     public function getUrl()
     {
         return $this->url;
+    }
+
+    /**
+     * Sets the full URL.
+     *
+     * @param string $url
+     *
+     * @return void
+     */
+    public function setUrl($url)
+    {
+        $this->url = $url;
+        $this->detectUrlDetails();
     }
 
     /**
@@ -443,8 +456,8 @@ class Url
             $exclusionBehavior = 'NOT_TRANSLATED';
 
             foreach ($this->excludedUrls as $excludedUrl) {
-                if (0 != preg_match('#'.$excludedUrl[0].'#', $this->getPath())
-                    || 0 != preg_match('#'.$excludedUrl[0].'#', rtrim($this->getPath(), '/'))) {
+                $regex = $excludedUrl[0];
+                if ($regex->match($this->getPath()) || $regex->match(rtrim($this->getPath(), '/'))) {
                     $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
                     $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);
                 }
@@ -457,22 +470,13 @@ class Url
                 $languageButtonDisplayed = true;
                 $exclusionBehavior = 'NOT_TRANSLATED';
                 foreach ($this->excludedUrls as $excludedUrl) {
+                    $regex = $excludedUrl[0];
                     if (null === $excludedUrl[1] || (\is_array($excludedUrl[1]) && \in_array($language, $excludedUrl[1]))) {
-                        if (str_contains($excludedUrl[0], '?!')) { // Si la regex contient un negative lookahead, alors on check le match entre le path et la regex
-                            if (0 != preg_match('#'.$excludedUrl[0].'#', $this->getPath())) {
-                                $isExcluded = true;
-                                $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
-                                $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);
-                                break;
-                            }
-                        } else { // Sinon on check le match entre le path et le rtrim(path)
-                            if (0 != preg_match('#'.$excludedUrl[0].'#', $this->getPath())
-                                || 0 != preg_match('#'.$excludedUrl[0].'#', rtrim($this->getPath(), '/'))) {
-                                $isExcluded = true;
-                                $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
-                                $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);
-                                break;
-                            }
+                        if ($regex->match($this->getPath()) || $regex->match(rtrim($this->getPath(), '/'))) {
+                            $isExcluded = true;
+                            $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
+                            $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);
+                            break;
                         }
                     }
                 }
