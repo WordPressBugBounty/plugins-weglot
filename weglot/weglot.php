@@ -10,7 +10,7 @@
 * Woo: 18734003994087:a9b22cd146b2b968b88bba3360c23eed
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 4.3.1
+* Version: 4.3.2
 */
 
 /**
@@ -25,7 +25,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '4.3.1' );
+define( 'WEGLOT_VERSION', '4.3.2' );
 define( 'WEGLOT_PHP_MIN', '5.6' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );

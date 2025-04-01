@@ -1,14 +1,4 @@
 *** Weglot Translate Changelog ***
 
-2025-01-20 - version 4.3.0
-* Improvement: Removed usage of Weglot.switchTo method during JS library initialization.
-* Improvement: Stopped adding weglot-data attributes when content is in the original language.
-* Improvement: Added a filter to allow translation of child nodes within excluded parent nodes.
-* Improvement: Added a filter to handle missing trailing slashes in URLs.
-* Improvement: Automatically added missing trailing slashes when translating content.
-* Improvement: Introduced a filter to manage the usage of custom path definitions for base URLs.
-* Improvement: Added the wg-excluded-link attribute to prevent translation of links while still translating labels or text.
-* Improvement: Displayed a warning banner for PHP 8.1 compatibility issues.
-* Fix: Resolved a deprecation issue by replacing FILTER_SANITIZE_STRING with FILTER_SANITIZE_FULL_SPECIAL_CHARS.
-* Fix: Fixed an issue where the WooCommerce reset password page displayed a blank page in the original language.
-* Quality: Addressed PHPStan issues to maintain level 6 compliance.
+2025-03-24 - version 4.3.2
+* Update: update weglot/languages to 1.9
