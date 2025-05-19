@@ -13,6 +13,7 @@ if (!\defined('CURL_SSLVERSION_TLSv1')) {
 if (!\defined('CURL_SSLVERSION_TLSv1_2')) {
     \define('CURL_SSLVERSION_TLSv1_2', 6);
 }
+
 // @codingStandardsIgnoreEnd
 
 class CurlClient implements ClientInterface
@@ -307,13 +308,37 @@ class CurlClient implements ClientInterface
     {
         $numRetries = 0;
         $message = '';
+
+        // prepare bypass list once
+        $bypass = \defined('WP_PROXY_BYPASS_HOSTS')
+            ? array_map('trim', explode(',', WP_PROXY_BYPASS_HOSTS))
+            : [];
+
+        // extract the hostname for bypass checking
+        $urlHost = parse_url($absUrl, \PHP_URL_HOST);
+
         while (true) {
             $rcode = $errno = 0;
 
             $curl = curl_init();
+            // only apply proxy settings if this host is NOT in the bypass list
+            if (!\in_array($urlHost, $bypass, true)) {
+                if (\defined('WP_PROXY_HOST')) {
+                    curl_setopt($curl, \CURLOPT_PROXY, WP_PROXY_HOST);
+                }
+                if (\defined('WP_PROXY_PORT')) {
+                    curl_setopt($curl, \CURLOPT_PROXYPORT, WP_PROXY_PORT);
+                }
+                // if we have a username (password may be omitted), send credentials
+                if (\defined('WP_PROXY_USERNAME')) {
+                    $user = WP_PROXY_USERNAME;
+                    $pass = \defined('WP_PROXY_PASSWORD') ? WP_PROXY_PASSWORD : '';
+                    curl_setopt($curl, \CURLOPT_PROXYUSERPWD, $user.':'.$pass);
+                }
+            }
             curl_setopt_array($curl, $options);
-            $rbody = curl_exec($curl);
 
+            $rbody = curl_exec($curl);
             if (false === $rbody) {
                 $errno = curl_errno($curl);
                 $message = curl_error($curl);
@@ -326,9 +351,10 @@ class CurlClient implements ClientInterface
                 ++$numRetries;
                 $sleepSeconds = $this->sleepTime($numRetries);
                 usleep((int) ($sleepSeconds * 1000000));
-            } else {
-                break;
+                continue;
             }
+
+            break;
         }
 
         if (false === $rbody) {
@@ -355,20 +381,20 @@ class CurlClient implements ClientInterface
             case \CURLE_COULDNT_RESOLVE_HOST:
             case \CURLE_OPERATION_TIMEOUTED:
                 $msg = "Could not connect to Weglot ($url).  Please check your "
-                    .'internet connection and try again.  If this problem persists, '
-                    ."you should check Weglot's status at "
-                    .'https://twitter.com/weglot, or';
+                       .'internet connection and try again.  If this problem persists, '
+                       ."you should check Weglot's status at "
+                       .'https://twitter.com/weglot, or';
                 break;
             case \CURLE_SSL_CACERT:
             case \CURLE_SSL_PEER_CERTIFICATE:
                 $msg = "Could not verify Weglot's SSL certificate.  Please make sure "
-                    .'that your network is not intercepting certificates.  '
-                    ."(Try going to $url in your browser.)  "
-                    .'If this problem persists,';
+                       .'that your network is not intercepting certificates.  '
+                       ."(Try going to $url in your browser.)  "
+                       .'If this problem persists,';
                 break;
             default:
                 $msg = 'Unexpected error communicating with Weglot.  '
-                    .'If this problem persists,';
+                       .'If this problem persists,';
         }
         $msg .= " let us know at support@weglot.com.\n\n(Network error [errno $errno]: $message)";
         if ($numRetries > 0) {

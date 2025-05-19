@@ -3,6 +3,9 @@
 
 # Change Log
 
+## 4.3.2 (01/04/2025) =
+* Update: update weglot/languages to 1.9
+
 ## 4.3.1 (10/03/2025) =
 * Improvement: Added a filter to allow rendering of the default language switcher in JavaScript.
 * Improvement: Introduced a filter to add a JSON key for ld+json.

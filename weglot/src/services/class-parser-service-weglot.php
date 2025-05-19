@@ -120,4 +120,34 @@ class Parser_Service_Weglot {
 
 		return $parser;
 	}
+
+	/**
+	 * Escape Vue.js attributes so that simple_html_dom does not break.
+	 *
+	 * @param string $content The HTML content to be processed.
+	 * @return string Processed content with Vue.js attributes replaced.
+	 */
+	public function escape_vue_attributes( $content ) {
+		// Escape attributes that start with "v-" (e.g. v-for, v-bind:src, etc.)
+		$content = preg_replace( '/\bv-([\w-]+)=/', 'data-vue-v-$1=', $content );
+
+		// Escape shorthand Vue.js directives starting with ":" by ensuring we match the start of the attribute.
+		// This regex looks for either the beginning of the string (^) or any whitespace (\s)
+		// followed by ":" and then the attribute name.
+		return preg_replace( '/(^|\s):([\w-]+)=/', '$1data-vue-bind-$2=', $content );
+	}
+
+	/**
+	 * Restore the original Vue.js attributes after translation.
+	 *
+	 * @param string $content The HTML content with escaped Vue attributes.
+	 * @return string Content with the original Vue.js attributes restored.
+	 */
+	public function restore_vue_attributes( $content ) {
+		// Restore attributes replaced for "v-" directives.
+		$content = preg_replace( '/\bdata-vue-v-([\w-]+)=/', 'v-$1=', $content );
+
+		// Restore the shorthand directives for attributes starting with a colon.
+		return preg_replace( '/(^|\s)data-vue-bind-([\w-]+)=/', '$1:$2=', $content );
+	}
 }

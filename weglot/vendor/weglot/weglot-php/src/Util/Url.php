@@ -457,7 +457,7 @@ class Url
 
             foreach ($this->excludedUrls as $excludedUrl) {
                 $regex = $excludedUrl[0];
-                if ($regex->match($this->getPath()) || $regex->match(rtrim($this->getPath(), '/'))) {
+                if ($regex->match($this->getPath())) {
                     $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
                     $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);
                 }
@@ -472,7 +472,7 @@ class Url
                 foreach ($this->excludedUrls as $excludedUrl) {
                     $regex = $excludedUrl[0];
                     if (null === $excludedUrl[1] || (\is_array($excludedUrl[1]) && \in_array($language, $excludedUrl[1]))) {
-                        if ($regex->match($this->getPath()) || $regex->match(rtrim($this->getPath(), '/'))) {
+                        if ($regex->match($this->getPath())) {
                             $isExcluded = true;
                             $exclusionBehavior = $this->exclusionBehavior($excludedUrl);
                             $languageButtonDisplayed = $this->languageButtonDisplayed($excludedUrl);

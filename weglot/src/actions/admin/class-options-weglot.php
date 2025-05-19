@@ -192,15 +192,18 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		// Prioritize custom_css from options : custom_css, fallback to button_style : custom_css if needed
+		// Determine which key holds the custom CSS and remove escape slashes
 		if (!empty($options['custom_css'])) {
-			$options['custom_settings']['button_style']['custom_css'] = stripcslashes($options['custom_css']);
+			$css = stripcslashes($options['custom_css']);
+		} elseif (!empty($options['custom_settings']['button_style']['custom_css'])) {
+			$css = stripcslashes($options['custom_settings']['button_style']['custom_css']);
+		} else {
+			$css = '';
 		}
-		elseif (!isset($options['custom_css']) && !empty($options['custom_settings']['button_style']['custom_css'])) {
-			$options['custom_css'] = stripcslashes($options['custom_settings']['button_style']['custom_css']);
-		}
-		else {
-			$options['custom_settings']['button_style']['custom_css'] = isset($options['custom_settings']['button_style']['custom_css']) ? stripcslashes($options['custom_settings']['button_style']['custom_css']) : '';
-		}
+
+		// Ensure both values are set to the same unescaped CSS code
+		$options['custom_css'] = $css;
+		$options['custom_settings']['button_style']['custom_css'] = $css;
 
 		$options['custom_settings']['button_style']['flag_type'] = isset( $options['custom_settings']['button_style']['flag_type'] ) ? $options['custom_settings']['button_style']['flag_type'] : Helper_Flag_Type::RECTANGLE_MAT;
 

@@ -80,12 +80,7 @@ class Front_Enqueue_Weglot implements Hooks_Interface_Weglot {
 		wp_enqueue_style( 'weglot-css' );
 
 		//display new flags
-		if ( empty( $this->option_services->get_option( 'flag_css' ) )
-		     && strpos( $this->option_services->get_css_custom_inline(), 'background-position' ) == false
-		     && strpos( $this->option_services->get_css_custom_inline(), 'background-image' ) == false ) {
-			Helper_Flag_Type::get_new_flags();
-		}
-
+		Helper_Flag_Type::get_new_flags();
 		wp_add_inline_style( 'weglot-css', $this->option_services->get_flag_css() );
 		wp_add_inline_style( 'weglot-css', $this->option_services->get_css_custom_inline() );
 		wp_add_inline_style( 'weglot-css', $this->option_services->get_switcher_editor_css() );

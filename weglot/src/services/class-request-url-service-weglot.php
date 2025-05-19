@@ -343,6 +343,20 @@ class Request_Url_Service_Weglot {
 		// If nothing else matches, fall back to the home URL.
 		return home_url( '/' );
 	}
+
+	/**
+	 * Cleans up a URL by replacing redundant slashes with a single slash,
+	 * while preserving the double slashes after the protocol (e.g. http:// or https://).
+	 *
+	 * This function uses a regular expression with a negative lookbehind to ensure that
+	 * only the unintended multiple slashes in the path are replaced.
+	 *
+	 * @param string $url The URL to be cleaned.
+	 * @return string The cleaned URL.
+	 */
+	public function clean_url_slashes( $url ) {
+		return preg_replace( '#(?<!:)/{2,}#', '/', $url );
+	}
 }
 
 

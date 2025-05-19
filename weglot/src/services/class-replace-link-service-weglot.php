@@ -171,8 +171,31 @@ class Replace_Link_Service_Weglot {
 	 */
 	public function replace_datalink( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<' . preg_quote( $sometags, '/' ) . 'data-link=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<' . $sometags . 'data-link=' . $quote1 . $this->replace_url( $current_url, $current_language ) . $quote2, $translated_page );
+		$regex_limit_default = 200000;
 
+		// Check if the filter exists.
+		if ( has_filter( 'weglot_regex_tags_limit' ) ) {
+			// Use the filtered limit.
+			$regex_limit = apply_filters( 'weglot_regex_tags_limit', $regex_limit_default );
+
+			// Check if $sometags exceeds the limit.
+			if ( strlen( $sometags ) > $regex_limit ) {
+				// Skip the preg_replace; leave $translated_page as is.
+			} else {
+				$translated_page = preg_replace(
+					'/<' . preg_quote( $sometags, '/' ) . 'data-link=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/',
+					'<' . $sometags . 'data-link=' . $quote1 . $this->replace_url( $current_url, $current_language ) . $quote2,
+					$translated_page
+				);
+			}
+		} else {
+			// No filter exists; use the default behavior.
+			$translated_page = preg_replace(
+				'/<' . preg_quote( $sometags, '/' ) . 'data-link=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/',
+				'<' . $sometags . 'data-link=' . $quote1 . $this->replace_url( $current_url, $current_language ) . $quote2,
+				$translated_page
+			);
+		}
 		return $translated_page;
 	}
 

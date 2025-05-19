@@ -235,12 +235,21 @@ class Translate_Service_Weglot {
 
 					return apply_filters( 'weglot_xml_treat_page', $translated_content );
 				case 'html':
+					if ( apply_filters( 'weglot_escape_vue_js', false ) ) {
+						// Escape the Vue.js attributes before processing.
+						$content = $this->parser_services->escape_vue_attributes( $content );
+					}
+
 					if($force_request_url){
 						$request_url = $this->request_url_services->get_current_canonical_url();
 						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
 					}else{
 						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
-					}					$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
+					}
+					if ( apply_filters( 'weglot_escape_vue_js', false ) ) {
+						$translated_content = $this->parser_services->restore_vue_attributes( $translated_content );
+					}
+					$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
 					$translated_content = $this->replace_url_services->proxify_url( $translated_content );
 					$translated_content = $this->disable_automated_translation_services( $translated_content );
 

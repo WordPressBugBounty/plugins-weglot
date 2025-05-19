@@ -13,34 +13,79 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 abstract class Helper_API {
 
-	const API_BASE         = 'https://api.weglot.com';
-	const API_BASE_STAGING = 'https://api.weglot.dev';
-	const ROOT_CDN_BASE         = 'https://cdn.weglot.com';
-	const ROOT_CDN_BASE_STAGING         = 'https://cdn.weglot.dev';
-	const API_CDN_BASE         = 'https://cdn-api-weglot.com';
-	const API_CDN_BASE_STAGING = 'https://cdn-api-weglot.dev';
-	const CDN_BASE         = 'https://cdn.weglot.com/projects-settings/';
-	const CDN_BASE_SWITCHERS_TPL         = 'https://cdn.weglot.com/switchers/';
-	const CDN_BASE_SWITCHERS_TPL_STAGING         = 'https://cdn.weglot.dev/switchers/';
+	const API_BASE                   = 'https://api.weglot.com';
+	const API_BASE_STAGING           = 'https://api.weglot.dev';
+	// New API endpoint for the sandbox environment
+	const API_BASE_US           = 'https://api.weglot.us';
+
+	const ROOT_CDN_BASE              = 'https://cdn.weglot.com';
+	const ROOT_CDN_BASE_STAGING      = 'https://cdn.weglot.dev';
+	const API_CDN_BASE               = 'https://cdn-api-weglot.com';
+	const API_CDN_BASE_STAGING       = 'https://cdn-api-weglot.dev';
+	const CDN_BASE                   = 'https://cdn.weglot.com/projects-settings/';
+	const CDN_BASE_STAGING                   = 'https://cdn.weglot.dev/projects-settings/';
+	const CDN_BASE_US                   = 'https://cdn.weglot.us/projects-settings/';
+	const CDN_BASE_SWITCHERS_TPL     = 'https://cdn.weglot.com/switchers/';
+	const CDN_BASE_SWITCHERS_TPL_STAGING = 'https://cdn.weglot.dev/switchers/';
 
 	/**
-	 * @since 3.0.0
+	 * Get the current environment.
+	 *
+	 * This method uses the 'weglot_environment' filter, so you can override the environment.
+	 *
+	 * By default, it checks for a defined constant WEGLOT_ENV.
+	 * If that's not set, it falls back to 'staging' if WEGLOT_DEV is true, otherwise 'production'.
+	 *
+	 * @return string 'production', 'staging', or any custom value (e.g., 'sandbox').
+	 */
+	public static function get_environment() {
+		// If WEGLOT_ENV is defined, use that value.
+		if ( defined( 'WEGLOT_ENV' ) ) {
+			return apply_filters( 'weglot_environment', WEGLOT_ENV );
+		}
+
+		if ( defined( 'WEGLOT_DEV' ) && WEGLOT_DEV ) {
+			return apply_filters( 'weglot_environment', 'staging' );
+		}
+
+		// Default to 'production'.
+		return apply_filters( 'weglot_environment', 'production' );
+	}
+
+
+	/**
+	 * Get the CDN URL based on the current environment.
+	 *
 	 * @return string
 	 */
 	public static function get_cdn_url() {
-		if ( WEGLOT_DEV ) {
-			return self::CDN_BASE . 'staging/';
+		$env = self::get_environment();
+
+		if ( 'env_us' === $env ) {
+			return self::CDN_BASE_US;
+		}
+
+		if ( 'staging' === $env ) {
+			return self::CDN_BASE_STAGING;
 		}
 
 		return self::CDN_BASE;
 	}
 
+
 	/**
-	 * @since 3.0.0
+	 * Get the API URL based on the current environment.
+	 *
 	 * @return string
 	 */
 	public static function get_api_url() {
-		if ( WEGLOT_DEV ) {
+		$env = self::get_environment();
+
+		if ( 'env_us' === $env ) {
+			return self::API_BASE_US;
+		}
+
+		if ( 'staging' === $env ) {
 			return self::API_BASE_STAGING;
 		}
 
@@ -48,11 +93,14 @@ abstract class Helper_API {
 	}
 
 	/**
-	 * @since 3.0.0
+	 * Get the switchers template URL based on the current environment.
+	 *
 	 * @return string
 	 */
 	public static function get_tpl_switchers_url() {
-		if ( WEGLOT_DEV ) {
+		$env = self::get_environment();
+
+		if ( 'staging' === $env ) {
 			return self::CDN_BASE_SWITCHERS_TPL_STAGING;
 		}
 
@@ -60,27 +108,23 @@ abstract class Helper_API {
 	}
 
 	/**
-	 * Fetches remote content using the appropriate function for the environment.
+	 * Fetch remote content using the appropriate function for the environment.
 	 *
-	 * Uses `vip_safe_wp_remote_get()` if it exists (typically on WordPress VIP Go),
-	 * otherwise falls back to `wp_remote_get()`.
-	 *
-	 * @since 3.0.0
+	 * Uses vip_safe_wp_remote_get() if it exists (typically on WordPress VIP Go),
+	 * otherwise falls back to wp_remote_get().
 	 *
 	 * @param string $url  The URL to fetch the content from.
-	 * @param array  $args Optional. An array of request arguments. Default is an empty array.
+	 * @param array  $args Optional. An array of request arguments.
 	 *
 	 * @return array|WP_Error The response or WP_Error on failure.
 	 */
-
-	public static function get_remote_content($url, $args = []) {
-		if ( function_exists('vip_safe_wp_remote_get') ) {
-			return vip_safe_wp_remote_get($url, $args);
+	public static function get_remote_content( $url, $args = [] ) {
+		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+			return vip_safe_wp_remote_get( $url, $args );
 		}
+
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		return wp_remote_get($url, $args);
+		return wp_remote_get( $url, $args );
 	}
 
 }
-
-

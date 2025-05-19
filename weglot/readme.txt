@@ -4,7 +4,7 @@ Tags: translate, multilingual, language, translation, localization, multilingual
 Requires at least: 4.5
 Tested up to: 6.7
 Requires PHP: 7.0
-Stable tag: 4.3.2
+Stable tag: 4.3.3
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -129,7 +129,7 @@ When you’re ready, you can edit your translations directly in [your account](h
 
 - Weglot Translate is free for small websites (under 2,000 words) with one translation language.
 - Our WordPress multilingual plugin is cost-effective like no other, with custom paid plans to suit your translation needs. [Check our pricing](https://weglot.com/pricing) for more information.
-- Weglot Translate also offers a [10-day free trial version](https://dashboard.weglot.com/register); try our multilingual website solution today!
+- Weglot Translate also offers a [14-day free trial version](https://dashboard.weglot.com/register); try our multilingual website solution today!
 
 = Is Weglot compatible with SEO? =
 
@@ -137,7 +137,7 @@ Weglot Translate is 100% optimized for multilingual SEO. It creates a dedicated 
 
 = Can I try Weglot before buying a plan? =
 
-Yes, we have a 10-day free trial—no commitment, no credit card required—that everyone can use to test Weglot on your site. After the trial, you can choose to stay on the free plan and keep your translations (if your word count is below 2,000).
+Yes, we have a 14-day free trial—no commitment, no credit card required—that everyone can use to test Weglot on your site. After the trial, you can choose to stay on the free plan and keep your translations (if your word count is below 2,000).
 
 = How many languages are supported? =
 
@@ -266,15 +266,20 @@ See changelog for upgrade changes.
 
 
 == Changelog ==
+= 4.3.3 (19/05/2025) =
 
-2024-09-30 - version 4.2.9
-* Dev - PHPStan level 6 improvement.
-* Update - named mousedown eventlistener to allow to remove it.
-* Added - Filter to prevent access to specific role.
-
-= 4.3.2 (01/04/2025) =
-
-* Update: update weglot/languages to 1.9
+* Improvement: Add filter and helper method to escape Vue.js attributes before parsing content
+* Improvement: Prevent empty host value when retrieving current URL via wp_parse_url
+* Improvement: Remove private API key from Weglot data JSON
+* Improvement: Exclude the generate_wpo_wcpdf AJAX action from translation
+* Improvement: Validate replacement limit before running link-replacement regex
+* Improvement: Trim redundant double slashes from URLs during redirect
+* Improvement: Check that autoswitch is enabled and remove the language_to parameter from the JS script
+* Improvement: Add filter to enable Weglot in U.S. environments
+* Improvement: Update button CSS so code-language classes are prefixed with wg-
+* Improvement: Document usage of the check_custom_redirect() method
+* Improvement: Add srcset attribute to default DOM checker list
+* Improvement: Add proxy option for HTTP client calls
 
 = Older versions =
 

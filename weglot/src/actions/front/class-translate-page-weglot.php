@@ -144,6 +144,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				'jet_ajax_search', // jet_ajax_search.
 				'woofc_update_qty', // jet_ajax_search.
 				'et_fb_ajax_save', // save divi builder.
+				'generate_wpo_wcpdf', // WooCommerce PDF Invoices & Packing Slips
 			)
 		);
 
@@ -250,7 +251,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 * @version 2.1.0
 	 */
 	public function check_custom_redirect($current_url) {
+
 		$custom_redirect_exclude = $this->option_services->get_option_custom_settings('custom_redirect_exclude');
+
+		// Check if $custom_redirect_exclude is an array and not empty
+		if (!is_array($custom_redirect_exclude) || empty($custom_redirect_exclude)) {
+			return false;
+		}
 
 		foreach ($custom_redirect_exclude as $language => $urls) {
 			if (in_array($current_url, $urls)) {
@@ -282,6 +289,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 
 		if ( $original_language === $this->current_language ) {
 			return;
+		}
+
+		//we check if we have a custom redirect into our custom settings
+		$custom_redirect = $this->check_custom_redirect($this->request_url_services->get_full_url());
+		if($custom_redirect){
+			wp_safe_redirect( $custom_redirect, 301 );
+			exit;
 		}
 
 		// If we are not in the original language, but the URL is not available in the current language, and the option redirect is true,  we redirect to original.
@@ -431,6 +445,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		}
 		unset( $settings['deleted_at'] );
 		unset( $settings['api_key'] );
+		unset( $settings['api_key_private'] );
 		unset( $settings['technology_id'] );
 		unset( $settings['category'] );
 		unset( $settings['versions'] );
@@ -649,7 +664,19 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		if ( $add_dynamics ) {
 			// Get the current URL
 			$parsed_url  = wp_parse_url( weglot_get_current_full_url() );
-			$current_url = $parsed_url['scheme'] . '://' . $parsed_url['host'];
+			$scheme = $parsed_url['scheme'] ?? '';
+			$host = $parsed_url['host'] ?? wp_parse_url( home_url(), PHP_URL_HOST );
+
+			if ( empty( $scheme ) || empty( $host ) ) {
+				// Handle the error: You might want to log this or set a fallback URL.
+				$current_url = ''; // Or set a default value
+			} else {
+				$current_url = $scheme . '://' . $host;
+
+				if ( isset( $parsed_url['port'] ) ) {
+					$current_url .= ':' . $parsed_url['port'];
+				}
+			}
 
 			if ( isset( $parsed_url['port'] ) ) {
 				$current_url .= ':' . $parsed_url['port'];
@@ -705,18 +732,24 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$proxify_iframes  = apply_filters( 'weglot_proxify_iframes', $default_proxify_iframes );
 				$js_autoswitch     = apply_filters( 'weglot_autoredirect_js', false );
 				$hide_switcher     = apply_filters( 'weglot_hide_switcher_js', true );
+
+				$weglotConfig = [
+					'api_key' => esc_js($api_key),
+					'whitelist' => $whitelist,
+					'dynamics' => $dynamics,
+					'proxify_iframes' => $proxify_iframes,
+					'hide_switcher' => $hide_switcher ? 'true' : 'false',
+					'auto_switch' => $js_autoswitch ? 'true' : 'false',
+				];
+
+				if (!$js_autoswitch) {
+					$weglotConfig['language_to'] = esc_js(weglot_get_current_language());
+				}
+
 				?>
 				<script type="text/javascript" src="https://cdn.weglot.com/weglot.min.js"></script>
 				<script>
-					Weglot.initialize({
-						api_key: '<?php echo esc_js( $api_key ); ?>',
-						whitelist: <?php echo wp_json_encode( $whitelist ); ?>,
-						dynamics: <?php echo wp_json_encode( $dynamics ); ?>,
-						proxify_iframes: <?php echo wp_json_encode( $proxify_iframes ); ?>,
-						hide_switcher: <?php echo $hide_switcher ? 'true' : 'false'; ?>,
-						language_to: '<?php echo esc_js( weglot_get_current_language() ); ?>',
-						auto_switch: <?php echo $js_autoswitch ? 'true' : 'false'; ?>
-					});
+					Weglot.initialize(<?php echo wp_json_encode($weglotConfig); ?>);
 				</script>
 				<?php
 			}

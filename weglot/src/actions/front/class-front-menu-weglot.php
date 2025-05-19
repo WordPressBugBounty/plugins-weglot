@@ -139,7 +139,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 				}
 				$item->title      = apply_filters( 'weglot_menu_parent_menu_item_title', $title );
 				$item->attr_title = $current_language->getLocalName();
-				$item->classes    = array_merge( array( 'weglot-parent-menu-item' ), $classes, array( $current_language->getInternalCode() ) );
+				$item->classes    = array_merge( array( 'weglot-parent-menu-item', 'wg-'.$current_language->getInternalCode() ), $classes, array( $current_language->getInternalCode() ) );
 				$new_items[]      = $item;
 				$offset ++;
 			}
@@ -177,6 +177,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 				$add_classes[] = 'weglot-' . $language->getInternalCode();
 				if ( $with_flags ) {
 					$add_classes[] = $language->getInternalCode();
+					$add_classes[] = 'wg-' . $language->getInternalCode();
 				}
 
 				if ( $this->option_services->get_option( 'auto_redirect' )
