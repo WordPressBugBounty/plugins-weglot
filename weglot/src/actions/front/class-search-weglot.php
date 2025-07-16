@@ -11,8 +11,8 @@ use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
-use WeglotWP\Services\Parser_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
+use WeglotWP\Services\Translate_Service_Weglot;
 use WP_Query;
 
 /**
@@ -39,6 +39,11 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 	 * @var Language_Service_Weglot
 	 */
 	private $language_services;
+	/**
+	 * @var Translate_Service_Weglot
+	 */
+	private $translate_services;
+
 
 	/**
 	 * @since 2.4.0
@@ -47,6 +52,7 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 		$this->option_services      = weglot_get_service( 'Option_Service_Weglot' );
 		$this->request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
 		$this->language_services    = weglot_get_service( 'Language_Service_Weglot' );
+		$this->translate_services   = weglot_get_service('Translate_Service_Weglot');
 	}
 
 	/**
@@ -95,7 +101,7 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 
 		try {
 			$api_key_private = $this->option_services->get_api_key_private();
-			$this->new_search = $this->reverseTranslate($api_key_private, $current_language, $original_language, home_url('/'), $query->query_vars[ $query_vars_check ], 1);
+			$this->new_search = $this->translate_services->reverseTranslate($api_key_private, $current_language, $original_language, home_url('/'), $query->query_vars[ $query_vars_check ], 1);
 
 			if ( empty( $this->new_search ) ) {
 				return;
@@ -115,64 +121,6 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function get_search_query_translate( $string ) {
 		return ( $this->old_search ) ? $this->old_search : $string;
-	}
-
-	/**
-	 * @param string $api_key
-	 * @param string $l_from
-	 * @param string $l_to
-	 * @param string $request_url
-	 * @param string $word
-	 * @param int $t
-	 *
-	 * @return string
-	 * @since 2.4.0
-	 */
-	function reverseTranslate($api_key, $l_from, $l_to, $request_url, $word, $t) {
-		// Construct the request body.
-		$requestBody = wp_json_encode(array(
-			"l_from" => $l_from,
-			"l_to" => $l_to,
-			"request_url" => $request_url,
-			"words" => array(
-				array("w" => $word, "t" => $t)
-			)
-		));
-
-		// Define the API endpoint with the Weglot API key.
-		$url = sprintf('%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key);
-
-		// Set up the arguments for the request.
-		$args = array(
-			'body'        => $requestBody,
-			'headers'     => array(
-				'Content-Type' => 'application/json',
-			),
-			'method'      => 'POST',
-			'data_format' => 'body',
-		);
-
-		// Send the request using wp_remote_post.
-		$response = wp_remote_post($url, $args);
-
-		// Check for WP errors.
-		if (is_wp_error($response)) {
-			return "WP Error: " . $response->get_error_message();
-		}
-
-		// Get the response body.
-		$response_body = wp_remote_retrieve_body($response);
-
-		// Parse the JSON response.
-		$responseData = json_decode($response_body, true);
-
-		// Check if response is successful.
-		if (!$responseData || !isset($responseData['ids'])) {
-			return "Error: Invalid response from API";
-		}
-
-		// Return translated data.
-		return $responseData['to_words'][0];
 	}
 
 }

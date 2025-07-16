@@ -88,7 +88,7 @@ $plans     = $this->user_api_services->get_plans();
 				}
 				$original_languages_possible = $language_services->get_languages_available( [ 'sort' => true ] );
 				foreach ( $original_languages_possible as $language ) {
-					if ( $language->getInternalCode() !== 'br' ) {
+					if ( $language->getInternalCode() !== 'pt-br' ) {
 						?>
 						<?php if ( $this->options['has_first_settings'] ) { ?>
 							<option

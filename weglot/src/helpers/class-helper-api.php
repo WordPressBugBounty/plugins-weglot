@@ -108,21 +108,13 @@ abstract class Helper_API {
 	}
 
 	/**
-	 * Fetch remote content using the appropriate function for the environment.
+	 * Wrapper around wp_remote_get() which can be moved into VIP-safe context.
 	 *
-	 * Uses vip_safe_wp_remote_get() if it exists (typically on WordPress VIP Go),
-	 * otherwise falls back to wp_remote_get().
-	 *
-	 * @param string $url  The URL to fetch the content from.
-	 * @param array  $args Optional. An array of request arguments.
-	 *
-	 * @return array|WP_Error The response or WP_Error on failure.
+	 * @param string             $url  The URL to retrieve.
+	 * @param array<string,mixed> $args Optional WP HTTP args.
+	 * @return array<string,mixed>|WP_Error
 	 */
-	public static function get_remote_content( $url, $args = [] ) {
-		if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
-			return vip_safe_wp_remote_get( $url, $args );
-		}
-
+	public static function vip_safe_wp_remote_get( string $url, array $args = [] ) {
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
 		return wp_remote_get( $url, $args );
 	}

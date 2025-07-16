@@ -9,7 +9,7 @@
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 4.3.3
+* Version: 5.0
 */
 
 /**
@@ -24,8 +24,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '4.3.3' );
-define( 'WEGLOT_PHP_MIN', '5.6' );
+define( 'WEGLOT_VERSION', '5.0' );
+define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
 define( 'WEGLOT_DIR_LANGUAGES', WEGLOT_DIR . '/languages' );
@@ -215,8 +215,21 @@ function weglot_php_min_compatibility() {
  */
 function weglot_plugin_activate() {
 	if ( ! weglot_is_compatible() ) {
-		return;
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+		wp_die(
+			sprintf(
+			/* translators: 1: Required PHP version, 2: Current PHP version */
+				esc_html__( 'Weglot could not be activated because it requires PHP version %1$s or higher. Your current version is %2$s.', 'weglot' ),
+				WEGLOT_PHP_MIN,
+				PHP_VERSION
+			),
+			esc_html__( 'Plugin Activation Error', 'weglot' ),
+			array(
+				'back_link' => true,
+			)
+		);
 	}
+
 
 	require_once __DIR__ . '/weglot-autoload.php';
 	require_once __DIR__ . '/vendor/autoload.php';

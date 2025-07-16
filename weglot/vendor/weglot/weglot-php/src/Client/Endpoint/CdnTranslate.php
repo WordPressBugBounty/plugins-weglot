@@ -15,6 +15,7 @@ class CdnTranslate extends Endpoint
 {
     const METHOD = 'POST';
     const ENDPOINT = '/translate';
+    const WORDS_LIMIT = 600;
 
     /**
      * @var TranslateEntry
@@ -62,14 +63,39 @@ class CdnTranslate extends Endpoint
     public function handle()
     {
         $asArray = $this->translateEntry->jsonSerialize();
-        if (!empty($asArray['words'])) {
-            list($rawBody, $httpStatusCode) = $this->request($asArray, false);
-            if (200 !== $httpStatusCode) {
-                throw new ApiError($rawBody, $asArray);
-            }
-            $response = json_decode($rawBody, true);
-        } else {
+
+        if (empty($asArray['words'])) {
             throw new ApiError('Empty words passed', $asArray);
+        }
+
+        $wordChunks = array_chunk($asArray['words'], self::WORDS_LIMIT);
+        $response = [];
+
+        foreach ($wordChunks as $chunk) {
+            $payload = $asArray;
+
+            $payload['words'] = $chunk;
+            list($rawBody, $httpStatusCode) = $this->request($payload, false);
+
+            if (200 === $httpStatusCode) {
+                $chunkResponse = json_decode($rawBody, true);
+
+                foreach (['from_words', 'to_words', 'ids'] as $key) {
+                    $response[$key] = array_merge(
+                        isset($response[$key]) ? $response[$key] : [],
+                        isset($chunkResponse[$key]) ? $chunkResponse[$key] : []
+                    );
+                }
+            } else {
+                $originalWords = array_column($chunk, 'w');
+                foreach (['from_words', 'to_words'] as $key) {
+                    $response[$key] = array_merge($response[$key] ?? [], $originalWords);
+                }
+            }
+        }
+
+        if (empty($response)) {
+            throw new ApiError('All API calls failed', $asArray);
         }
 
         $factory = new TranslateFactory($response);

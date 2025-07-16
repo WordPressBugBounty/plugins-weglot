@@ -20,6 +20,7 @@ use WeglotWP\Services\Redirect_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
 use WeglotWP\Services\Translate_Service_Weglot;
 use WeglotWP\Services\Feature_Flags_Service_Weglot;
+use WP_Error;
 
 
 /**
@@ -245,10 +246,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	}
 
 	/**
-	 * @return boolean
-	 * @throws Exception
+	 * Description: A function to check custom redirects on provided URLs.
+	 *
 	 * @since 2.0
 	 * @version 2.1.0
+	 * @param string $current_url The URL which needs to be checked.
+	 * @return string|false Returns the redirect URL if found, false otherwise.
+	 * @throws Exception If there was an error processing the URL.
 	 */
 	public function check_custom_redirect($current_url) {
 
@@ -388,10 +392,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		}
 	}
 
+
 	/**
-	 * @return bool
-	 * @since 2.0
+	 * Checks if the given string ends with a slash.
 	 *
+	 * @param string $string The string to check.
+	 *
+	 * @return bool Returns true if the string ends with a slash ('/'), otherwise false.
 	 */
 	private function ends_with_slash($string) {
 		return substr($string, -1) === '/';
@@ -549,7 +556,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					$filename_esc_css,      // Handle name
 					$css_to_load,         // CSS file URL
 					array(),      // Dependencies
-					8,         // Version (null to avoid adding a version number)
+					'8',         // Version (null to avoid adding a version number)
 					'screen'         // Media
 				);
 
@@ -566,10 +573,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 
 
 	/**
-	 * @param string $template_name
-	 * @return array|null
-	 * @throws Exception
-	 * @since 2.3.0
+	 * Retrieves the hash information for a given template name.
+	 * The method fetches template version data from a remote JSON file,
+	 * and caches the retrieved data in a transient for a week.
+	 *
+	 * @param string $template_name The name of the template to fetch the hash for.
+	 *
+	 * @return array<string,mixed>|null An array containing the template data if found, or null if the template is not found or if an error occurs.
 	 */
 	public function get_template_hash($template_name) {
 		// Transient key based on the template name
@@ -585,15 +595,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		// Fetch JSON data from the URL
 		$url = esc_url(Helper_API::get_tpl_switchers_url() . 'versions.json');
 
-		if ( ! function_exists( 'vip_safe_wp_remote_get' ) ) {
-			function vip_safe_wp_remote_get( $url, $args = [] ) {
-				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-				return wp_remote_get( $url, $args );
-			}
-		}
-
-		$response = Helper_API::get_remote_content($url);
-
+		$response = Helper_API::vip_safe_wp_remote_get( $url );
 		// Check if the request was successful
 		if (is_wp_error($response)) {
 			return null; // Return null on failure
@@ -620,11 +622,21 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		return null;
 	}
 
+
 	/**
-	 * @return array
-	 * @throws \Exception
-	 * @version 2.3.0
-	 * @since 2.0
+	 * Retrieve the default options for the switcher configuration.
+	 *
+	 * @return array{
+	 *   templates: array{name: string, hash: string},
+	 *   location: array<string, mixed>,
+	 *   style: array{
+	 *     with_flags: bool,
+	 *     flag_type: string,
+	 *     with_name: bool,
+	 *     full_name: bool,
+	 *     is_dropdown: bool,
+	 *   },
+	 * }
 	 */
 	public function switcher_default_options(){
 

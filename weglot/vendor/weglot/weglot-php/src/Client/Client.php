@@ -207,7 +207,15 @@ class Client
                 $data[$key] = $this->recursivelyConvertToUtf8($value);
             }
         } elseif (\is_string($data)) {
-            return mb_convert_encoding($data, 'UTF-8', 'auto');
+            if (mb_check_encoding($data, 'UTF-8')) {
+                return $data;
+            }
+            $encoding = mb_detect_encoding($data, mb_detect_order(), true);
+            if (false !== $encoding) {
+                return mb_convert_encoding($data, 'UTF-8', $encoding);
+            }
+
+            return $data;
         }
 
         return $data;

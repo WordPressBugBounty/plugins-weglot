@@ -2,6 +2,20 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 4.3.3 (19/05/2025) =
+
+* Improvement: Add filter and helper method to escape Vue.js attributes before parsing content
+* Improvement: Prevent empty host value when retrieving current URL via wp_parse_url
+* Improvement: Remove private API key from Weglot data JSON
+* Improvement: Exclude the generate_wpo_wcpdf AJAX action from translation
+* Improvement: Validate replacement limit before running link-replacement regex
+* Improvement: Trim redundant double slashes from URLs during redirect
+* Improvement: Check that autoswitch is enabled and remove the language_to parameter from the JS script
+* Improvement: Add filter to enable Weglot in U.S. environments
+* Improvement: Update button CSS so code-language classes are prefixed with wg-
+* Improvement: Document usage of the check_custom_redirect() method
+* Improvement: Add srcset attribute to default DOM checker list
+* Improvement: Add proxy option for HTTP client calls
 
 ## 4.3.2 (01/04/2025) =
 * Update: update weglot/languages to 1.9

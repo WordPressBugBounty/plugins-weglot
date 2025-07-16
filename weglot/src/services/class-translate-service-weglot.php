@@ -8,9 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Weglot\Client\Api\Exception\ApiError;
 use Weglot\Client\Api\LanguageEntry;
-use Weglot\Util\Url;
 use WeglotWP\Helpers\Helper_Json_Inline_Weglot;
-use WeglotWP\Helpers\Helper_Keys_Json_Weglot;
+use WeglotWP\Helpers\Helper_API;
 
 
 /**
@@ -222,9 +221,14 @@ class Translate_Service_Weglot {
 			switch ( $type ) {
 				case 'json':
 					$extra_keys         = apply_filters( 'weglot_add_json_keys', array() );
+					if ( apply_filters( 'weglot_escape_attribute_in_json', false ) ) {
+						$content = $this->parser_services->preserve_attributes( $content ); // List attributes you want to escape
+					}
 					$translated_content = $parser->translate( $content, $this->original_language,$this->current_language, $extra_keys );
 					$translated_content = wp_json_encode( $this->replace_url_services->replace_link_in_json( json_decode( $translated_content, true ) ) );
-
+					if ( apply_filters( 'weglot_escape_attribute_in_json', false ) ) {
+						$translated_content = $this->parser_services->restore_preserved_attributes( $translated_content );
+					}
 					return apply_filters( 'weglot_json_treat_page', $translated_content );
 				case 'xml':
 					$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
@@ -235,6 +239,11 @@ class Translate_Service_Weglot {
 
 					return apply_filters( 'weglot_xml_treat_page', $translated_content );
 				case 'html':
+
+					if ( apply_filters( 'weglot_escape_attribute_in_html', false ) ) {
+						$content = $this->parser_services->preserve_attributes( $content );
+					}
+
 					if ( apply_filters( 'weglot_escape_vue_js', false ) ) {
 						// Escape the Vue.js attributes before processing.
 						$content = $this->parser_services->escape_vue_attributes( $content );
@@ -249,6 +258,11 @@ class Translate_Service_Weglot {
 					if ( apply_filters( 'weglot_escape_vue_js', false ) ) {
 						$translated_content = $this->parser_services->restore_vue_attributes( $translated_content );
 					}
+
+					if ( apply_filters( 'weglot_escape_attribute_in_html', false ) ) {
+						$translated_content = $this->parser_services->restore_preserved_attributes( $translated_content );
+					}
+
 					$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
 					$translated_content = $this->replace_url_services->proxify_url( $translated_content );
 					$translated_content = $this->disable_automated_translation_services( $translated_content );
@@ -368,6 +382,56 @@ class Translate_Service_Weglot {
 		}
 
 		return $html;
+	}
+
+	/**
+	 * @param string $api_key Weglot API key
+	 * @param string $l_from Source language
+	 * @param string $l_to Target language
+	 * @param string $request_url Request URL
+	 * @param string $word Word to translate
+	 * @param int $t Text type
+	 *
+	 * @return string
+	 * @since 2.4.0
+	 */
+	public function reverseTranslate($api_key, $l_from, $l_to, $request_url, $word, $t) {
+
+		$requestBody = wp_json_encode([
+			"l_from" => $l_from,
+			"l_to" => $l_to,
+			"request_url" => $request_url,
+			"words" => [
+				["w" => $word, "t" => $t]
+			]
+		]);
+
+		$url = sprintf('%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key);
+
+		$args = [
+			'body'        => $requestBody,
+			'headers'     => [
+				'Content-Type' => 'application/json',
+			],
+			'method'      => 'POST',
+			'data_format' => 'body',
+		];
+
+		$response = wp_remote_post($url, $args);
+
+		if (is_wp_error($response)) {
+			return "WP Error: " . $response->get_error_message();
+		}
+
+		$response_body = wp_remote_retrieve_body($response);
+
+		$responseData = json_decode($response_body, true);
+
+		if (!$responseData || !isset($responseData['ids'])) {
+			return "Error: Invalid response from API";
+		}
+
+		return $responseData['to_words'][0];
 	}
 }
 

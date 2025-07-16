@@ -2,9 +2,9 @@
 Contributors: remyb92, gmulti, wysija, wpr0ck, glx77
 Tags: translate, multilingual, language, translation, localization, multilingual SEO, languages, translator, website translation, multilanguage, international, traduction
 Requires at least: 4.5
-Tested up to: 6.7
-Requires PHP: 7.0
-Stable tag: 4.3.3
+Tested up to: 6.8
+Requires PHP: 7.4
+Stable tag: 5.0
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -16,13 +16,16 @@ Translate your WordPress website in 110+ languages within minutes with Weglot Tr
 
 Weglot Translate is an all-in-one WordPress translation plugin, trusted by 70,000+ users worldwide. Translate your WordPress website into 110+ languages and go multilingual within minutes, no coding required.
 
-Increase visibility and boost conversions with ease by adding automatic translations to your website, with full editing control. Weglot Translate is fully optimized for multilingual SEO, with every translated page automatically indexed by Google. Say hello in multiple languages to millions of new visitors with high-quality translations, boosted by AI.
+**Get the first layer of translation powered by top-tier AI engines** (DeepL, Google, Microsoft), then refine with full human control through your Weglot Dashboard.
+
+**Want your translations to reflect your brand voice instantly?**
+Build your own **AI Language Model** to generate more natural, accurate translations that are custom to your business—using your glossary, past edits, and style preferences.
 
 Explore how Weglot makes website translation easy with a free trial. Keep using it for free once the trial ends, or upgrade to a plan that best fits your needs. Visit [https://weglot.com/](https://weglot.com/) to learn more!
 
 ### How Weglot Translate works
 
-[youtube https://www.youtube.com/watch?v=frzdb79qTrU]
+[youtube https://www.youtube.com/watch?v=shCB1didH8Q&ab_channel=Weglot]
 
 ### Why Weglot Translate
 
@@ -251,13 +254,14 @@ If you decide to stop using Weglot, your website will no longer be translated. A
 == Screenshots ==
 
 1. Become visible on search engines with multilingual SEO
-2. Get full editing control with machine, human and pro translation options
-3. Integrate Weglot with your WordPress website and get started instantly
-4. Create your translation team and collaborate with members
-5. Customize your language switcher for your website and brand
-6. Edit your translations directly on a live preview of your website
-7. See the impact of your translated pages and leverage new opportunities
-8. Create translation rules and avoid repetitive editing tasks
+2. Train your own AI Language Model for accurate, brand-specific translations tailored to your business.
+3. Get full editing control with machine, human and pro translation options
+4. Integrate Weglot with your WordPress website and get started instantly
+5. Create your translation team and collaborate with members
+6. Customize your language switcher for your website and brand
+7. Edit your translations directly on a live preview of your website
+8. See the impact of your translated pages and leverage new opportunities
+9. Create translation rules and avoid repetitive editing tasks
 
 
 == Upgrade Notice ==
@@ -266,20 +270,16 @@ See changelog for upgrade changes.
 
 
 == Changelog ==
-= 4.3.3 (19/05/2025) =
-
-* Improvement: Add filter and helper method to escape Vue.js attributes before parsing content
-* Improvement: Prevent empty host value when retrieving current URL via wp_parse_url
-* Improvement: Remove private API key from Weglot data JSON
-* Improvement: Exclude the generate_wpo_wcpdf AJAX action from translation
-* Improvement: Validate replacement limit before running link-replacement regex
-* Improvement: Trim redundant double slashes from URLs during redirect
-* Improvement: Check that autoswitch is enabled and remove the language_to parameter from the JS script
-* Improvement: Add filter to enable Weglot in U.S. environments
-* Improvement: Update button CSS so code-language classes are prefixed with wg-
-* Improvement: Document usage of the check_custom_redirect() method
-* Improvement: Add srcset attribute to default DOM checker list
-* Improvement: Add proxy option for HTTP client calls
+= 5.0 (16/07/2025) =
+* Major: Update minimum PHP requirement to 7.4 to align with WordPress requirements
+* Improvement: Add prefix to Weglot CSS to prevent conflicts with other styles
+* Improvement: Introduce escape_vue_attributes and preserve_attributes methods for attribute escaping
+* Improvement: Rename inline CSS ID from Weglot to weglot_custom_style
+* Improvement: Add missing keys for WooCommerce JSON (variation cart)
+* Improvement: Add reverse_translate method to TranslateService
+* Improvement: Enhance recursivelyConvertToUtf8 usage
+* Improvement: Control payload size and truncate when exceeding limits
+* Quality: Maintain PHPStan at level 6
 
 = Older versions =
 

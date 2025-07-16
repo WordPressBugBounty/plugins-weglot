@@ -703,7 +703,7 @@ class Option_Service_Weglot {
 	public function get_translate_inside_exclusions_blocks(){
 
 		$inside_exclusions_blocks = $this->get_option( 'translate_inside_exclusions' );
-
+		$transformed_array = [];
 		if(empty($inside_exclusions_blocks)){
 			return [];
 		}

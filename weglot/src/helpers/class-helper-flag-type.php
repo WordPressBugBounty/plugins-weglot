@@ -119,8 +119,8 @@ class Helper_Flag_Type {
 			$flag_url = $flag_code;
 		}
 
-		return ".weglot-flags.flag-{$flag_number}.{$language_code}>a:before," .
-				".weglot-flags.flag-{$flag_number}.{$language_code}>span:before {" .
+		return ".weglot-flags.flag-{$flag_number}.wg-{$language_code}>a:before," .
+				".weglot-flags.flag-{$flag_number}.wg-{$language_code}>span:before {" .
 				"background-image: url({$flag_url}); }";
 
 	}

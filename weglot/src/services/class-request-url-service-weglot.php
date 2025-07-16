@@ -108,13 +108,7 @@ class Request_Url_Service_Weglot {
 			$this->init_weglot_url();
 		}
 
-		/**
-		 * Filter the Weglot URL object before it is returned.
-		 *
-		 * @param $weglot_url
-		 */
 		return apply_filters( 'weglot_url_object', $this->weglot_url );
-
 	}
 
 	/**

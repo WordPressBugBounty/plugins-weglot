@@ -174,10 +174,9 @@ class Schema_Option_V3 {
 
 	/**
 	 * Overrides the "language_to" value in each language array based on a provided mapping.
-	 *
-	 * @param array $languages An array of language configurations, each containing a "language_to" key.
-	 * @param array $overrides An associative array mapping original "language_to" values to their custom replacements.
-	 * @return array The modified array of language configurations with updated "language_to" values.
+	 * @param array<string, mixed> $languages An array of language configurations, each containing a "language_to" key.
+	 * @param array<string, string> $overrides An associative array mapping original "language_to" values to their custom replacements.
+	 * @return array<string, mixed> The modified array of language configurations with updated "language_to" values.
 	 */
 	public static function overrideLanguageTo(array $languages, array $overrides) {
 		foreach ($languages as &$language) {

@@ -17,17 +17,12 @@ use WeglotWP\Third\Woocommerce\Wc_Active;
  * @since 3.1.4
  */
 class Wc_Tracking_Weglot implements Hooks_Interface_Weglot {
-	/**
-	 * @var Wc_Active
-	 */
-	private $wc_active_services;
 
 	/**
 	 * @since 3.1.4
 	 * @return void
 	 */
 	public function __construct() {
-		$this->wc_active_services = weglot_get_service( 'Wc_Active' );
 	}
 
 	/**

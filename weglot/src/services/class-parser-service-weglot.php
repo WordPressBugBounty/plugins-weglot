@@ -33,6 +33,9 @@ class Parser_Service_Weglot {
 	 */
 	private $dom_checkers_services;
 
+	/** @var array<string,string>  token → original value */
+	private $preserved = [];
+
 	/**
 	 * @since 2.0
 	 */
@@ -150,4 +153,74 @@ class Parser_Service_Weglot {
 		// Restore the shorthand directives for attributes starting with a colon.
 		return preg_replace( '/(^|\s)data-vue-bind-([\w-]+)=/', '$1:$2=', $content );
 	}
+
+
+	/**
+	 * Preserves specified attributes in the given HTML string by replacing
+	 * their inner values with tokens, storing these values for later restoration.
+	 *
+	 * @param string $html The HTML content where attributes should be preserved.
+	 *
+	 * @return string The HTML content with specified attributes replaced by tokens.
+	 */
+	public function preserve_attributes( string $html ): string {
+		$attrs = apply_filters( 'weglot_escape_attributes', [] );
+		if ( empty( $attrs ) ) {
+			return $html;
+		}
+
+		// build alternation like '(d|foo|bar)'
+		$list = implode( '|', array_map( 'preg_quote', $attrs ) );
+
+		return preg_replace_callback(
+		// 1: attr name, 2: optional slash, 3: quote, 4: value
+			'/\b(' . $list . ')=(\\\\?)([\'"])(.*?)\2\3/s',
+			function( $m ) {
+				static $i = 0;
+				$i++;
+				$attr  = $m[1];
+				$token = "__WG_ATTR_{$attr}_{$i}__";
+
+				// store the raw inner value (with any backslashes)
+				$this->preserved[ $token ] = $m[4];
+
+				// re-emit attr=slash+quote+token+slash+quote
+				return sprintf(
+					'%s=%s%s%s%s%s',
+					$attr,
+					$m[2],
+					$m[3],
+					$token,
+					$m[2],
+					$m[3]
+				);
+			},
+			$html
+		);
+	}
+
+
+	/**
+	 * Restores preserved attributes in the provided HTML string by replacing tokens with their original values.
+	 *
+	 * @param string $html The HTML string where preserved attributes need to be restored.
+	 *
+	 * @return string The HTML string with preserved attributes restored to their original values.
+	 */
+	public function restore_preserved_attributes( string $html ): string {
+		foreach ( $this->preserved as $token => $original ) {
+			// match quote+token+same-quote, preserving any leading slash
+			$html = preg_replace_callback(
+				'/(\\\\?)([\'"])' . preg_quote( $token, '/' ) . '\1\2/',
+				function( $m ) use ( $original ) {
+					return $m[1] . $m[2] . $original . $m[1] . $m[2];
+				},
+				$html
+			);
+		}
+		// clear stash if you reuse this instance
+		$this->preserved = [];
+		return $html;
+	}
+
 }

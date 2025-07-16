@@ -177,24 +177,24 @@
         },
         {
             "name": "weglot/simplehtmldom",
-            "version": "0.8.3",
-            "version_normalized": "0.8.3.0",
+            "version": "0.8.4",
+            "version_normalized": "0.8.4.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:weglot/simple_html_dom.git",
-                "reference": "9c713eae0665a41511c9d02ae5c00b560c64927e"
+                "reference": "e0d2aeaeac88734ca8bbd8ee5a71d2597652dcf0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/simple_html_dom/zipball/9c713eae0665a41511c9d02ae5c00b560c64927e",
-                "reference": "9c713eae0665a41511c9d02ae5c00b560c64927e",
+                "url": "https://api.github.com/repos/weglot/simple_html_dom/zipball/e0d2aeaeac88734ca8bbd8ee5a71d2597652dcf0",
+                "reference": "e0d2aeaeac88734ca8bbd8ee5a71d2597652dcf0",
                 "shasum": ""
             },
             "require": {
                 "ext-iconv": "*",
                 "php": ">=5.3.0"
             },
-            "time": "2024-12-13T10:16:55+00:00",
+            "time": "2025-06-03T09:06:26+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -222,7 +222,7 @@
                 "simple"
             ],
             "support": {
-                "source": "https://github.com/weglot/simple_html_dom/tree/0.8.3"
+                "source": "https://github.com/weglot/simple_html_dom/tree/0.8.4"
             },
             "install-path": "../weglot/simplehtmldom"
         },
@@ -271,23 +271,23 @@
         },
         {
             "name": "weglot/weglot-php",
-            "version": "1.9.1",
-            "version_normalized": "1.9.1.0",
+            "version": "1.9.2",
+            "version_normalized": "1.9.2.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:weglot/weglot-php.git",
-                "reference": "6ddcc7b5a53f1ae2bdbe4df4e4cfc3003bcdaf3d"
+                "reference": "d39f6db76eb90e58d2f48349f75d7c149c6ef611"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/6ddcc7b5a53f1ae2bdbe4df4e4cfc3003bcdaf3d",
-                "reference": "6ddcc7b5a53f1ae2bdbe4df4e4cfc3003bcdaf3d",
+                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/d39f6db76eb90e58d2f48349f75d7c149c6ef611",
+                "reference": "d39f6db76eb90e58d2f48349f75d7c149c6ef611",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "php": ">=5.6",
+                "php": ">=7.2",
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "symfony/polyfill-php80": "^1.31",
                 "weglot/simplehtmldom": "^0.8",
@@ -301,7 +301,7 @@
                 "symfony/cache": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1",
                 "symfony/dotenv": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1"
             },
-            "time": "2025-05-07T14:02:44+00:00",
+            "time": "2025-06-24T07:28:00+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

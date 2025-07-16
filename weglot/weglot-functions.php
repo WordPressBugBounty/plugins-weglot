@@ -82,11 +82,14 @@ function weglot_get_current_language_code_from_custom_language() {
 	return Context_Weglot::weglot_get_context()->get_service( 'Request_Url_Service_Weglot' )->get_current_language()->getExternalCode();
 }
 
+
 /**
- * Get destination language with filters
- * @return array
- * @throws Exception
- * @since 2.0
+ * Get destination languages available for translation
+ *
+ * This method retrieves the destination languages available for translation from Weglot service.
+ *
+ * @return string[] An array of destination languages
+ * @throws Exception If unable to retrieve destination languages
  */
 function weglot_get_destination_languages() {
 	return Context_Weglot::weglot_get_context()->get_service( 'Option_Service_Weglot' )->get_destination_languages();

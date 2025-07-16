@@ -590,7 +590,8 @@ class simple_html_dom_node
             $end += $parent->_[WG_HDOM_INFO_END];
         }
 
-        for ($i=$this->_[WG_HDOM_INFO_BEGIN]+1; $i<$end; ++$i) {
+        $index = isset( $this->_[ WG_HDOM_INFO_BEGIN ] ) ? $this->_[ WG_HDOM_INFO_BEGIN ] : 1;
+        for ($i=$index+1; $i<$end; ++$i) {
             $node = $this->dom->nodes[$i];
 
             $pass = true;
