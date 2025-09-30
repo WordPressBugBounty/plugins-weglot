@@ -42,10 +42,10 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.4.0
 	 */
 	public function __construct() {
-		$this->option_services      = weglot_get_service( 'Option_Service_Weglot' );
-		$this->button_services      = weglot_get_service( 'Button_Service_Weglot' );
-		$this->request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
-		$this->language_services    = weglot_get_service( 'Language_Service_Weglot' );
+		$this->option_services      = weglot_get_service( Option_Service_Weglot::class );
+		$this->button_services      = weglot_get_service( Button_Service_Weglot::class );
+		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
+		$this->language_services    = weglot_get_service( Language_Service_Weglot::class );
 	}
 
 	/**
@@ -180,7 +180,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 					$add_classes[] = 'wg-' . $language->getInternalCode();
 				}
 
-				if ( $this->option_services->get_option( 'auto_redirect' )
+				if ( $this->option_services->get_option( 'auto_redirect' ) && is_string( $link_button )
 				) {
 					$is_orig = $language === $this->language_services->get_original_language() ? 'true' : 'false';
 					if ( strpos( $link_button, '?' ) !== false ) {
@@ -198,10 +198,10 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 				$language_item->lang        = $language->getInternalCode();
 				$language_item->classes     = array_merge( $classes, $add_classes );
 				$language_item->menu_order += $offset + $i++;
-				if($wg_original_no_follow && strpos( $link_button, 'wg-choose-original' ) !== false){
+				if($wg_original_no_follow && is_string($link_button) && strpos( $link_button, 'wg-choose-original' ) !== false){
 					$language_item->xfn .= 'nofollow';
 				}
-				if ( $dropdown ) {
+				if ( $dropdown && isset( $item->db_id ) ) {
 					$language_item->menu_item_parent = $item->db_id;
 					$language_item->db_id            = 0;
 				}
@@ -220,6 +220,10 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 	 * @return array<int|string,mixed>
 	 */
 	public function get_ancestors( $item ) {
+		if ( ! isset( $item->db_id ) ) {
+			return array();
+		}
+
 		$ids     = array();
 		$_anc_id = (int) $item->db_id;
 		$_anc_id = get_post_meta( $_anc_id, '_menu_item_menu_item_parent', true );

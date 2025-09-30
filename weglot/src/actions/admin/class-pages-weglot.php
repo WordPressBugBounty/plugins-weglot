@@ -39,8 +39,8 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->option_services    = weglot_get_service( 'Option_Service_Weglot' );
-		$this->user_api_services  = weglot_get_service( 'User_Api_Service_Weglot' );
+		$this->option_services    = weglot_get_service( Option_Service_Weglot::class );
+		$this->user_api_services  = weglot_get_service( User_Api_Service_Weglot::class );
 
 	}
 
@@ -62,8 +62,7 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function add_admin_bar_menu() {
 
-		global $wp_admin_bar;
-		global $wp;
+		global $wp_admin_bar, $wp, $pagenow;
 		$current_user = wp_get_current_user();
 		$user_roles = $current_user->roles;
 		$role = array_shift($user_roles);
@@ -87,6 +86,14 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 
 		if ( is_admin() ) {
 			$url_to_edit = get_home_url();
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- We are only reading the post ID to generate a URL, not processing a form submission. The value is sanitized with absint().
+			if ( 'post.php' === $pagenow && isset( $_GET['post'] ) ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$post_id = absint( $_GET['post'] );
+				if ( $post_id && ( $link = get_permalink( $post_id ) ) ) {
+					$url_to_edit = $link;
+				}
+			}
 		} else {
 			$url_to_edit = home_url( add_query_arg( array(), $wp->request ) );
 		}

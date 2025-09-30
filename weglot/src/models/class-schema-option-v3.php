@@ -255,6 +255,7 @@ class Schema_Option_V3 {
 				},
 			),
 			'custom_settings'           => 'custom_settings',
+			'definitions'               => 'custom_settings.definitions',
 			'is_dropdown'               => 'custom_settings.button_style.is_dropdown',
 			'is_fullname'               => 'custom_settings.button_style.full_name',
 			'with_name'                 => 'custom_settings.button_style.with_name',

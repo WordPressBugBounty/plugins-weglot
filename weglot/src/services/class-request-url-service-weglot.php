@@ -40,8 +40,8 @@ class Request_Url_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->option_services   = weglot_get_service( 'Option_Service_Weglot' );
-		$this->language_services = weglot_get_service( 'Language_Service_Weglot' );
+		$this->option_services   = weglot_get_service( Option_Service_Weglot::class );
+		$this->language_services = weglot_get_service( Language_Service_Weglot::class );
 	}
 
 	/**
@@ -63,7 +63,11 @@ class Request_Url_Service_Weglot {
 			$parsed_url_path = wp_parse_url($url, PHP_URL_PATH);
 
 			// Check if the URL path is valid and contains the specified path
-			$contains_path = $parsed_url_path !== null && strpos($parsed_url_path, $path_to_check) !== false;
+			if(!is_string($parsed_url_path)){
+				$contains_path = false;
+			}else{
+				$contains_path = $parsed_url_path !== null && strpos($parsed_url_path, $path_to_check) !== false;
+			}
 
 			if ($contains_path) {
 				$home_directory = $this->get_home_wordpress_directory($path_to_check);
@@ -266,7 +270,7 @@ class Request_Url_Service_Weglot {
 		if ( current_user_can( 'administrator' )
 		     || strpos( $this->get_full_url(), 'weglot-private=1' ) !== false
 		     || isset( $_COOKIE['weglot_allow_private'] )
-		     || ( isset( $_SERVER['HTTP_USER_AGENT'] ) && strpos( sanitize_text_field( $_SERVER['HTTP_USER_AGENT'] ), "Weglot Visual Editor" ) !== false ) //phpcs:ignore
+		     || ( isset( $_SERVER['HTTP_WEGLOT_PRIVATE'] ) && '1' === $_SERVER['HTTP_WEGLOT_PRIVATE'] )
 		) {
 			return true;
 		}

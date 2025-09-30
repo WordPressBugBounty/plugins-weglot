@@ -6,7 +6,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WeglotWP\Helpers\Helper_API;
 use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
@@ -49,10 +48,10 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.4.0
 	 */
 	public function __construct() {
-		$this->option_services      = weglot_get_service( 'Option_Service_Weglot' );
-		$this->request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
-		$this->language_services    = weglot_get_service( 'Language_Service_Weglot' );
-		$this->translate_services   = weglot_get_service('Translate_Service_Weglot');
+		$this->option_services      = weglot_get_service( Option_Service_Weglot::class );
+		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
+		$this->language_services    = weglot_get_service( Language_Service_Weglot::class );
+		$this->translate_services   = weglot_get_service(Translate_Service_Weglot::class);
 	}
 
 	/**
@@ -70,7 +69,7 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 		$search_active = $this->option_services->get_option( 'active_search' );
 
 		if ( $search_active ) {
-			add_action( 'pre_get_posts', array( $this, 'pre_get_posts_translate' ) );
+			add_action( 'pre_get_posts', array( $this, 'pre_get_posts_translate' ), 9 );
 			add_filter( 'get_search_query', array( $this, 'get_search_query_translate' ) );
 		}
 	}
@@ -83,7 +82,7 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function pre_get_posts_translate( $query ) {
 
-		if ( ! $query->is_search() ) {
+		if ( ! $query->is_search() || ! $query->is_main_query() ) {
 			return;
 		}
 
@@ -95,7 +94,8 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 		$original_language = $this->language_services->get_original_language()->getInternalCode();
 		$current_language  = $this->request_url_services->get_current_language()->getInternalCode();
 
-		if ( $original_language === $current_language ) {
+		$prevent_translation = apply_filters( 'weglot_prevent_search_translation', false, $current_language, $query );
+		if ( $original_language === $current_language || $prevent_translation ) {
 			return;
 		}
 
@@ -108,6 +108,9 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 			}
 
 			$query->set( $query_vars_check, $this->new_search ); //phpcs:ignore
+			if ( isset( $query->query[ $query_vars_check ] ) ) {
+				$query->query[ $query_vars_check ] = $this->new_search;
+			}
 		} catch ( \Exception $th ) {
 			return;
 		}

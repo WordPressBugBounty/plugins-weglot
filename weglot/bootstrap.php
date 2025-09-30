@@ -25,7 +25,7 @@ abstract class Context_Weglot {
 	 * Create context if not exist
 	 *
 	 * @static
-	 * @return object
+	 * @return Bootstrap_Weglot
 	 * @since 2.0
 	 */
 	public static function weglot_get_context() {

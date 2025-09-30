@@ -1,21 +1,23 @@
 <?php
 /*
 * Plugin Name: Weglot Translate
-* Plugin URI: http://wordpress.org/plugins/weglot/
+* Plugin URI: https://www.weglot.com/integrations/wordpress-translation-plugin
 * Description: Translate your website into multiple languages in minutes without doing any coding. Fully SEO compatible.
 * Author: Weglot Translate team
-* Author URI: https://weglot.com/
+* Author URI: https://www.weglot.com/
 * Text Domain: weglot
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 5.0
+* Version: 5.1
 */
 
 /**
  * This file need to be compatible with PHP 5.3
  * Example : Don't use short syntax for array()
  */
+
+use WeglotWP\Third\Wprocket\Wprocket_Active;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '5.0' );
+define( 'WEGLOT_VERSION', '5.1' );
 define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -33,7 +35,7 @@ define( 'WEGLOT_DIR_DIST', WEGLOT_DIR . '/dist' );
 
 define( 'WEGLOT_DIRURL', plugin_dir_url( __FILE__ ) );
 define( 'WEGLOT_URL_DIST', WEGLOT_DIRURL . 'dist' );
-define( 'WEGLOT_LATEST_VERSION', '2.7.0' );
+define( 'WEGLOT_LATEST_VERSION', '5.0' );
 define( 'WEGLOT_DEBUG', false );
 define( 'WEGLOT_DEV', false );
 
@@ -215,7 +217,10 @@ function weglot_php_min_compatibility() {
  */
 function weglot_plugin_activate() {
 	if ( ! weglot_is_compatible() ) {
+		// Deactivate the plugin.
 		deactivate_plugins( plugin_basename( __FILE__ ) );
+
+		// Die with an error message.
 		wp_die(
 			sprintf(
 			/* translators: 1: Required PHP version, 2: Current PHP version */
@@ -241,7 +246,7 @@ function weglot_plugin_activate() {
 
 	$dir_wp_rocket = plugin_dir_path( __DIR__ ) . 'wp-rocket';
 	if ( file_exists( $dir_wp_rocket . '/wp-rocket.php' ) ) {
-		if(  weglot_get_service( 'Wprocket_Active' )->is_active()) {
+		if(  weglot_get_service( Wprocket_Active::class )->is_active()) {
 
 			add_filter( 'rocket_htaccess_mod_rewrite', '__return_false' );
 			add_filter( 'rocket_cache_mandatory_cookies', 'weglot_mandatory_cookie' );
@@ -267,7 +272,7 @@ function weglot_plugin_deactivate() {
 
 	$dir_wp_rocket = plugin_dir_path( __DIR__ ) . 'wp-rocket';
 	if ( file_exists( $dir_wp_rocket . '/wp-rocket.php' ) ) {
-		if(  weglot_get_service( 'Wprocket_Active' )->is_active()) {
+		if(  weglot_get_service( Wprocket_Active::class )->is_active()) {
 			remove_filter( 'rocket_htaccess_mod_rewrite', '__return_true' );
 			remove_filter( 'rocket_cache_mandatory_cookies', 'weglot_mandatory_cookie' );
 			flush_wp_rocket();

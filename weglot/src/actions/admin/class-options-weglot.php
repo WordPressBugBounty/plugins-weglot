@@ -34,8 +34,8 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->option_services   = weglot_get_service( 'Option_Service_Weglot' );
-		$this->user_api_services = weglot_get_service( 'User_Api_Service_Weglot' );
+		$this->option_services   = weglot_get_service( Option_Service_Weglot::class );
+		$this->user_api_services = weglot_get_service( User_Api_Service_Weglot::class );
 	}
 
 	/**
@@ -88,6 +88,10 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 		// SAVE USER VERSION OF PLUGIN INTO SETTINGS.
 		$options['custom_settings']['wp_user_version'] = WEGLOT_VERSION;
 		$options_bdd = $this->option_services->get_options_bdd_v3();
+
+		if ( ! is_array( $options_bdd ) ) {
+			$options_bdd = array();
+		}
 
 		switch ( $tab ) {
 			case Helper_Tabs_Admin_Weglot::SETTINGS:
@@ -164,11 +168,13 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 	 * @version 2.0.6
 	 * @param array<string|int,mixed> $options
 	 * @param mixed $has_first_settings
-	 * @return array<string|int,mixed>
+	 * @return array<string,mixed>
 	 */
+
 	public function sanitize_options_settings( $options, $has_first_settings = false ) {
 		$user_info = $this->user_api_services->get_user_info( $options['api_key_private'] );
 		$switchers = $this->option_services->get_switchers_editor_button();
+		$definitions = $this->option_services->get_option('definitions');
 
 		// Limit language.
 		$limit = 30;
@@ -220,6 +226,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 
 		// Ensure options:custom_settings:switchers is set correctly
 		$options['custom_settings']['switchers'] = !empty($switchers) ? $switchers : [];
+		$options['custom_settings']['definitions'] = !empty($definitions) ? $definitions : [];
 
 		// Ensure $options['switchers'] is also updated if it's empty but custom_settings['switchers'] is not
 		if (empty($options['switchers']) && !empty($options['custom_settings']['switchers'])) {

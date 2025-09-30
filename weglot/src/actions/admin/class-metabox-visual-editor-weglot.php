@@ -30,8 +30,8 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.1.0
 	 */
 	public function __construct() {
-		$this->option_services      = weglot_get_service( 'Option_Service_Weglot' );
-		$this->request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
+		$this->option_services      = weglot_get_service( Option_Service_Weglot::class );
+		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
 	}
 
 	/**
@@ -85,30 +85,18 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 	}
 
 	/**
-	 * @param object $post
-	 * @return string
+	 * @param \WP_Post $post
+	 * @return void
 	 *  @since 2.1.0
 	 *
 	 */
 	public function weglot_visual_editor_meta_box_callback( $post ) {
 		echo '<ul>';
 		$path = get_permalink( $post->ID );
-		$this->get_weglot_path_status( $path, true );
-
-		return '';
-	}
-
-	/**
-	 * @param int $post_id
-	 * @return bool
-	 *  @since 2.1.0
-	 *
-	 */
-	public function weglot_visual_editor_save_meta_box( $post_id ) {
-		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return false;
+		if ( ! $path ) {
+			return;
 		}
-		return true;
+		$this->get_weglot_path_status( $path, true );
 	}
 
 	/**
@@ -135,6 +123,9 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 
 		if ( $column_name == 'wg-visual-editor-url' ) {
 			$path = get_permalink( $post_id );
+			if ( ! $path ) {
+				return;
+			}
 			$this->get_weglot_path_status( $path, false );
 		}
 	}

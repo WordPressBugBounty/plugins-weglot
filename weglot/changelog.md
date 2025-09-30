@@ -2,8 +2,29 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
-## 4.3.3 (19/05/2025) =
 
+## 5.1 (30/09/2025) =
+* Feature: Add support for Brazilian Portuguese
+* Improvement: Default translation engine to version 3
+* Improvement: Update plugin URI
+* Improvement: Add new filter for search results
+* Improvement: Update translation files
+* Quality: Upgrade to PHPStan level 7
+* Quality: Add CI pipeline quality checks
+
+## 5.0 (16/07/2025) =
+* Major: Update minimum PHP requirement to 7.4 to align with WordPress requirements
+* Improvement: Add prefix to Weglot CSS to prevent conflicts with other styles
+* Improvement: Introduce escape_vue_attributes and preserve_attributes methods for attribute escaping
+* Improvement: Rename inline CSS ID from Weglot to weglot_custom_style
+* Improvement: Add missing keys for WooCommerce JSON (variation cart)
+* Improvement: Add reverse_translate method to TranslateService
+* Improvement: Enhance recursivelyConvertToUtf8 usage
+* Improvement: Control payload size and truncate when exceeding limits
+* Quality: Maintain PHPStan at level 6
+
+
+## 4.3.3 (19/05/2025) =
 * Improvement: Add filter and helper method to escape Vue.js attributes before parsing content
 * Improvement: Prevent empty host value when retrieving current URL via wp_parse_url
 * Improvement: Remove private API key from Weglot data JSON

@@ -24,7 +24,7 @@ class Replace_Link_Service_Weglot {
 	private $request_url_services;
 
 	/**
-	 * @var array<string,mixed>|null
+	 * @var array<int|string,mixed>|null
 	 */
 	private $multisite_other_paths;
 
@@ -32,8 +32,8 @@ class Replace_Link_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->multisite_service     = weglot_get_service( 'Multisite_Service_Weglot' );
-		$this->request_url_services  = weglot_get_service( 'Request_Url_Service_Weglot' );
+		$this->multisite_service     = weglot_get_service( Multisite_Service_Weglot::class );
+		$this->request_url_services  = weglot_get_service( Request_Url_Service_Weglot::class );
 		$this->multisite_other_paths = null;
 		if ( is_multisite() ) {
 			$this->multisite_other_paths = array_filter(
@@ -116,7 +116,6 @@ class Replace_Link_Service_Weglot {
 		$replace_url_other_site = '';
 		if ( $replace_multisite_link ) {
 			$parsed_url         = wp_parse_url( $current_url );
-			$parsed_url['host'] = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
 			if ( isset( $parsed_url['path'] ) ) {
 				$current_home_path    = wp_parse_url( get_home_url( get_current_blog_id(), '/' ), PHP_URL_PATH );
 				$found_dynamic_string = false;
@@ -128,7 +127,9 @@ class Replace_Link_Service_Weglot {
 					if ( strpos( $this->replace_url( $current_url, $current_language ), trim( $dynamic_string, '/' ) ) !== false && $dynamic_string != '/' ) {
 						$found_dynamic_string   = true;
 						$replace_url_other_site = str_replace( trim( $dynamic_string, '/' ), "", $this->replace_url( $current_url, $current_language ) );
-						$replace_url_other_site = str_replace( $current_home_path, $dynamic_string, $replace_url_other_site );
+						if(is_string($current_home_path)){
+							$replace_url_other_site = str_replace( $current_home_path, $dynamic_string, $replace_url_other_site );
+						}
 						break; // Exit the loop once a match is found
 					}
 				}

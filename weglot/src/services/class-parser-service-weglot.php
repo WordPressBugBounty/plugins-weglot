@@ -40,9 +40,9 @@ class Parser_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->option_services         = weglot_get_service( 'Option_Service_Weglot' );
-		$this->dom_checkers_services   = weglot_get_service( 'Dom_Checkers_Service_Weglot' );
-		$this->regex_checkers_services = weglot_get_service( 'Regex_Checkers_Service_Weglot' );
+		$this->option_services         = weglot_get_service( Option_Service_Weglot::class );
+		$this->dom_checkers_services   = weglot_get_service( Dom_Checkers_Service_Weglot::class );
+		$this->regex_checkers_services = weglot_get_service( Regex_Checkers_Service_Weglot::class );
 	}
 
 	/**
@@ -55,7 +55,7 @@ class Parser_Service_Weglot {
 		$version            = $this->option_services->get_version();
 		$translation_engine = $this->option_services->get_translation_engine();
 		if ( empty( $translation_engine ) ) {
-			$translation_engine = 2;
+			$translation_engine = 3;
 		}
 
 		$client = new Client(
@@ -96,7 +96,8 @@ class Parser_Service_Weglot {
 		}
 
 		$client = $this->get_client();
-		$parser = new Parser( $client, $config, $exclude_blocks, $custom_switchers, $whitelist_blocks, $translate_inside_exclusions_blocks );
+		$safe_custom_switchers = is_array( $custom_switchers ) ? $custom_switchers : [];
+		$parser = new Parser( $client, $config, $exclude_blocks, $safe_custom_switchers, $whitelist_blocks, $translate_inside_exclusions_blocks );
 
 		$parser->getDomCheckerProvider()->addCheckers( $this->dom_checkers_services->get_dom_checkers() );
 		$parser->getRegexCheckerProvider()->addCheckers( $this->regex_checkers_services->get_regex_checkers() );

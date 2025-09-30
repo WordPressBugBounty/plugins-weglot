@@ -15,6 +15,7 @@ use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Schema_Option_V3;
 use WeglotWP\Helpers\Helper_Flag_Type;
 use WeglotWP\Helpers\Helper_API;
+use WeglotWP\Third\Amp\Amp_Service_Weglot;
 
 
 /**
@@ -188,7 +189,7 @@ class Option_Service_Weglot {
 	 * @param string $api_key
 	 * @param array<int|string,mixed> $destinations_languages
 	 *
-	 * @return array<string,string>
+	 * @return array<int|string, mixed>
 	 * @since 3.0.0
 	 */
 	protected function get_slugs_from_cache_with_api_key( $api_key, $destinations_languages ) {
@@ -260,7 +261,7 @@ class Option_Service_Weglot {
 			$options['api_key_private'] = $this->get_api_key_private();
 			if ( empty( $options['custom_settings']['menu_switcher'] ) ) {
 				/** @var Menu_Options_Service_Weglot $menu_options_services */
-				$menu_options_services                       = weglot_get_service( 'Menu_Options_Service_Weglot' );
+				$menu_options_services                       = weglot_get_service( Menu_Options_Service_Weglot::class );
 				$options['custom_settings']['menu_switcher'] = $menu_options_services->get_options_default();
 			}
 			$this->options_from_api = $options;
@@ -430,8 +431,18 @@ class Option_Service_Weglot {
 		$api_key         = $this->get_api_key();
 		$api_key_private = $this->get_api_key_private();
 
-		$is_weglot_settings_page = isset( $_GET['page'] ) && strpos( $_GET['page'], 'weglot-settings' ) !== false; //phpcs:ignore
+		$page_param = '';
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		if ( isset( $_GET['page'] ) ) {
+			$raw_page = wp_unslash( $_GET['page'] );
+			$page = is_array( $raw_page ) ? reset( $raw_page ) : $raw_page;
+			$page_param = is_scalar( $page ) ? sanitize_text_field( (string) $page ) : '';
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+
+		$is_weglot_settings_page = ( $page_param !== '' && strpos( $page_param, 'weglot-settings' ) !== false );
 		if ( Helper_Is_Admin::is_wp_admin() && $api_key_private && $is_weglot_settings_page ) {
 			$response = $this->get_options_from_api_with_api_key( $api_key_private );
 		} else {
@@ -517,11 +528,18 @@ class Option_Service_Weglot {
 	 * @since 3.0.0
 	 */
 	public function save_options_to_weglot( $options ) {
+		$json_body = wp_json_encode( $options );
+		if ( false === $json_body ) {
+			return [
+				'success' => false,
+				'code'    => 'json_encode_fail',
+			];
+		}
 
 		$response = wp_remote_post( // phpcs:ignore
 			sprintf( '%s/projects/settings?api_key=%s', Helper_API::get_api_url(), $options['api_key_private'] ),
 			array(
-				'body'    => wp_json_encode( $options ), // phpcs:ignore.
+				'body'    => $json_body, // phpcs:ignore.
 				'timeout' => 60, // phpcs:ignore
 				'headers' => array(
 					'technology'   => 'wordpress',
@@ -664,8 +682,9 @@ class Option_Service_Weglot {
 		if (
 			array_key_exists('custom_settings', $options) &&
 			is_array($options['custom_settings']) &&
-			!empty($options['custom_settings']['switchers'])
-		) {
+			!empty($options['custom_settings']['switchers']) &&
+			is_array( $options['custom_settings']['switchers'])
+			) {
 			$options['switchers'] = $options['custom_settings']['switchers'];
 			return $options['switchers'];
 		}
@@ -789,7 +808,7 @@ class Option_Service_Weglot {
 		$list_exclude_urls = $this->get_option( 'exclude_urls' );
 
 		/** @var Request_Url_Service_Weglot $request_url_services */
-		$request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
+		$request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
 		$exclude_urls         = array();
 
 		if ( ! empty( $list_exclude_urls ) ) {
@@ -799,7 +818,7 @@ class Option_Service_Weglot {
 					if ( ! empty( $item['excluded_languages'] ) && is_array( $item['excluded_languages'] ) ) {
 						foreach ( $item['excluded_languages'] as $excluded_language ) {
 							/** @var Language_Service_Weglot $language_service */
-							$language_service     = weglot_get_service( 'Language_Service_Weglot' );
+							$language_service     = weglot_get_service( Language_Service_Weglot::class );
 							$excluded_languages[] = $language_service->get_language_from_internal( $excluded_language );
 						}
 					}
@@ -823,7 +842,7 @@ class Option_Service_Weglot {
 		$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, '/main-sitemap.xsl'), null );
 
 		if ( ! weglot_get_translate_amp_translation() ) {
-			$amp_regex = weglot_get_service( 'Amp_Service_Weglot' )->get_regex();
+			$amp_regex = weglot_get_service( Amp_Service_Weglot::class )->get_regex();
 			$exclude_urls[] = array( new Regex(RegexEnum::CONTAIN, $amp_regex), null );
 		}
 
@@ -876,7 +895,7 @@ class Option_Service_Weglot {
 	}
 
 	/**
-	 * @return array<string,mixed>|false
+	 * @return array<string,mixed>
 	 * @since 3.0.0
 	 */
 	public function get_options_bdd_v3() {
@@ -923,8 +942,10 @@ class Option_Service_Weglot {
 	 */
 	public function get_switcher_editor_css() {
 		$switcher_editor_css = '';
-		if ( ! empty( $this->get_switchers_editor_button() ) ) {
-			foreach ( $this->get_switchers_editor_button() as $switcher ) {
+		$switchers = $this->get_switchers_editor_button();
+
+		if ( is_array( $switchers ) && ! empty( $switchers ) ) {
+			foreach ( $switchers as $switcher ) {
 				if ( ! empty( $switcher['style']['custom_css'] ) ) {
 					$switcher_editor_css .= $switcher['style']['custom_css'];
 				}

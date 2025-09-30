@@ -39,10 +39,10 @@ class Button_Service_Weglot {
 	 * @since 2.0
 	 */
 	public function __construct() {
-		$this->option_services      = weglot_get_service( 'Option_Service_Weglot' );
-		$this->request_url_services = weglot_get_service( 'Request_Url_Service_Weglot' );
-		$this->language_services    = weglot_get_service( 'Language_Service_Weglot' );
-		$this->amp_services         = weglot_get_service( 'Amp_Service_Weglot' );
+		$this->option_services      = weglot_get_service( Option_Service_Weglot::class );
+		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
+		$this->language_services    = weglot_get_service( Language_Service_Weglot::class );
+		$this->amp_services         = weglot_get_service( Amp_Service_Weglot::class );
 	}
 
 	/**
@@ -140,7 +140,7 @@ class Button_Service_Weglot {
 	 * @param string $add_class
 	 * @param string $add_attr_target
 	 * @param string $add_attr_sibling
-	 * @param string $pos
+	 * @param string|int $pos
 	 * @param array<string,mixed> $switcher
 	 *
 	 * @return string
@@ -246,7 +246,7 @@ class Button_Service_Weglot {
 
 				if ( $this->option_services->get_option( 'auto_redirect' ) ) {
 					$is_orig = $language === $this->language_services->get_original_language() ? 'true' : 'false';
-					if ( strpos( $link_button, '?' ) !== false ) {
+					if ( is_string($link_button) && strpos( $link_button, '?' ) !== false ) {
 						$link_button = str_replace( '?', "?wg-choose-original=$is_orig&", $link_button );
 					} else {
 						$link_button .= "?wg-choose-original=$is_orig";
@@ -257,13 +257,16 @@ class Button_Service_Weglot {
 
 				// Check if $add_class contains "weglot-preview"
 				if ( strpos( $add_class, 'weglot-preview' ) === false ) {
-					if ( strpos( $link_button, 'wg-choose-original' ) !== false && $wg_original_no_follow ) {
+					if ( is_string($link_button) && strpos( $link_button, 'wg-choose-original' ) !== false && $wg_original_no_follow ) {
 						$button_html .= sprintf(
 							'<a rel="nofollow" title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
 							esc_url( $link_button ),
 							esc_html( $name )
 						);
 					} else {
+						if ( ! is_string( $link_button ) ) {
+							continue;
+						}
 						$button_html .= sprintf(
 							'<a title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="" href="%s">%s</a>',
 							esc_url( $link_button ),
@@ -271,6 +274,7 @@ class Button_Service_Weglot {
 						);
 					}
 				} else {
+
 					// If "weglot-preview" is in $add_class, use a <span> instead
 					$button_html .= sprintf(
 						'<span title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="">%s</span>',
