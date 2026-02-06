@@ -11,4 +11,5 @@ return array(
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),
     'Psr\\Cache\\' => array($vendorDir . '/psr/cache/src'),
     'Morphism\\' => array($vendorDir . '/gmulti/morphism-php/lib'),
+    'DeviceDetector\\' => array($vendorDir . '/matomo/device-detector'),
 );

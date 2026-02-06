@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class TdDataTitle extends AbstractDomChecker
 {
-    const DOM = 'td';
+    public const DOM = 'td';
 
-    const PROPERTY = 'data-title';
+    public const PROPERTY = 'data-title';
 
-    const WORD_TYPE = WordType::VALUE;
+    public const WORD_TYPE = WordType::VALUE;
 }

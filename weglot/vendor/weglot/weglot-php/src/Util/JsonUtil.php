@@ -9,7 +9,7 @@ use Weglot\Client\Api\WordEntry;
 
 class JsonUtil
 {
-    const SEPARATOR = '##';
+    public const SEPARATOR = '##';
 
     /**
      * @param string $key

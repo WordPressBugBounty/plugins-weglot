@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class LinkDataTooltip extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'data-tooltip';
+    public const PROPERTY = 'data-tooltip';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 }

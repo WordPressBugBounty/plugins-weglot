@@ -7,13 +7,13 @@ use Weglot\Util\Text as TextUtil;
 
 class MetaContent extends AbstractDomChecker
 {
-    const DOM = 'meta[name="description"],meta[property="og:description"],meta[property="og:site_name"],meta[name="twitter:description"]';
+    public const DOM = 'meta[name="description"],meta[property="og:description"],meta[property="og:site_name"],meta[name="twitter:description"]';
 
-    const PROPERTY = 'content';
+    public const PROPERTY = 'content';
 
-    const WORD_TYPE = WordType::META_CONTENT;
+    public const WORD_TYPE = WordType::META_CONTENT;
 
-    const ESCAPE_SPECIAL_CHAR = true;
+    public const ESCAPE_SPECIAL_CHAR = true;
 
     protected function check()
     {

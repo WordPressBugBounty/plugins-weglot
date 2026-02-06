@@ -7,11 +7,11 @@ use Weglot\Util\Text as TextUtil;
 
 class LinkHref extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'href';
+    public const PROPERTY = 'href';
 
-    const WORD_TYPE = WordType::PDF_HREF;
+    public const WORD_TYPE = WordType::PDF_HREF;
 
     /**
      * @var array

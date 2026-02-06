@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class LinkDataHover extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'data-hover';
+    public const PROPERTY = 'data-hover';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 }

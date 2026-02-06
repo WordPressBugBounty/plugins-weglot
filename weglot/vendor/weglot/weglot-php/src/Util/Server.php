@@ -2,6 +2,7 @@
 
 namespace Weglot\Util;
 
+use DeviceDetector\DeviceDetector;
 use Weglot\Client\Api\Enum\BotType;
 
 class Server
@@ -46,43 +47,41 @@ class Server
     public static function detectBot(array $server)
     {
         $userAgent = self::getUserAgent($server);
-        if (\is_string($userAgent) && !empty($userAgent) && preg_match('/bot|favicon|crawl|facebook|slurp|spider/i', $userAgent)) {
-            $checkBotAgent = true;
-        } else {
-            $checkBotAgent = false;
-        }
-        $checkBotGoogle = (Text::contains($userAgent, 'Google')
-                            || Text::contains($userAgent, 'facebook')
-                            || Text::contains($userAgent, 'wprocketbot')
-                            || Text::contains($userAgent, 'Ahrefs')
-                            || Text::contains($userAgent, 'SemrushBot'));
-
-        if (null !== $userAgent && !$checkBotAgent) {
+        if (null === $userAgent) {
             return BotType::HUMAN;
         }
-        if (null !== $userAgent && $checkBotAgent && $checkBotGoogle) {
+
+        if (str_contains($userAgent, 'wprocketbot')) {
             return BotType::GOOGLE;
         }
-        foreach (self::otherBotAgents() as $agent => $agentBot) {
-            if (null !== $userAgent && $checkBotAgent && !$checkBotGoogle && Text::contains($userAgent, $agent)) {
-                return $agentBot;
+
+        $dd = new DeviceDetector($userAgent);
+
+        $dd->parse();
+
+        if (!$dd->isBot()) {
+            return BotType::HUMAN;
+        }
+
+        $botInfo = $dd->getBot();
+
+        if (isset($botInfo['name'])) {
+            $botName = strtolower($botInfo['name']);
+            switch (true) {
+                case str_contains($botName, 'google'):
+                    return BotType::GOOGLE;
+                case str_contains($botName, 'bing'):
+                    return BotType::BING;
+                case str_contains($botName, 'yahoo'):
+                    return BotType::YAHOO;
+                case str_contains($botName, 'baidu'):
+                    return BotType::BAIDU;
+                case str_contains($botName, 'yandex'):
+                    return BotType::YANDEX;
             }
         }
 
         return BotType::OTHER;
-    }
-
-    /**
-     * @return array
-     */
-    private static function otherBotAgents()
-    {
-        return [
-            'bing' => BotType::BING,
-            'yahoo' => BotType::YAHOO,
-            'Baidu' => BotType::BAIDU,
-            'Yandex' => BotType::YANDEX,
-        ];
     }
 
     /**

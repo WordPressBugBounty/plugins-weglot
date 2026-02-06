@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class ImageDataSource extends AbstractDomChecker
 {
-    const DOM = 'img';
+    public const DOM = 'img';
 
-    const PROPERTY = 'data-src';
+    public const PROPERTY = 'data-src';
 
-    const WORD_TYPE = WordType::IMG_SRC;
+    public const WORD_TYPE = WordType::IMG_SRC;
 }

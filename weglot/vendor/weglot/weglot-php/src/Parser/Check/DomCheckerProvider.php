@@ -30,7 +30,7 @@ class DomCheckerProvider
         'q', 'u', 'mark',
     ];
 
-    const DEFAULT_CHECKERS_NAMESPACE = '\\Weglot\\Parser\\Check\\Dom\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\\Weglot\\Parser\\Check\\Dom\\';
 
     /**
      * @var Parser

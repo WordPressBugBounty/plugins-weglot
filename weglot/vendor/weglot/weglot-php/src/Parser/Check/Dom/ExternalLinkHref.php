@@ -6,11 +6,11 @@ use Weglot\Client\Api\Enum\WordType;
 
 class ExternalLinkHref extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'href';
+    public const PROPERTY = 'href';
 
-    const WORD_TYPE = WordType::EXTERNAL_LINK;
+    public const WORD_TYPE = WordType::EXTERNAL_LINK;
 
     protected function check()
     {

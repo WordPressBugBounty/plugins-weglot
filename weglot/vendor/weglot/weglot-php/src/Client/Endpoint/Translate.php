@@ -13,8 +13,8 @@ use Weglot\Client\Factory\Translate as TranslateFactory;
 
 class Translate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
 
     /**
      * @var TranslateEntry

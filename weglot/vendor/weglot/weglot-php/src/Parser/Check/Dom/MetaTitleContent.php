@@ -7,13 +7,13 @@ use Weglot\Util\Text as TextUtil;
 
 class MetaTitleContent extends AbstractDomChecker
 {
-    const DOM = 'meta[property="og:title"],meta[name="twitter:title"]';
+    public const DOM = 'meta[property="og:title"],meta[name="twitter:title"]';
 
-    const PROPERTY = 'content';
+    public const PROPERTY = 'content';
 
-    const WORD_TYPE = WordType::TITLE;
+    public const WORD_TYPE = WordType::TITLE;
 
-    const ESCAPE_SPECIAL_CHAR = true;
+    public const ESCAPE_SPECIAL_CHAR = true;
 
     protected function check()
     {

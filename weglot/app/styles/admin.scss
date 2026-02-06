@@ -1,5 +1,5 @@
-@import "_colors.scss";
-@import "selectize.css";
+@use "colors";
+@use "selectize";
 
 $wp-color-red: #dc3232; // RGB(220,50,50)
 $wp-color-green: #46b450; // RGB(70, 180, 80)
@@ -54,7 +54,7 @@ $wp-color-green: #46b450; // RGB(70, 180, 80)
 	}
 
 	.btn {
-		background: $primary;
+		background: colors.$primary;
 		display: inline-block;
 		padding: 8px 10px;
 		border-radius: 4px;
@@ -70,11 +70,11 @@ $wp-color-green: #46b450; // RGB(70, 180, 80)
 		box-shadow: none;
 		white-space: nowrap;
 		color: white;
-		border: 1px solid $primary;
+		border: 1px solid colors.$primary;
 
 		&.btn-soft {
 			background-color: #fff;
-			color: $textColor;
+			color: colors.$textColor;
 			border-radius: 4px;
 			border: 1px solid #7e8993;
 			line-height: 1.4em;
@@ -89,8 +89,8 @@ $wp-color-green: #46b450; // RGB(70, 180, 80)
 			&:active,
 			&:focus,
 			&:hover {
-				border-color: $primaryHover;
-				background-color: $primaryHover;
+				border-color: colors.$primaryHover;
+				background-color: colors.$primaryHover;
 			}
 		}
 	}
@@ -186,7 +186,7 @@ $wp-color-green: #46b450; // RGB(70, 180, 80)
 		border: 1px solid #7e8993;
 
 		&:focus {
-			border-color: $primaryHover !important;
+			border-color: colors.$primaryHover !important;
 			box-shadow: none !important;
 		}
 	}

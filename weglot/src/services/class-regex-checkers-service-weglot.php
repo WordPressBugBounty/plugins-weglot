@@ -40,6 +40,8 @@ class Regex_Checkers_Service_Weglot {
 			array_push( $checkers, new RegexChecker( '#\b' . $other_word . '\b#u', SourceType::SOURCE_TEXT, 0 ) );
 		}
 
+		$checkers = array_merge( $checkers, $this->get_default_regex_checkers() );
+
 		$scandir_thirds = scandir( WEGLOT_DIR . '/src/third' );
 		if ( false === $scandir_thirds ) {
 			$scandir_thirds = [];
@@ -62,7 +64,7 @@ class Regex_Checkers_Service_Weglot {
 				if ( strpos( $file, 'active.php' ) !== false ) {
 					$file    = Text::removeFileExtension( $file );
 					$file    = str_replace( 'class-', '', $file );
-					$class_name_part = implode( '', array_map( 'ucfirst', explode( '-', $file ) ) );
+					$class_name_part = implode( '_', array_map( 'ucfirst', explode( '-', $file ) ) );
 					$namespace_part  = implode( '', array_map( 'ucfirst', explode( '-', $third ) ) );
 					$fqcn = '\\WeglotWP\\Third\\' . $namespace_part . '\\' . $class_name_part;
 					if ( ! class_exists( $fqcn ) ) {
@@ -99,4 +101,23 @@ class Regex_Checkers_Service_Weglot {
 		return apply_filters( 'weglot_get_regex_checkers', $checkers );
 	}
 
+	/**
+	 *
+	 * @return array<int, RegexChecker>
+	 */
+	private function get_default_regex_checkers() {
+		return array(
+			new RegexChecker(
+				'#data-et-multi-view=(["\'])(.*?)\1#',
+				SourceType::SOURCE_JSON,
+				2,
+				array(),
+				'html_entity_decode',
+				function( $string ) {
+					return htmlentities( $string, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+				}
+			),
+
+		);
+	}
 }

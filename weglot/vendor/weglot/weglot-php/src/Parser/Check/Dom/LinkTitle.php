@@ -6,11 +6,11 @@ use Weglot\Client\Api\Enum\WordType;
 
 class LinkTitle extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'title';
+    public const PROPERTY = 'title';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 
-    const ESCAPE_SPECIAL_CHAR = true;
+    public const ESCAPE_SPECIAL_CHAR = true;
 }

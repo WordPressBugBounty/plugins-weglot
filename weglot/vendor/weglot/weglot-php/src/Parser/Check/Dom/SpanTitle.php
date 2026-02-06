@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class SpanTitle extends AbstractDomChecker
 {
-    const DOM = 'span[title]';
+    public const DOM = 'span[title]';
 
-    const PROPERTY = 'title';
+    public const PROPERTY = 'title';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 }

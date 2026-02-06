@@ -8,8 +8,8 @@ use Weglot\Client\Client;
 
 abstract class Endpoint
 {
-    const METHOD = 'GET';
-    const ENDPOINT = '/';
+    public const METHOD = 'GET';
+    public const ENDPOINT = '/';
 
     /**
      * @var Client

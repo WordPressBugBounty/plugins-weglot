@@ -6,11 +6,11 @@ use Weglot\Client\Api\Enum\WordType;
 
 class ImageAlt extends AbstractDomChecker
 {
-    const DOM = 'img';
+    public const DOM = 'img';
 
-    const PROPERTY = 'alt';
+    public const PROPERTY = 'alt';
 
-    const WORD_TYPE = WordType::IMG_ALT;
+    public const WORD_TYPE = WordType::IMG_ALT;
 
-    const ESCAPE_SPECIAL_CHAR = true;
+    public const ESCAPE_SPECIAL_CHAR = true;
 }

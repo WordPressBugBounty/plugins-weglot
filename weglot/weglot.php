@@ -9,7 +9,7 @@
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 5.1
+* Version: 5.3
 */
 
 /**
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '5.1' );
+define( 'WEGLOT_VERSION', '5.3' );
 define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -35,7 +35,7 @@ define( 'WEGLOT_DIR_DIST', WEGLOT_DIR . '/dist' );
 
 define( 'WEGLOT_DIRURL', plugin_dir_url( __FILE__ ) );
 define( 'WEGLOT_URL_DIST', WEGLOT_DIRURL . 'dist' );
-define( 'WEGLOT_LATEST_VERSION', '5.0' );
+define( 'WEGLOT_LATEST_VERSION', '5.2' );
 define( 'WEGLOT_DEBUG', false );
 define( 'WEGLOT_DEV', false );
 
@@ -91,13 +91,72 @@ wpml_is_active();
  * @return bool
  */
 function weglot_is_compatible() {
-	// Check php version.
 	if ( version_compare( PHP_VERSION, WEGLOT_PHP_MIN ) < 0 ) {
 		add_action( 'admin_notices', 'weglot_php_min_compatibility' );
 		return false;
 	}
 
+	if ( weglot_should_skip_init() ) {
+		return false;
+	}
+
 	return true;
+}
+
+/**
+ *
+ * @return array{
+ *   pages: string[],
+ *   screens: string[],
+ *   callbacks: callable[]
+ * }
+ */
+function weglot_skip_contexts() {
+	$contexts = [
+		'pages'     => [
+			'integration-cds',
+		],
+		'screens'   => [
+		],
+		'callbacks' => [
+		],
+	];
+
+	return apply_filters( 'weglot/skip_contexts', $contexts );
+}
+
+/**
+ * @return bool
+ */
+function weglot_should_skip_init() {
+	if ( ! is_admin() ) {
+		return false;
+	}
+
+	$contexts = weglot_skip_contexts();
+
+	$page = '';
+	if ( isset( $_GET['page'] ) ) {
+		$page = sanitize_key( wp_unslash( $_GET['page'] ) );
+	}
+	if ( $page && in_array( $page, $contexts['pages'], true ) ) {
+		return true;
+	}
+
+	if ( function_exists('get_current_screen') ) {
+		$screen = get_current_screen();
+		if ( $screen && ! empty( $contexts['screens'] ) && in_array( $screen->id, $contexts['screens'], true ) ) {
+			return true;
+		}
+	}
+
+	foreach ( (array) $contexts['callbacks'] as $cb ) {
+		if ( is_callable( $cb ) && (bool) call_user_func( $cb ) === true ) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 /**

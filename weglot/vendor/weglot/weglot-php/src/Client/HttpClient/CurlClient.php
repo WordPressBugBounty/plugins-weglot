@@ -18,13 +18,13 @@ if (!\defined('CURL_SSLVERSION_TLSv1_2')) {
 
 class CurlClient implements ClientInterface
 {
-    const DEFAULT_TIMEOUT = 80;
-    const DEFAULT_CONNECT_TIMEOUT = 30;
+    public const DEFAULT_TIMEOUT = 80;
+    public const DEFAULT_CONNECT_TIMEOUT = 30;
 
-    const INITIAL_NETWORK_RETRY_DELAY = 0.5;
-    const MAX_NETWORK_RETRY_DELAY = 2.0;
+    public const INITIAL_NETWORK_RETRY_DELAY = 0.5;
+    public const MAX_NETWORK_RETRY_DELAY = 2.0;
 
-    const MAX_NETWORK_RETRIES = 0;
+    public const MAX_NETWORK_RETRIES = 0;
 
     /**
      * @var int

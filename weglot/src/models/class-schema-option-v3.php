@@ -14,6 +14,10 @@ class Schema_Option_V3 {
 	/**
 	 * @var string
 	 */
+	public $definitions;
+	/**
+	 * @var string
+	 */
 	public $api_key;
 	/**
 	 * @var string

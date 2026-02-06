@@ -6,11 +6,11 @@ use Weglot\Client\Api\Enum\WordType;
 
 class IframeSrc extends AbstractDomChecker
 {
-    const DOM = 'iframe';
+    public const DOM = 'iframe';
 
-    const PROPERTY = 'src';
+    public const PROPERTY = 'src';
 
-    const WORD_TYPE = WordType::EXTERNAL_LINK;
+    public const WORD_TYPE = WordType::EXTERNAL_LINK;
 
     protected function check()
     {

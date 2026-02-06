@@ -114,7 +114,9 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 	public function woocommerce_filter_order_received_url( $url_filter ) {
 		$url = $this->request_url_services->create_url_object( $url_filter );
 
-		return $url->getForLanguage( $this->request_url_services->get_current_language() );
+		$translated_url = $url->getForLanguage( $this->request_url_services->get_current_language() );
+
+		return is_string( $translated_url ) ? $translated_url : $url_filter;
 	}
 
 	/**
@@ -139,6 +141,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 						$translated_url = $theUrl->getForLanguage( $this->request_url_services->get_current_language() );
 						if ( is_string( $translated_url ) ) {
 							setcookie( 'wp-resetpass-' . $matches_name[1], urldecode( $matches_name[2] ), 0, $translated_url, '', is_ssl(), true ); // phpcs:ignore
+
 							return $translated_url;
 						}
 
@@ -148,7 +151,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 
 			$current_url = $this->request_url_services->create_url_object( $url );
 
-			if(! is_string( $current_url->getForLanguage( $this->request_url_services->get_current_language() ) )){
+			if ( ! is_string( $current_url->getForLanguage( $this->request_url_services->get_current_language() ) ) ) {
 				return $url;
 			}
 
@@ -171,6 +174,11 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 		$language_service = weglot_get_service( Language_Service_Weglot::class );
 
 		$choose_current_language = $this->request_url_services->get_current_language();
+
+		if ( ! isset( $result['redirect'] ) ) {
+			return $result;
+		}
+
 		if ( $choose_current_language !== $language_service->get_original_language() ) { // Not ajax
 			$url = $this->request_url_services->create_url_object( $result['redirect'] );
 		} else {
@@ -186,7 +194,10 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 		if ( isset( $result['redirect'] ) ) {
 			if ( $this->replace_url_services->check_link( $result['redirect'] ) ) { // We must not add language code if external link
 				if ( isset( $url ) && $url ) {
-					$result['redirect'] = $url->getForLanguage( $choose_current_language );
+					$translated_redirect = $url->getForLanguage( $choose_current_language );
+					if ( is_string( $translated_redirect ) ) {
+						$result['redirect'] = $translated_redirect;
+					}
 				}
 			}
 		}
@@ -208,7 +219,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 
 		$reset_link_sent = apply_filters( 'weglot_redirect_woocommerce_filter_reset_password', true );
 
-		if( ! $reset_link_sent ){
+		if ( ! $reset_link_sent ) {
 			return;
 		}
 
@@ -222,7 +233,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 		$url_redirect = add_query_arg( 'reset-link-sent', 'true', wc_get_account_endpoint_url( 'lost-password' ) );
 		$url_redirect = $this->request_url_services->create_url_object( $url_redirect );
 
-		if(! is_string( $url_redirect->getForLanguage( $this->request_url_services->get_current_language() ))){
+		if ( ! is_string( $url_redirect->getForLanguage( $this->request_url_services->get_current_language() ) ) ) {
 			return;
 		}
 		wp_redirect( $url_redirect->getForLanguage( $this->request_url_services->get_current_language() ) ); //phpcs:ignore

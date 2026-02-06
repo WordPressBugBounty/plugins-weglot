@@ -2,6 +2,12 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 5.2 (28/10/2025) =
+* Improvement: Introduces weglot/v1/cache/purge REST route with HMAC auth and idempotency to purge cache, replacing the old Clean_Options init-based cleaner.
+* Improvement: Renames the REST request helper from is_rest to wg_is_rest and updates its usage in the redirect logic.
+* Improvement: Introduce a filterable admin-context mechanism to skip Weglot initialization and wire it into weglot_is_compatible().
+* Improvement: Explicitly declares the definitions property on Schema_Option_V3 to replace deprecated dynamic property usage.
+* Fix: Prevents translation conflicts when using the Breakdance editor by excluding AJAX requests during editing sessions.
 
 ## 5.1 (30/09/2025) =
 * Feature: Add support for Brazilian Portuguese

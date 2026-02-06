@@ -9,7 +9,7 @@ use Weglot\Util\SourceType;
 
 class RegexCheckerProvider
 {
-    const DEFAULT_CHECKERS_NAMESPACE = '\\Weglot\\Parser\\Check\\Regex\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\\Weglot\\Parser\\Check\\Regex\\';
 
     /**
      * @var Parser

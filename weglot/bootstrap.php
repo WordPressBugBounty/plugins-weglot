@@ -72,6 +72,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\MailOptin\Mailoptin_Active',
 			'\WeglotWP\Third\ContactForm7\Contactform7_Active',
 			'\WeglotWP\Third\WpOptimize\Wp_Optimize_Active',
+			'\WeglotWP\Third\Iubenda\Iubenda_Active',
 			'\WeglotWP\Third\CacheEnabler\Cache_Enabler_Active',
 			'\WeglotWP\Third\Wprocket\Wprocket_Active',
 			'\WeglotWP\Third\Wprentals\Wprentals_Active',
@@ -101,7 +102,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Actions\Front\Search_Weglot',
 			'\WeglotWP\Actions\Front\Redirect_Comment',
 			'\WeglotWP\Actions\Admin\Ajax_User_Info',
-			'\WeglotWP\Actions\Front\Clean_Options',
+			'\WeglotWP\Actions\Rest\Cache_Purge_Rest_Weglot',
 
 			'\WeglotWP\Third\Amp\Amp_Enqueue_Weglot',
 			'\WeglotWP\Third\Calderaforms\Caldera_I18n_Inline',
@@ -122,6 +123,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\Wprocket\Wprocket_Cache',
 			'\WeglotWP\Third\Wprentals\Wprentals_translate_calendar',
 			'\WeglotWP\Third\Stackable\Stackable_Translate',
+			'\WeglotWP\Third\Iubenda\Iubenda_Weglot',
 		);
 
 		self::$context->set_actions( $actions );
@@ -144,6 +146,21 @@ function weglot_init() {
 	if ( $cancel_init ) {
 		return;
 	}
+
+	/**
+	 * WP Engine: prevent Weglot translation layer on cache purge REST endpoint
+	 * (Avoid 502 on /wp-json/wpe/cache-plugin/v1/clear_all_caches)
+	 */
+	add_filter( 'weglot_active_translation', function( $active ) {
+		if (
+			isset( $_SERVER['REQUEST_URI'] )
+			&& strpos( $_SERVER['REQUEST_URI'], '/wp-json/wpe/cache-plugin/v1/clear_all_caches' ) !== false
+		) {
+			return false;
+		}
+
+		return $active;
+	}, 0 );
 
 	if (version_compare(PHP_VERSION, '7.4', '<')) {
 		add_action( 'admin_notices', array( '\WeglotWP\Notices\Php_Weglot', 'admin_notice' ) );

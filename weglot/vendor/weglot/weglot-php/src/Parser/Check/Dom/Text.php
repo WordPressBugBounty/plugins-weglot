@@ -7,11 +7,11 @@ use Weglot\Util\Text as TextUtil;
 
 class Text extends AbstractDomChecker
 {
-    const DOM = 'text';
+    public const DOM = 'text';
 
-    const PROPERTY = 'innertext';
+    public const PROPERTY = 'innertext';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 
     protected function check()
     {

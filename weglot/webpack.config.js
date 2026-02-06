@@ -1,7 +1,8 @@
 const path = require("path");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const webpack = require("webpack");
+const sass = require("sass");
 const env = process.env.NODE_ENV || "development";
 
 module.exports = {
@@ -30,27 +31,34 @@ module.exports = {
 			{
 				test: /\.(gif|jpe?g|png)$/,
 				loader: "url-loader",
-				query: {
+				options: {
 					limit: 10000,
 					name: "images/[name].[ext]"
 				}
 			},
 			{
 				test: /\.scss$/,
-				use: ExtractTextPlugin.extract({
-					fallback: "style-loader",
-					use: [
-						{
-							loader: "css-loader?url=false"
-						},
-						{
-							loader: "postcss-loader"
-						},
-						{
-							loader: "sass-loader"
+				use: [
+					MiniCssExtractPlugin.loader,
+					{
+						loader: "css-loader",
+						options: {
+							url: false
 						}
-					]
-				})
+					},
+					{
+						loader: "postcss-loader"
+					},
+					{
+						loader: "sass-loader",
+						options: {
+							implementation: sass,
+							sassOptions: {
+								api: "modern"
+							}
+						}
+					}
+				]
 			}
 		]
 	},
@@ -58,13 +66,15 @@ module.exports = {
 		new webpack.DefinePlugin({
 			NODE_ENV: env
 		}),
-		new ExtractTextPlugin({
+		new MiniCssExtractPlugin({
 			filename: "css/[name].css"
 		}),
-		new CopyWebpackPlugin([
-			{ from: "app/images", to: "images" },
-			{ from: "app/static", to: "images" },
-			{ from: "app/javascripts/selectize.js", to: "selectize.js" }
-		])
+		new CopyWebpackPlugin({
+			patterns: [
+				{ from: "app/images", to: "images" },
+				{ from: "app/static", to: "images" },
+				{ from: "app/javascripts/selectize.js", to: "selectize.js" }
+			]
+		})
 	]
 };

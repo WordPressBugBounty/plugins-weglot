@@ -36,6 +36,9 @@ class Parser_Service_Weglot {
 	/** @var array<string,string>  token → original value */
 	private $preserved = [];
 
+	/** @var array<string,string> token → original word */
+	private $preserved_words = [];
+
 	/**
 	 * @since 2.0
 	 */
@@ -157,9 +160,86 @@ class Parser_Service_Weglot {
 
 
 	/**
-	 * Preserves specified attributes in the given HTML string by replacing
-	 * their inner values with tokens, storing these values for later restoration.
+	 * @param string   $content The content to process (HTML, JSON string, etc.).
+	 * @param string[] $words   List of words to preserve.
 	 *
+	 * @return string
+	 */
+	public function preserve_words( string $content, array $words ): string {
+		$words = array_values(
+			array_filter(
+				$words,
+				function( $w ) {
+					return is_string( $w ) && '' !== $w;
+				}
+			)
+		);
+
+		if ( empty( $words ) ) {
+			return $content;
+		}
+
+		usort(
+			$words,
+			function( $a, $b ) {
+				return strlen( $b ) <=> strlen( $a );
+			}
+		);
+
+		$escaped = array_map(
+			function( $w ) {
+				return preg_quote( $w, '/' );
+			},
+			$words
+		);
+
+		$pattern = '/(?<![\pL\pN_])(' . implode( '|', $escaped ) . ')(?![\pL\pN_])/u';
+
+		$result = preg_replace_callback(
+			$pattern,
+			function( $m ) {
+				static $i = 0;
+				$i++;
+
+				$original = $m[1];
+				$token    = "__WG_WORD_{$i}__";
+
+				$this->preserved_words[ $token ] = $original;
+
+				return $token;
+			},
+			$content
+		);
+		if ( null === $result ) {
+			return $content; // Return original content on error
+		}
+		return $result;
+	}
+
+	/**
+	 * Restore previously preserved words by replacing tokens back to their original values.
+	 *
+	 * @param string   $content The content to restore.
+	 * @param string[] $words   (Optional) Kept for API symmetry; restoration uses stored tokens.
+	 *
+	 * @return string
+	 */
+	public function restore_words( string $content, array $words = [] ): string {
+		unset( $words );
+
+		if ( empty( $this->preserved_words ) ) {
+			return $content;
+		}
+
+		foreach ( $this->preserved_words as $token => $original ) {
+			$content = str_replace( $token, $original, $content );
+		}
+
+		$this->preserved_words = [];
+
+		return $content;
+	}
+	/**
 	 * @param string $html The HTML content where attributes should be preserved.
 	 *
 	 * @return string The HTML content with specified attributes replaced by tokens.
@@ -170,11 +250,9 @@ class Parser_Service_Weglot {
 			return $html;
 		}
 
-		// build alternation like '(d|foo|bar)'
 		$list = implode( '|', array_map( 'preg_quote', $attrs ) );
 
 		return preg_replace_callback(
-		// 1: attr name, 2: optional slash, 3: quote, 4: value
 			'/\b(' . $list . ')=(\\\\?)([\'"])(.*?)\2\3/s',
 			function( $m ) {
 				static $i = 0;
@@ -182,10 +260,8 @@ class Parser_Service_Weglot {
 				$attr  = $m[1];
 				$token = "__WG_ATTR_{$attr}_{$i}__";
 
-				// store the raw inner value (with any backslashes)
 				$this->preserved[ $token ] = $m[4];
 
-				// re-emit attr=slash+quote+token+slash+quote
 				return sprintf(
 					'%s=%s%s%s%s%s',
 					$attr,

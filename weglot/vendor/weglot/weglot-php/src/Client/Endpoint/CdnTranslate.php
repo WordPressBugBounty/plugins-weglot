@@ -13,9 +13,9 @@ use Weglot\Client\Factory\Translate as TranslateFactory;
 
 class CdnTranslate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
-    const WORDS_LIMIT = 600;
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
+    public const WORDS_LIMIT = 600;
 
     /**
      * @var TranslateEntry

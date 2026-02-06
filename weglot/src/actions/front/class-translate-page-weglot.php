@@ -94,11 +94,11 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 			}
 		}
 
-
 		//check if is elementor preview.
 		$elementor_preview = filter_input(INPUT_GET, 'elementor-preview', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+		$break_dance_edit = filter_input(INPUT_GET, '_breakdance_doing_ajax', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] || $elementor_preview) {
+		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] || $elementor_preview || $break_dance_edit) {
 			return;
 		}
 
@@ -147,6 +147,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				'jet_ajax_search', // jet_ajax_search.
 				'woofc_update_qty', // jet_ajax_search.
 				'et_fb_ajax_save', // save divi builder.
+				'generate_wpo_wcpdf', // WooCommerce PDF Invoices & Packing Slips
 				'generate_wpo_wcpdf', // WooCommerce PDF Invoices & Packing Slips
 			)
 		);
@@ -248,7 +249,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		if (
 			! $skip_redirect &&
 			! wp_doing_ajax() && // no ajax.
-			! is_rest() &&
+			! wg_is_rest() &&
 			! Helper_Is_Admin::is_wp_admin() &&
 			$this->language_services->get_original_language() === $this->request_url_services->get_current_language() &&
 			! isset( $_COOKIE['WG_CHOOSE_ORIGINAL'] ) && // No force redirect.
@@ -514,6 +515,30 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		if(empty($settings['custom_settings']['switchers'])){
 			$settings['custom_settings']['switchers'][0] = $this->switcher_default_options();
 		}
+
+		/**
+		 * Allow developers to alter inline Weglot settings before they are JSON-encoded.
+		 *
+		 * Typical use cases:
+		 * - Removing tracking query args (utm_*, fbclid, gclid...) from switcher_links
+		 * - Overriding custom settings for specific contexts
+		 *
+		 * @param array<string,mixed> $settings Settings array printed in #weglot-data.
+		 * @param array<string,mixed> $context  Contextual info.
+		 */
+		$filtered_settings = apply_filters(
+			'weglot_custom_settings_data',
+			$settings,
+			array(
+				'current_language' => $this->current_language ? $this->current_language->getInternalCode() : null,
+				'original_path'    => isset( $settings['original_path'] ) ? $settings['original_path'] : null,
+			)
+		);
+
+		if ( is_array( $filtered_settings ) ) {
+			$settings = $filtered_settings;
+		}
+
 		echo '<script type="application/json" id="weglot-data">';
 		echo wp_json_encode( $settings );
 		echo '</script>';

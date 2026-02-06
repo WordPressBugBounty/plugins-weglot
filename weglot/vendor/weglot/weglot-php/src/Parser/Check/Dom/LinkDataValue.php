@@ -6,9 +6,9 @@ use Weglot\Client\Api\Enum\WordType;
 
 class LinkDataValue extends AbstractDomChecker
 {
-    const DOM = 'a';
+    public const DOM = 'a';
 
-    const PROPERTY = 'data-value';
+    public const PROPERTY = 'data-value';
 
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
 }

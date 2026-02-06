@@ -11,8 +11,8 @@ use WeglotLanguages\Languages;
  */
 class LanguagesList extends Endpoint
 {
-    const METHOD = 'GET';
-    const ENDPOINT = '/languages';
+    public const METHOD = 'GET';
+    public const ENDPOINT = '/languages';
 
     /**
      * @return array<string, Language>

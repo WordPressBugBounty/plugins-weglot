@@ -52,9 +52,9 @@ class Parser
     /**
      * Attribute to match in DOM when we don't want to translate innertext & childs.
      */
-    const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
-    const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
-    const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
+    public const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
+    public const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
+    public const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
 
     /**
      * @var Client

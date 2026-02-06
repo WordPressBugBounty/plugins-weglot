@@ -68,7 +68,13 @@ class Translate_Service_Weglot {
 	 * @since 2.3.0
 	 */
 	public function weglot_translate() {
-		ob_start( array( $this, 'weglot_treat_page' ) );
+		$is_wp_engine = apply_filters( 'weglot_is_wp_engine_hosting', false );
+
+		if ( $is_wp_engine ) {
+			add_filter( 'final_output', array( $this, 'weglot_treat_page' ), 999 );
+		} else {
+			ob_start( array( $this, 'weglot_treat_page' ) );
+		}
 	}
 
 	/**
@@ -252,12 +258,23 @@ class Translate_Service_Weglot {
 						$content = $this->parser_services->escape_vue_attributes( $content );
 					}
 
-					if($force_request_url){
+					$preserve_words_enabled = apply_filters( 'weglot_preserve_words_enabled', false );
+					$preserve_words_list    = apply_filters( 'weglot_preserve_words_list', array(), $content );
+					if ( $preserve_words_enabled && is_array( $preserve_words_list ) && ! empty( $preserve_words_list ) ) {
+						$content = $this->parser_services->preserve_words( $content, $preserve_words_list );
+					}
+
+					if ( $force_request_url ) {
 						$request_url = $this->request_url_services->get_current_canonical_url();
 						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
 					}else{
 						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
 					}
+
+					if ( $preserve_words_enabled && is_array( $preserve_words_list ) && ! empty( $preserve_words_list ) ) {
+						$translated_content = $this->parser_services->restore_words( $translated_content, $preserve_words_list );
+					}
+
 					if ( apply_filters( 'weglot_escape_vue_js', false ) ) {
 						$translated_content = $this->parser_services->restore_vue_attributes( $translated_content );
 					}

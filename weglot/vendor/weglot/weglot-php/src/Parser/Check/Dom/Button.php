@@ -7,11 +7,11 @@ use Weglot\Util\Text as TextUtil;
 
 class Button extends AbstractDomChecker
 {
-    const DOM = 'input[type="submit"],input[type="button"],button';
+    public const DOM = 'input[type="submit"],input[type="button"],button';
 
-    const PROPERTY = 'value';
+    public const PROPERTY = 'value';
 
-    const WORD_TYPE = WordType::VALUE;
+    public const WORD_TYPE = WordType::VALUE;
 
     protected function check()
     {

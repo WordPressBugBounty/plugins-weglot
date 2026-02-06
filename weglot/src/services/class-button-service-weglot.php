@@ -274,10 +274,8 @@ class Button_Service_Weglot {
 						);
 					}
 				} else {
-
-					// If "weglot-preview" is in $add_class, use a <span> instead
 					$button_html .= sprintf(
-						'<span title="Language switcher : ' . $language->getEnglishName() . '" class="weglot-language-' . $language->getExternalCode() . '" role="option" data-wg-notranslate="">%s</span>',
+'<a href="#" title="Language switcher : ' . esc_attr($language->getEnglishName()) . '" class="weglot-language-' . esc_attr($language->getExternalCode()) . '" role="option" data-wg-notranslate="">%s</a>',
 						esc_html( $name )
 					);
 				}

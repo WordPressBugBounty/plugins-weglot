@@ -1,3 +1,6 @@
+
+@use "sass:map";
+
 // Define the style and width based on the flag level
 $flag-styles: (
 	3: circle,
@@ -147,9 +150,9 @@ $lang-prefix: "wg-";
 @mixin weglot-flag($level, $lang, $countryCode) {
 	.weglot-flags.flag-#{$level}.#{$lang-prefix}#{$lang} > a:before,
 	.weglot-flags.flag-#{$level}.#{$lang-prefix}#{$lang} > span:before {
-		background-image: url("https://cdn.weglot.com/flags/#{map-get($flag-styles, $level)}/#{$countryCode}.svg");
+		background-image: url("https://cdn.weglot.com/flags/#{map.get($flag-styles, $level)}/#{$countryCode}.svg");
 		background-position: unset !important;
-		width: map-get($flag-widths, $level) !important;
+		width: map.get($flag-widths, $level) !important;
 	}
 }
 
@@ -164,5 +167,5 @@ $lang-prefix: "wg-";
 .weglot-flags.flag-0 > a:before,
 .weglot-flags.flag-0 > span:before {
 	background-position: unset !important;
-	width: map-get($flag-widths, 0) !important;
+	width: map.get($flag-widths, 0) !important;
 }
