@@ -1,6 +1,6 @@
 === AI Multilingual Translation – Translate Sites – Weglot ===
 Contributors: remyb92, gmulti, wysija, wpr0ck, glx77
-Tags: translate, translation, multilingual, localization, language
+Tags: translate, translation, multilingual, automatic translation, AI translation
 Requires at least: 4.5
 Tested up to: 6.9
 Requires PHP: 7.4
