@@ -249,6 +249,8 @@ class Translate_Service_Weglot {
 					return apply_filters( 'weglot_xml_treat_page', $translated_content );
 				case 'html':
 
+					$content = $this->add_ai_disclaimer( $content );
+
 					if ( apply_filters( 'weglot_escape_attribute_in_html', false ) ) {
 						$content = $this->parser_services->preserve_attributes( $content );
 					}
@@ -258,11 +260,18 @@ class Translate_Service_Weglot {
 						$content = $this->parser_services->escape_vue_attributes( $content );
 					}
 
+
 					$preserve_words_enabled = apply_filters( 'weglot_preserve_words_enabled', false );
 					$preserve_words_list    = apply_filters( 'weglot_preserve_words_list', array(), $content );
 					if ( $preserve_words_enabled && is_array( $preserve_words_list ) && ! empty( $preserve_words_list ) ) {
 						$content = $this->parser_services->preserve_words( $content, $preserve_words_list );
 					}
+
+                    if ( apply_filters( 'weglot_escape_script_templates', false ) ) {
+						$content = $this->parser_services->escape_script_templates( $content );
+					}
+
+
 
 					if ( $force_request_url ) {
 						$request_url = $this->request_url_services->get_current_canonical_url();
@@ -271,6 +280,11 @@ class Translate_Service_Weglot {
 						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
 					}
 
+
+					// Restore script templates
+					if ( apply_filters( 'weglot_escape_script_templates', false ) ) {
+						$translated_content = $this->parser_services->restore_script_templates( $translated_content );
+          }
 					if ( $preserve_words_enabled && is_array( $preserve_words_list ) && ! empty( $preserve_words_list ) ) {
 						$translated_content = $this->parser_services->restore_words( $translated_content, $preserve_words_list );
 					}
@@ -352,6 +366,100 @@ class Translate_Service_Weglot {
 			}
 		}
 		return $content;
+	}
+
+	/**
+	 * @param string $dom the HTML string.
+	 *
+	 * @return string
+	 * @since 2.3.0
+	 */
+	private function add_ai_disclaimer( $dom ) {
+		$ai_disclaimer_selector = $this->option_services->get_option_custom_settings( 'ai_disclaimer_selector' );
+
+		if ( ! isset( $ai_disclaimer_selector ) || '' === $ai_disclaimer_selector || ! is_string( $ai_disclaimer_selector ) ) {
+			return $dom;
+		}
+
+		$disclaimer_text = 'Translated content on this website may be generated using artificial intelligence. Learn more about AI-generated translations';
+		$disclaimer_text = apply_filters( 'weglot_ai_disclaimer_text', $disclaimer_text );
+
+		$doc = new \DOMDocument();
+		libxml_use_internal_errors( true );
+
+		// Use proper encoding and flags for complete HTML documents
+		$success = $doc->loadHTML(
+			'<?xml version="1.0" encoding="UTF-8"?>' . $dom,
+			LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+		);
+
+		if ( ! $success ) {
+			libxml_clear_errors();
+			return $dom; // Return original on error
+		}
+
+		libxml_clear_errors();
+
+		$xpath = new \DOMXPath( $doc );
+		$xpath_query = $this->css_to_xpath( $ai_disclaimer_selector );
+
+		if ( false === $xpath_query ) {
+			return $dom; // Invalid selector
+		}
+
+		$elements = $xpath->query( $xpath_query );
+
+		if ( false === $elements || $elements->length === 0 ) {
+			return $dom; // Query failed or no elements found
+		}
+
+		$target_element = $elements->item( 0 );
+		if ( $target_element ) {
+			$text_node = $doc->createTextNode( $disclaimer_text );
+			$target_element->appendChild( $text_node );
+		}
+
+		// Remove XML processing instruction node to prevent it from appearing in output
+		for ( $i = $doc->childNodes->length - 1; $i >= 0; $i-- ) {
+			$node = $doc->childNodes->item( $i );
+			if ( $node && $node->nodeType === XML_PI_NODE ) {
+				$doc->removeChild( $node );
+			}
+		}
+
+		$html = $doc->saveHTML();
+		return $html !== false ? $html : $dom;
+
+		}
+
+	/**
+	 *
+	 * @param string $selector CSS selector.
+	 *
+	 * @return string|false XPath query or false on invalid selector.
+	 */
+	private function css_to_xpath( $selector ) {
+		$selector = trim( $selector );
+
+		// Validate selector format
+		if ( ! preg_match( '/^[#.]?[a-zA-Z0-9_-]+$/', $selector ) ) {
+			return false; // Invalid selector
+		}
+
+		if ( strpos( $selector, '#' ) === 0 ) {
+			$id = substr( $selector, 1 );
+			// Regex validation ensures $id contains only [a-zA-Z0-9_-], so no XPath escaping needed
+			return "//*[@id='" . $id . "']";
+		}
+
+		if ( strpos( $selector, '.' ) === 0 ) {
+			$class = substr( $selector, 1 );
+			$class = str_replace( "'", "", $class );
+			return "//*[contains(concat(' ', normalize-space(@class), ' '), ' " . $class . " ')]";
+		}
+
+		$selector = str_replace( "'", "", $selector );
+		return "//" . $selector;
 	}
 
 	/**

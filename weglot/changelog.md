@@ -2,12 +2,17 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
-## 5.2 (28/10/2025) =
-* Improvement: Introduces weglot/v1/cache/purge REST route with HMAC auth and idempotency to purge cache, replacing the old Clean_Options init-based cleaner.
-* Improvement: Renames the REST request helper from is_rest to wg_is_rest and updates its usage in the redirect logic.
-* Improvement: Introduce a filterable admin-context mechanism to skip Weglot initialization and wire it into weglot_is_compatible().
-* Improvement: Explicitly declares the definitions property on Schema_Option_V3 to replace deprecated dynamic property usage.
-* Fix: Prevents translation conflicts when using the Breakdance editor by excluding AJAX requests during editing sessions.
+## 5.3 (02/02/2026) =
+* Improvement: Modernizes the project's build system by updating dependencies and migrating to the newer Sass module syntax.
+* Improvement: Switches bot detection to Matomo DeviceDetector for more accurate and maintainable user agent parsing.
+* Improvement: Introduces an opt-in mechanism to prevent translation of specific words in HTML.
+* Improvement: Introduces a built-in regex checker and integrates defaults into the checker list before third-party discovery.
+* Improvement: Improves URL translation robustness to prevent null/invalid redirects in WooCommerce flows.
+* Improvement: Disables the Weglot translation layer for the WP Engine cache purge endpoint (/wp-json/wpe/cache-plugin/v1/clear_all_caches) to prevent 502 errors.
+* Update: Refreshes the readme content (marketing, SEO, and FAQ) for clarity and relevance.
+* Fix: Changes class name construction in Regex_Checkers_Service_Weglot to use underscores for consistency and compatibility.
+* Fix: Renders preview-mode language items as anchors with href "#" to prevent navigation during preview sessions.
+* Fix: Ensures cache is actually purged as part of validating signed purge requests.
 
 ## 5.1 (30/09/2025) =
 * Feature: Add support for Brazilian Portuguese

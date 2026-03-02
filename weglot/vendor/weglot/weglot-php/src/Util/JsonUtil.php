@@ -12,7 +12,8 @@ class JsonUtil
     public const SEPARATOR = '##';
 
     /**
-     * @param string $key
+     * @param array<mixed> $data
+     * @param string       $key
      *
      * @return mixed
      */
@@ -38,18 +39,30 @@ class JsonUtil
     }
 
     /**
-     * @param array  $data
-     * @param string $index
-     * @param int    $nextJson
+     * @param array<mixed> $data
+     * @param string       $index
+     * @param int          $nextJson
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function set(WordCollection $words, $data, $index, &$nextJson)
     {
         $keys = explode(self::SEPARATOR, $index);
         $current = &$data;
+
         foreach ($keys as $key) {
+            if (!\is_array($current) || !\array_key_exists($key, $current)) {
+                ++$nextJson;
+
+                return $data;
+            }
             $current = &$current[$key];
+        }
+
+        if (!isset($words[$nextJson])) {
+            ++$nextJson;
+
+            return $data;
         }
 
         $current = $words[$nextJson]->getWord();
@@ -59,11 +72,11 @@ class JsonUtil
     }
 
     /**
-     * @param string $newHTML
-     * @param array  $data
-     * @param string $key
+     * @param string       $newHTML
+     * @param array<mixed> $data
+     * @param string       $key
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function setHTML($newHTML, $data, $key)
     {
@@ -79,11 +92,11 @@ class JsonUtil
     }
 
     /**
-     * @param string $jsonString
-     * @param array  $data
-     * @param string $key
+     * @param string       $jsonString
+     * @param array<mixed> $data
+     * @param string       $key
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function setJSONString($jsonString, $data, $key)
     {

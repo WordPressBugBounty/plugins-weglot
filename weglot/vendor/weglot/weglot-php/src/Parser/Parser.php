@@ -67,17 +67,17 @@ class Parser
     protected $configProvider;
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $excludeBlocks;
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $whiteList;
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $translateInsideExclusionsBlocks;
 
@@ -116,6 +116,11 @@ class Parser
      */
     protected $ignoredNodesFormatter;
 
+    /**
+     * @param array<string> $excludeBlocks
+     * @param array<string> $whiteList
+     * @param array<string> $translateInsideExclusionsBlocks
+     */
     public function __construct(Client $client, ConfigProviderInterface $config, array $excludeBlocks = [], array $customSwitchers = [], array $whiteList = [], array $translateInsideExclusionsBlocks = [])
     {
         $this
@@ -150,6 +155,8 @@ class Parser
     }
 
     /**
+     * @param array<string> $excludeBlocks
+     *
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
@@ -160,7 +167,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getExcludeBlocks()
     {
@@ -168,6 +175,8 @@ class Parser
     }
 
     /**
+     * @param array<string> $whiteList
+     *
      * @return $this
      */
     public function setWhiteList(array $whiteList)
@@ -178,7 +187,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getWhiteList()
     {
@@ -186,7 +195,7 @@ class Parser
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getTranslateInsideExclusionsBlocks()
     {
@@ -194,6 +203,8 @@ class Parser
     }
 
     /**
+     * @param array<string> $translateInsideExclusionsBlocks
+     *
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)
@@ -596,7 +607,10 @@ class Parser
             return $source;
         }
         if (SourceType::SOURCE_TEXT === $tree['type']) {
-            $source = str_replace($tree['text'], $translateEntry->getOutputWords()[$index]->getWord(), $source);
+            $outputWord = $translateEntry->getOutputWords()[$index] ?? null;
+            if (null !== $outputWord) {
+                $source = str_replace($tree['text'], $outputWord->getWord(), $source);
+            }
             ++$index;
         }
         if (SourceType::SOURCE_JSON === $tree['type']) {

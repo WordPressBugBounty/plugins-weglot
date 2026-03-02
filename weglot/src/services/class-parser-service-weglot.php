@@ -300,4 +300,153 @@ class Parser_Service_Weglot {
 		return $html;
 	}
 
+	/**
+	 * Escape script tags with template content to prevent parsing and improve performance.
+	 * Targets script tags with type="text/template" or specific id/class patterns.
+	 *
+	 * @param string $html The HTML content to be processed.
+	 * @return string Processed content with script templates replaced by tokens.
+	 */
+	public function escape_script_templates( string $html ): string {
+		// Default script types to escape
+		$type_patterns = apply_filters( 'weglot_escape_script_types', [
+			'text/template',
+			'text/html',
+			'text/x-template',
+			'text/x-handlebars-template',
+		]);
+
+		// Script IDs to escape (supports partial matching with *)
+		// Example: 'tmpl-*', 'nf-*', '*-js-extra'
+		$id_patterns = apply_filters( 'weglot_escape_script_ids', [
+			'tmpl-*',
+			'nf-*',
+			'*-js-extra',
+		]);
+
+		// Script classes to escape (supports partial matching with *)
+		$class_patterns = apply_filters( 'weglot_escape_script_classes', [] );
+
+		// NEW: escape scripts whose *content* matches one of these patterns (regex, without delimiters)
+		// Example: 'nfForms\s*=\s*nfForms\s*\|\|\s*\[\]'
+		$contains_patterns = apply_filters( 'weglot_escape_script_contains', [] );
+
+		// Build regex patterns (attribute-based)
+		$conditions = [];
+
+		// Add type conditions
+		if ( ! empty( $type_patterns ) ) {
+			$type_regex = implode( '|', array_map( function( $type ) {
+				return preg_quote( $type, '/' );
+			}, $type_patterns ) );
+			$conditions[] = 'type=["\'](?:' . $type_regex . ')["\']';
+		}
+
+		// Add id conditions
+		if ( ! empty( $id_patterns ) ) {
+			$id_regex_parts = [];
+			foreach ( $id_patterns as $pattern ) {
+				$regex = preg_quote( $pattern, '/' );
+				$regex = str_replace( '\*', '[^"\']*', $regex );
+				$id_regex_parts[] = $regex;
+			}
+			$conditions[] = 'id=["\'](?:' . implode( '|', $id_regex_parts ) . ')["\']';
+		}
+
+		// Add class conditions
+		if ( ! empty( $class_patterns ) ) {
+			$class_regex_parts = [];
+			foreach ( $class_patterns as $pattern ) {
+				$regex = preg_quote( $pattern, '/' );
+				$regex = str_replace( '\*', '[^"\']*', $regex );
+				$class_regex_parts[] = $regex;
+			}
+			$conditions[] = 'class=["\'](?:[^"\']*\s)?(?:' . implode( '|', $class_regex_parts ) . ')(?:\s[^"\']*)?["\']';
+		}
+
+		// If nothing to do, return unchanged
+		$has_attr_conditions = ! empty( $conditions );
+		$has_contains_conditions = is_array( $contains_patterns ) && ! empty( $contains_patterns );
+		if ( ! $has_attr_conditions && ! $has_contains_conditions ) {
+			return $html;
+		}
+
+		// Build regex: capture attributes and content for post-check
+		// 1 = attributes part (without <script and >), 2 = inner content
+		$pattern = '/<script\b([^>]*)>(.*?)<\/script>/is';
+
+		$result = preg_replace_callback(
+			$pattern,
+			function( $m ) use ( $conditions, $contains_patterns, $has_attr_conditions, $has_contains_conditions ) {
+				$attrs   = $m[1];
+				$content = $m[2];
+
+				$should_preserve = false;
+
+				// Attribute-based match (existing behavior)
+				if ( $has_attr_conditions ) {
+					$attr_pattern = '/(?:' . implode( '|', $conditions ) . ')/i';
+					if ( preg_match( $attr_pattern, $attrs ) ) {
+						$should_preserve = true;
+					}
+				}
+
+				// Content-based match (new behavior)
+				if ( ! $should_preserve && $has_contains_conditions ) {
+					foreach ( $contains_patterns as $cp ) {
+						if ( ! is_string( $cp ) || $cp === '' ) {
+							continue;
+						}
+						// treat each entry as a regex fragment (no delimiters expected)
+						$test_result = @preg_match( '/'.$cp.'/is', '' );
+						if ( false === $test_result ) {
+							// Invalid regex pattern, skip it
+							continue;
+						}
+						if ( preg_match( '/'.$cp.'/is', $content ) ) {
+							$should_preserve = true;
+							break;
+						}
+					}
+				}
+
+				if ( ! $should_preserve ) {
+					return $m[0];
+				}
+
+				static $i = 0;
+				$i++;
+				$token = "__WG_SCRIPT_TEMPLATE_{$i}__";
+
+				// Store the entire script tag
+				$this->preserved[ $token ] = $m[0];
+
+				// Replace with a simple placeholder comment
+				return "<!-- {$token} -->";
+			},
+			$html
+		);
+
+		// Return original HTML if preg_replace_callback failed
+		return $result !== null ? $result : $html;
+	}
+
+	/**
+	 * Restore escaped script template tags after translation.
+	 *
+	 * @param string $html The HTML string where script tags need to be restored.
+	 * @return string The HTML string with script tags restored.
+	 */
+	public function restore_script_templates( string $html ): string {
+		foreach ( $this->preserved as $token => $original ) {
+			// Only restore script template tokens
+			if ( strpos( $token, '__WG_SCRIPT_TEMPLATE_' ) === 0 ) {
+				$html = str_replace( "<!-- {$token} -->", $original, $html );
+				// Remove from preserved array to avoid conflicts
+				unset( $this->preserved[ $token ] );
+			}
+		}
+		return $html;
+	}
+
 }

@@ -365,6 +365,14 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 
 		$request_uri = esc_url_raw($_SERVER['REQUEST_URI']);
 
+		// Skip trailing slash management for admin and API URLs
+		if (is_admin() ||
+			strpos($request_uri, '/wp-json/') === 0 ||
+			strpos($request_uri, '/wp-json?') !== false ||
+			strpos($request_uri, '/wp-admin/') === 0) {
+			return;
+		}
+
 		// Define URLs to skip, and allow filtering
 		$excluded_urls = apply_filters('custom_trailing_slash_exclusions', [
 			'/robots.txt',                 // Robots file

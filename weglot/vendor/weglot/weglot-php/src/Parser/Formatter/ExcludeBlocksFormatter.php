@@ -13,24 +13,25 @@ class ExcludeBlocksFormatter
     protected $dom;
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $excludeBlocks;
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $whiteList;
+
     /**
-     * @var array
+     * @var array<string>
      */
     protected $translateInsideExclusionsBlocks;
 
     /**
      * @param simple_html_dom $dom
-     * @param array           $excludeBlocks
-     * @param array           $whiteList
-     * @param array           $translateInsideExclusionsBlocks
+     * @param array<string>   $excludeBlocks
+     * @param array<string>   $whiteList
+     * @param array<string>   $translateInsideExclusionsBlocks
      */
     public function __construct($dom, $excludeBlocks, $whiteList = [], $translateInsideExclusionsBlocks = [])
     {
@@ -61,6 +62,8 @@ class ExcludeBlocksFormatter
     }
 
     /**
+     * @param array<string> $excludeBlocks
+     *
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
@@ -71,7 +74,7 @@ class ExcludeBlocksFormatter
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getExcludeBlocks()
     {
@@ -79,6 +82,8 @@ class ExcludeBlocksFormatter
     }
 
     /**
+     * @param array<string> $whiteList
+     *
      * @return $this
      */
     public function setWhiteList(array $whiteList)
@@ -89,7 +94,7 @@ class ExcludeBlocksFormatter
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getWhiteList()
     {
@@ -97,7 +102,7 @@ class ExcludeBlocksFormatter
     }
 
     /**
-     * @return array
+     * @return array<string>
      */
     public function getTranslateInsideExclusionsBlocks()
     {
@@ -105,6 +110,8 @@ class ExcludeBlocksFormatter
     }
 
     /**
+     * @param array<string> $translateInsideExclusionsBlocks
+     *
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)

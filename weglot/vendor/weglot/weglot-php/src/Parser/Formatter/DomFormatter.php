@@ -41,20 +41,44 @@ if (!\function_exists('array_column')) {
 
 class DomFormatter extends AbstractFormatter
 {
+    private ?array $originalWords = null;
+
+    private ?array $translatedWords = null;
+
+    /**
+     * @return $this
+     */
+    public function setTranslated(\Weglot\Client\Api\TranslateEntry $translated)
+    {
+        $this->translated = $translated;
+
+        $this->originalWords = null;
+        $this->translatedWords = null;
+
+        return $this;
+    }
+
     public function handle(array $nodes, &$index)
     {
         $translatable_attributes = $this->getTranslatableAttributes();
 
-        $original_words = array_column($this->getTranslated()->getInputWords()->jsonSerialize(), 'w');
-        $translated_words = array_column($this->getTranslated()->getOutputWords()->jsonSerialize(), 'w');
+        if (null === $this->originalWords) {
+            $this->originalWords = array_column($this->getTranslated()->getInputWords()->jsonSerialize(), 'w');
+        }
+        if (null === $this->translatedWords) {
+            $this->translatedWords = array_column($this->getTranslated()->getOutputWords()->jsonSerialize(), 'w');
+        }
+
+        $originalWords = $this->originalWords;
+        $translatedWords = $this->translatedWords;
 
         for ($i = 0; $i < \count($nodes); ++$i) {
             $currentNode = $nodes[$i];
 
-            if (null !== $translated_words[$i + $index]) {
-                $currentTranslated = $translated_words[$i + $index];
+            $currentTranslated = $translatedWords[$i + $index] ?? null;
 
-                $this->metaContent($currentNode, $currentTranslated, $translatable_attributes, $original_words, $translated_words);
+            if (null !== $currentTranslated) {
+                $this->metaContent($currentNode, $currentTranslated, $translatable_attributes, $originalWords, $translatedWords);
                 $this->imageSource($currentNode, $currentTranslated, $i);
             }
         }
@@ -64,12 +88,12 @@ class DomFormatter extends AbstractFormatter
     /**
      * @param string $translated
      * @param array  $translatable_attributes
-     * @param array  $original_words
-     * @param array  $translated_words
+     * @param array  $originalWords
+     * @param array  $translatedWords
      *
      * @return void
      */
-    protected function metaContent(array $details, $translated, $translatable_attributes, $original_words, $translated_words)
+    protected function metaContent(array $details, $translated, $translatable_attributes, $originalWords, $translatedWords)
     {
         $property = $details['property'];
 
@@ -84,9 +108,9 @@ class DomFormatter extends AbstractFormatter
                 $attributeString = '';
                 foreach ($attributes as $key => $attribute) {
                     if (\in_array($key, $translatable_attributes)) {
-                        $pos = array_search($attribute, $original_words);
+                        $pos = array_search($attribute, $originalWords);
                         if (false !== $pos) {
-                            $attribute = $translated_words[$pos];
+                            $attribute = $translatedWords[$pos];
                         }
                     }
                     $attributeString .= $key.'="'.$attribute.'" ';
@@ -107,11 +131,13 @@ class DomFormatter extends AbstractFormatter
     protected function imageSource(array $details, $translated, $index)
     {
         $words = $this->getTranslated()->getInputWords();
+        $word = $words[$index] ?? null;
 
         if ('\Weglot\Parser\Check\Dom\ImageSource' === $details['class']) {
             if ($details['node']->hasAttribute('srcset')
                 && '' != $details['node']->srcset
-                && $translated != $words[$index]->getWord()) {
+                && null !== $word
+                && $translated != $word->getWord()) {
                 $details['node']->srcset = '';
             }
         }
@@ -120,7 +146,8 @@ class DomFormatter extends AbstractFormatter
             $dataSrcSet = 'data-srcset';
             if ($details['node']->hasAttribute('data-srcset')
                 && $details['node']->$dataSrcSet != ''
-                && $translated != $words[$index]->getWord()) {
+                && null !== $word
+                && $translated != $word->getWord()) {
                 $details['node']->$dataSrcSet = '';
             }
         }

@@ -746,6 +746,9 @@ class Option_Service_Weglot {
 			include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		}
 
+		// xml lastmod.
+		$exclude_blocks[] = 'lastmod';
+
 		// WordPress.
 		$exclude_blocks[] = '#wpadminbar';
 
