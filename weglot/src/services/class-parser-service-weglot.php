@@ -70,6 +70,13 @@ class Parser_Service_Weglot {
 			)
 		);
 		$client->getHttpClient()->addHeader( 'weglot-integration: WordPress Plugin' );
+		$editor_session = isset( $_SERVER['HTTP_WG_EDITOR_SESSION'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_WG_EDITOR_SESSION'] ) ) : null;
+		if ( $editor_session ) {
+			$editor_session = preg_replace( '/[^\w\-.]/', '', $editor_session );
+			if ( ! empty( $editor_session ) ) {
+				$client->getHttpClient()->addHeader( 'editor-session: ' . $editor_session );
+			}
+		}
 
 		return $client;
 	}

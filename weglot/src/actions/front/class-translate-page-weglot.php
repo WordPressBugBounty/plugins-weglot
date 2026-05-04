@@ -481,25 +481,8 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		if ( empty( $settings ) ) {
 			$settings = $this->option_services->get_options();
 		}
-		unset( $settings['deleted_at'] );
 		unset( $settings['api_key'] );
 		unset( $settings['api_key_private'] );
-		unset( $settings['technology_id'] );
-		unset( $settings['category'] );
-		unset( $settings['versions'] );
-		unset( $settings['wp_user_version'] );
-		unset( $settings['page_views_enabled'] );
-		unset( $settings['external_enabled'] );
-		unset( $settings['media_enabled'] );
-		unset( $settings['translate_amp'] );
-		unset( $settings['translate_search'] );
-		unset( $settings['translate_email'] );
-		unset( $settings['button_style'] );
-		unset( $settings['translation_engine'] );
-		unset( $settings['auto_switch_fallback'] );
-		unset( $settings['auto_switch'] );
-		unset( $settings['dynamics'] );
-		unset( $settings['technology_name'] );
 		$settings['current_language'] = $this->current_language->getInternalCode();
 		$settings['switcher_links']   = array();
 		foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private() ) as $language ) {

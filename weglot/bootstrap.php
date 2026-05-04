@@ -62,6 +62,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\Calderaforms\Caldera_Active',
 			'\WeglotWP\Third\Edd\Edd_Active',
 			'\WeglotWP\Third\Gravityforms\Gf_Active',
+			'\WeglotWP\Third\Fibosearch\Fibosearch_Active',
 			'\WeglotWP\Third\NinjaForms\Ninja_Active',
 			'\WeglotWP\Third\Woocommerce\Wc_Active',
 			'\WeglotWP\Third\Woocommercepdf\Wcpdf_Active',
@@ -108,6 +109,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\Calderaforms\Caldera_I18n_Inline',
 			'\WeglotWP\Third\Edd\Edd_Filter_Urls',
 			'\WeglotWP\Third\Gravityforms\GF_Filter_Urls',
+			'\WeglotWP\Third\Fibosearch\Fibosearch_Service',
 			'\WeglotWP\Third\Woocommerce\WC_Filter_Urls_Weglot',
 			'\WeglotWP\Third\Woocommerce\WC_Cart_Reload_Weglot',
 			'\WeglotWP\Third\Woocommerce\WC_Mail_Weglot',
@@ -154,7 +156,7 @@ function weglot_init() {
 	add_filter( 'weglot_active_translation', function( $active ) {
 		if (
 			isset( $_SERVER['REQUEST_URI'] )
-			&& strpos( $_SERVER['REQUEST_URI'], '/wp-json/wpe/cache-plugin/v1/clear_all_caches' ) !== false
+			&& strpos( sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/wp-json/wpe/cache-plugin/v1/clear_all_caches' ) !== false
 		) {
 			return false;
 		}

@@ -2,11 +2,22 @@
 
 namespace Weglot\Util;
 
+use DeviceDetector\Cache\StaticCache;
 use DeviceDetector\DeviceDetector;
 use Weglot\Client\Api\Enum\BotType;
 
 class Server
 {
+    /**
+     * @var array In-memory cache for bot detection results by user agent
+     */
+    private static $botCache = [];
+
+    /**
+     * @var StaticCache|null Singleton cache instance for DeviceDetector
+     */
+    private static $deviceDetectorCache;
+
     /**
      * @param bool $use_forwarded_host
      *
@@ -51,12 +62,30 @@ class Server
             return BotType::HUMAN;
         }
 
+        if (!isset(self::$botCache[$userAgent])) {
+            self::$botCache[$userAgent] = self::detectBotFromUserAgent($userAgent);
+        }
+
+        return self::$botCache[$userAgent];
+    }
+
+    /**
+     * @param string $userAgent
+     *
+     * @return int
+     */
+    private static function detectBotFromUserAgent($userAgent)
+    {
         if (str_contains($userAgent, 'wprocketbot')) {
             return BotType::GOOGLE;
         }
 
-        $dd = new DeviceDetector($userAgent);
+        if (null === self::$deviceDetectorCache) {
+            self::$deviceDetectorCache = new StaticCache();
+        }
 
+        $dd = new DeviceDetector($userAgent);
+        $dd->setCache(self::$deviceDetectorCache);
         $dd->parse();
 
         if (!$dd->isBot()) {

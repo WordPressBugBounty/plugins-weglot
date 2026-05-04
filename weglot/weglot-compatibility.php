@@ -71,6 +71,7 @@ if ( ! function_exists( 'array_column' ) ) {
 		$array = array();
 		foreach ( $input as $value ) {
 			if ( ! array_key_exists( $column_key, $value ) ) {
+				// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate deprecation notice for PHP < 5.5 compatibility
 				trigger_error( esc_html("Key \"$column_key\" does not exist in array" ));
 
 				return false;
@@ -79,11 +80,13 @@ if ( ! function_exists( 'array_column' ) ) {
 				$array[] = $value[ $column_key ];
 			} else {
 				if ( ! array_key_exists( $index_key, $value ) ) {
+					// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate deprecation notice for PHP < 5.5 compatibility
 					trigger_error( esc_html("Key \"$index_key\" does not exist in array" ));
 
 					return false;
 				}
 				if ( ! is_scalar( $value[ $index_key ] ) ) {
+					// phpcs:ignore QITStandard.PHP.DebugCode.DebugFunctionFound -- Legitimate deprecation notice for PHP < 5.5 compatibility
 					trigger_error( esc_html("Key \"$index_key\" does not contain scalar value" ) );
 
 					return false;

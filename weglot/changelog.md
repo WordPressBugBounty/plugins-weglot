@@ -2,6 +2,16 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 5.4 (02/03/2026) =
+* Improvement: Updates Translate_Page_Weglot::manage_trailing_slash() to bypass trailing-slash enforcement when the request targets WordPress admin or REST API endpoints
+* Improvement: Prevents sitemap XML lastmod values from being translated by adding lastmod to the default exclusion list returned by Option_Service_Weglot::get_exclude_blocks()
+* Improvement: Adds an optional AI-translation disclaimer injection step to the HTML translation flow (weglot_treat_page) before content is sent to the parser.
+* Improvement: Improves Translate_Service_Weglot::weglot_translate() to support WP Engine hosting by optionally processing the rendered page via the final_output filter instead of always relying on ob_start()
+* Improvement: Removes the ImageSourceSet DOM checker (img[srcset] / WordType::IMG_SRC) from src/Parser/Check/Dom, relying on existing ImageSource/DomFormatter logic to handle srcset without a dedicated checker.
+* Security: phpunit/phpunit in composer.json from ^4 || ^6 to ^9.6.33
+* Fix: Prevents runtime errors during formatting when word collections are shorter than expected.
+* Fix: Fixes out-of-bounds/index errors during formatting by making DomFormatter use a null-coalescing lookup ($translatedWords[$i + $index] ?? null) before applying translations.
+
 ## 5.3 (02/02/2026) =
 * Improvement: Modernizes the project's build system by updating dependencies and migrating to the newer Sass module syntax.
 * Improvement: Switches bot detection to Matomo DeviceDetector for more accurate and maintainable user agent parsing.

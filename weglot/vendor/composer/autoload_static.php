@@ -13,60 +13,60 @@ class ComposerStaticInit2cf9307a4ede9fe5b62cb9ee59379ffa
     );
 
     public static $prefixLengthsPsr4 = array (
-        'W' => 
+        'W' =>
         array (
             'Weglot\\' => 7,
             'WeglotLanguages\\' => 16,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Cache\\' => 10,
         ),
-        'M' => 
+        'M' =>
         array (
             'Morphism\\' => 9,
         ),
-        'D' => 
+        'D' =>
         array (
             'DeviceDetector\\' => 15,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'Weglot\\' => 
+        'Weglot\\' =>
         array (
             0 => __DIR__ . '/..' . '/weglot/weglot-php/src',
         ),
-        'WeglotLanguages\\' => 
+        'WeglotLanguages\\' =>
         array (
             0 => __DIR__ . '/..' . '/weglot/weglot-php/node_modules/@weglot/languages/dist',
         ),
-        'Symfony\\Polyfill\\Php80\\' => 
+        'Symfony\\Polyfill\\Php80\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
-        'Psr\\Cache\\' => 
+        'Psr\\Cache\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/cache/src',
         ),
-        'Morphism\\' => 
+        'Morphism\\' =>
         array (
             0 => __DIR__ . '/..' . '/gmulti/morphism-php/lib',
         ),
-        'DeviceDetector\\' => 
+        'DeviceDetector\\' =>
         array (
             0 => __DIR__ . '/..' . '/matomo/device-detector',
         ),
     );
 
     public static $prefixesPsr0 = array (
-        'W' => 
+        'W' =>
         array (
-            'WGSimpleHtmlDom' => 
+            'WGSimpleHtmlDom' =>
             array (
                 0 => __DIR__ . '/..' . '/weglot/simplehtmldom/src',
             ),

@@ -58,7 +58,7 @@ class DomFormatter extends AbstractFormatter
         return $this;
     }
 
-    public function handle(array $nodes, &$index)
+    public function handle(array $nodes, &$index): void
     {
         $translatable_attributes = $this->getTranslatableAttributes();
 
@@ -90,10 +90,8 @@ class DomFormatter extends AbstractFormatter
      * @param array  $translatable_attributes
      * @param array  $originalWords
      * @param array  $translatedWords
-     *
-     * @return void
      */
-    protected function metaContent(array $details, $translated, $translatable_attributes, $originalWords, $translatedWords)
+    protected function metaContent(array $details, $translated, $translatable_attributes, $originalWords, $translatedWords): void
     {
         $property = $details['property'];
 
@@ -125,10 +123,8 @@ class DomFormatter extends AbstractFormatter
     /**
      * @param string $translated
      * @param int    $index
-     *
-     * @return void
      */
-    protected function imageSource(array $details, $translated, $index)
+    protected function imageSource(array $details, $translated, $index): void
     {
         $words = $this->getTranslated()->getInputWords();
         $word = $words[$index] ?? null;

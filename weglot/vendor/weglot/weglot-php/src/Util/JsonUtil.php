@@ -29,11 +29,9 @@ class JsonUtil
     /**
      * @param string $value
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public static function add(WordCollection $words, $value)
+    public static function add(WordCollection $words, $value): void
     {
         $words->addOne(new WordEntry($value, WordType::TEXT));
     }

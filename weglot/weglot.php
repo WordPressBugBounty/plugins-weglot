@@ -9,7 +9,7 @@
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 5.4
+* Version: 5.5
 */
 
 /**
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '5.4' );
+define( 'WEGLOT_VERSION', '5.5' );
 define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -35,7 +35,7 @@ define( 'WEGLOT_DIR_DIST', WEGLOT_DIR . '/dist' );
 
 define( 'WEGLOT_DIRURL', plugin_dir_url( __FILE__ ) );
 define( 'WEGLOT_URL_DIST', WEGLOT_DIRURL . 'dist' );
-define( 'WEGLOT_LATEST_VERSION', '5.3' );
+define( 'WEGLOT_LATEST_VERSION', '5.4' );
 define( 'WEGLOT_DEBUG', false );
 define( 'WEGLOT_DEV', false );
 
@@ -284,8 +284,8 @@ function weglot_plugin_activate() {
 			sprintf(
 			/* translators: 1: Required PHP version, 2: Current PHP version */
 				esc_html__( 'Weglot could not be activated because it requires PHP version %1$s or higher. Your current version is %2$s.', 'weglot' ),
-				WEGLOT_PHP_MIN,
-				PHP_VERSION
+				esc_html( WEGLOT_PHP_MIN ),
+				esc_html( PHP_VERSION )
 			),
 			esc_html__( 'Plugin Activation Error', 'weglot' ),
 			array(

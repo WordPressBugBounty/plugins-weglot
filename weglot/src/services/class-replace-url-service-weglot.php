@@ -356,6 +356,7 @@ class Replace_Url_Service_Weglot {
 			'txt',
 			'eps',
 			'vcf',
+			'csv',
 		];
 
 		foreach ( $files as $file ) {

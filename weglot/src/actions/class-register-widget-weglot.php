@@ -150,6 +150,9 @@ class Register_Widget_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function weglot_widget_block() {
+		if ( ! function_exists( 'register_block_type' ) ) {
+			return;
+		}
 		register_block_type(
 			WEGLOT_DIR . '/blocks/weglot-widget/build',
 			array(
@@ -170,6 +173,9 @@ class Register_Widget_Weglot implements Hooks_Interface_Weglot {
 	 * @since 2.0
 	 */
 	public function weglot_menu_block() {
+		if ( ! function_exists( 'register_block_type' ) ) {
+			return;
+		}
 		register_block_type(
 			WEGLOT_DIR . '/blocks/weglot-menu/build',
 			array(

@@ -16,16 +16,14 @@ trait AbstractCollectionArrayAccess
         return isset($this->collection[$offset]) ? $this->collection[$offset] : null;
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if (isset($this->collection[$offset]) && $value instanceof AbstractCollectionEntry) {
             $this->collection[$offset] = $value;
         }
     }
 
-    #[\ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->collection[$offset]);
     }

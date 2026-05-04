@@ -82,10 +82,8 @@ class RegexCheckerProvider
 
     /**
      * Load default checkers.
-     *
-     * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $jsonKeys = ['description', 'name', 'headline', 'articleSection', 'text'];
 

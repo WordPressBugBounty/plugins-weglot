@@ -1,11 +1,11 @@
 *** Weglot Translate Changelog ***
 
-2026-03-02 - version 5.4
-* Improvement: Updates Translate_Page_Weglot::manage_trailing_slash() to bypass trailing-slash enforcement when the request targets WordPress admin or REST API endpoints
-* Improvement: Prevents sitemap XML lastmod values from being translated by adding lastmod to the default exclusion list returned by Option_Service_Weglot::get_exclude_blocks()
-* Improvement: Adds an optional AI-translation disclaimer injection step to the HTML translation flow (weglot_treat_page) before content is sent to the parser.
-* Improvement: Improves Translate_Service_Weglot::weglot_translate() to support WP Engine hosting by optionally processing the rendered page via the final_output filter instead of always relying on ob_start()
-* Improvement: Removes the ImageSourceSet DOM checker (img[srcset] / WordType::IMG_SRC) from src/Parser/Check/Dom, relying on existing ImageSource/DomFormatter logic to handle srcset without a dedicated checker.
-* Security: phpunit/phpunit in composer.json from ^4 || ^6 to ^9.6.33
-* Fix: Prevents runtime errors during formatting when word collections are shorter than expected.
-* Fix: Fixes out-of-bounds/index errors during formatting by making DomFormatter use a null-coalescing lookup ($translatedWords[$i + $index] ?? null) before applying translations.
+= 2026-04-27 version 5.5 (27/04/2026) =
+* Improvement: Adds FiboSearch (Ajax Search for WooCommerce) compatibility by registering new third-party services
+* Improvement: Updates Replace_Url_Service_Weglot::is_link_a_file() to treat .csv as a default excluded file extension, so links to CSV downloads are no longer processed for URL replacement/translation.
+* Improvement: Keeps most Weglot option data in the frontend settings payload.
+* Improvement: Propagates an editor-provided session identifier to Weglot API calls by reading HTTP_WG_EDITOR_SESSION, sanitizing/whitelisting characters, and conditionally adding it as an editor-session header in Parser_Service_Weglot::get_client().
+* Improvement: Adds xhook (^1.6.2) to runtime dependencies in package.json (keeping slugify), likely to vendor the library via the plugin/build rather than relying on an external source.
+* Improvement: Introduces a new weglot_modify_original_content filter in Translate_Service_Weglot::weglot_treat_page() to let callers adjust the original $content (with current/original language provided) before content-type detection, canonical extraction, and translation.
+* Improvement: Significantly expands and hardens the PHPUnit suite by adding new regression tests
+* Improvement: Adds optional WordPress integration to JsonChecker: when apply_filters is available, default_keys is now passed through the list_json_ld_keys filter before parsing. This lets WordPress hosts customize which JSON-LD fields (beyond the built-in defaults and extraKeys) are extracted for translation. thanks to @andreicnegrea for the feedbacks

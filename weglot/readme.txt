@@ -1,10 +1,10 @@
-=== Translate WordPress with Weglot - Multilingual AI Translation ===
+=== Translate WordPress with Weglot â€“ Multilingual AI Translation ===
 Contributors: remyb92, gmulti, wysija, wpr0ck, glx77
 Tags: translate, translation, multilingual, automatic translation, AI translation
 Requires at least: 4.5
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 5.4
+Stable tag: 5.5
 License: GPLv2 or later
 URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -52,15 +52,15 @@ We focus on speed and accuracy. Our AI translation tool detects all your content
 ### Proven Global Results
 
 - **The Bradery**: Scaled their fashion ecommerce store to [500+ daily product translations](https://www.weglot.com/customers/the-bradery), saving hours of manual work every week.
-* The biggest win for us is the time weâ€™ve saved. It takes us about ten minutes twice a week to double-check everything is running how we want it. Everything else is done by Weglot.â€*
+*â€œThe biggest win for us is the time weâ€™ve saved. It takes us about ten minutes twice a week to double-check everything is running how we want it. Everything else is done by Weglot.â€*
 AdÃ¨le Aubry, Ecommerce Manager at The Bradery
 
 - **REVIEWS.io**: Achieved a [120% increase in German traffic](https://www.weglot.com/customers/reviews-io) and a 20% conversion boost after localizing with our AI-powered workflow.
-* We needed a product that dramatically increased the speed of website translation. Our clunky manual coding approach was time-consuming, but with Weglot, itâ€™s fast and effortless.â€*
+*â€œWe needed a product that dramatically increased the speed of website translation. Our clunky manual coding approach was time-consuming, but with Weglot, itâ€™s fast and effortless.â€*
 Rich Ball, Marketing Manager, REVIEWS.io
 
 - **Ron Dorff**: Now generates [70% of their revenue](https://www.weglot.com/customers/ron-dorff) from international exports by providing a fully-localized customer experience.
-*Weglot interface is really friendly and easy to use. You can find all your content in a few clicks and then translate it quickly and efficiently.â€*
+*â€œWeglotâ€™s interface is really friendly and easy to use. You can find all your content in a few clicks and then translate it quickly and efficiently.â€*
 Jamila Halloum, Digital Marketing Director at Ron Dorff.
 
 ### Important Links
@@ -163,16 +163,15 @@ See changelog for upgrade changes.
 
 
 == Changelog ==
-= 5.4 (02/03/2026) =
-* Improvement: Updates Translate_Page_Weglot::manage_trailing_slash() to bypass trailing-slash enforcement when the request targets WordPress admin or REST API endpoints
-* Improvement: Prevents sitemap XML lastmod values from being translated by adding lastmod to the default exclusion list returned by Option_Service_Weglot::get_exclude_blocks()
-* Improvement: Adds an optional AI-translation disclaimer injection step to the HTML translation flow (weglot_treat_page) before content is sent to the parser.
-* Improvement: Improves Translate_Service_Weglot::weglot_translate() to support WP Engine hosting by optionally processing the rendered page via the final_output filter instead of always relying on ob_start()
-* Improvement: Removes the ImageSourceSet DOM checker (img[srcset] / WordType::IMG_SRC) from src/Parser/Check/Dom, relying on existing ImageSource/DomFormatter logic to handle srcset without a dedicated checker.
-* Security: phpunit/phpunit in composer.json from ^4 || ^6 to ^9.6.33
-* Fix: Prevents runtime errors during formatting when word collections are shorter than expected.
-* Fix: Fixes out-of-bounds/index errors during formatting by making DomFormatter use a null-coalescing lookup ($translatedWords[$i + $index] ?? null) before applying translations.
-
+= 5.5 (04/05/2026) =
+* Improvement: Adds FiboSearch (Ajax Search for WooCommerce) compatibility by registering new third-party services
+* Improvement: Updates Replace_Url_Service_Weglot::is_link_a_file() to treat .csv as a default excluded file extension, so links to CSV downloads are no longer processed for URL replacement/translation.
+* Improvement: Keeps most Weglot option data in the frontend settings payload.
+* Improvement: Propagates an editor-provided session identifier to Weglot API calls by reading HTTP_WG_EDITOR_SESSION, sanitizing/whitelisting characters, and conditionally adding it as an editor-session header in Parser_Service_Weglot::get_client().
+* Improvement: Adds xhook (^1.6.2) to runtime dependencies in package.json (keeping slugify), likely to vendor the library via the plugin/build rather than relying on an external source.
+* Improvement: Introduces a new weglot_modify_original_content filter in Translate_Service_Weglot::weglot_treat_page() to let callers adjust the original $content (with current/original language provided) before content-type detection, canonical extraction, and translation.
+* Improvement: Significantly expands and hardens the PHPUnit suite by adding new regression tests
+* Improvement: Adds optional WordPress integration to JsonChecker: when apply_filters is available, default_keys is now passed through the list_json_ld_keys filter before parsing. This lets WordPress hosts customize which JSON-LD fields (beyond the built-in defaults and extraKeys) are extracted for translation. thanks to @andreicnegrea for the feedbacks
 
 = Older versions =
 

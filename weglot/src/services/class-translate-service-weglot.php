@@ -124,7 +124,7 @@ class Translate_Service_Weglot {
 	 * @return boolean
 	 */
 	public function check_ajax_exclusion_before_treat() { //phpcs:ignore
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string(wp_get_referer())) {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string( wp_get_referer() ) ) {
 			if ( ! $this->request_url_services->create_url_object( wp_get_referer() )->getForLanguage( $this->request_url_services->get_current_language(), false ) ) {
 				return true;
 			}
@@ -144,6 +144,7 @@ class Translate_Service_Weglot {
 					return true;
 				}
 			}
+
 			return false;
 		} else {
 			return false;
@@ -170,19 +171,26 @@ class Translate_Service_Weglot {
 		$this->set_original_language( $this->language_services->get_original_language() );
 		$this->set_current_language( $this->request_url_services->get_current_language() ); // Need to reset.
 
+		$content = apply_filters(
+			'weglot_modify_original_content',
+			$content,
+			$this->current_language,
+			$this->original_language
+		);
+
 		// Choose type translate.
 		$type = ( Helper_Json_Inline_Weglot::is_json( $content ) ) ? 'json' : 'html';
 		if ( 'json' !== $type ) {
 			$type = ( Helper_Json_Inline_Weglot::is_xml( $content ) ) ? 'xml' : 'html';
 		}
 
-		$type      = apply_filters( 'weglot_type_treat_page', $type );
-		$canonical = $this->get_canonical_url_from_content( $content );
+		$type              = apply_filters( 'weglot_type_treat_page', $type );
+		$canonical         = $this->get_canonical_url_from_content( $content );
 		$force_request_url = apply_filters( 'weglot_get_current_canonical_url', false );
 
 		$weglot_force_translate_cart = apply_filters( 'weglot_force_translate_cart', false );
-		if( $weglot_force_translate_cart){
-			$content   = $this->force_translate_cart($content);
+		if ( $weglot_force_translate_cart ) {
+			$content = $this->force_translate_cart( $content );
 		}
 		// No need to translate but prepare new dom with button.
 		if (
@@ -190,7 +198,7 @@ class Translate_Service_Weglot {
 			|| $this->check_404_exclusion_before_treat()
 			|| ! $this->request_url_services->get_weglot_url()->getForLanguage( $this->request_url_services->get_current_language(), false )
 		) {
-			if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string(wp_get_referer()) ) {
+			if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string( wp_get_referer() ) ) {
 				if ( ! $this->request_url_services->create_url_object( wp_get_referer() )->getForLanguage( $this->request_url_services->get_current_language(), false ) ) { //phpcs:ignore
 					// do nothing because the ajax referer are not exclude!
 				} else {
@@ -202,42 +210,45 @@ class Translate_Service_Weglot {
 					return $content;
 				} else {
 					//we check if we need to translate some forced child
-					$translate_inside_exclusions_blocks   = $this->option_services->get_translate_inside_exclusions_blocks();
-					if(0 < count($translate_inside_exclusions_blocks)){
-						add_filter('weglot_parser_whitelist', function ($whitelist) {
+					$translate_inside_exclusions_blocks = $this->option_services->get_translate_inside_exclusions_blocks();
+					if ( 0 < count( $translate_inside_exclusions_blocks ) ) {
+						add_filter( 'weglot_parser_whitelist', function ( $whitelist ) {
 							$translate_inside_exclusions_blocks = $this->option_services->get_translate_inside_exclusions_blocks();
-							return array_merge($whitelist, $translate_inside_exclusions_blocks);
-						});
+
+							return array_merge( $whitelist, $translate_inside_exclusions_blocks );
+						} );
 						$parser = $this->parser_services->get_parser();
-						if($force_request_url){
-							$request_url = $this->request_url_services->get_current_canonical_url();
-							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
-						}else{
-							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
+						if ( $force_request_url ) {
+							$request_url        = $this->request_url_services->get_current_canonical_url();
+							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url );
+						} else {
+							$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
 						}
+
 						return $this->weglot_render_dom( $translated_content, $canonical );
-					}else{
+					} else {
 						return $this->weglot_render_dom( $content, $canonical );
 					}
 				}
 			}
 		}
-		do_action('weglot_treat_page_hook', $this->current_language);
+		do_action( 'weglot_treat_page_hook', $this->current_language );
 
 		$parser = $this->parser_services->get_parser();
 
 		try {
 			switch ( $type ) {
 				case 'json':
-					$extra_keys         = apply_filters( 'weglot_add_json_keys', array() );
+					$extra_keys = apply_filters( 'weglot_add_json_keys', array() );
 					if ( apply_filters( 'weglot_escape_attribute_in_json', false ) ) {
 						$content = $this->parser_services->preserve_attributes( $content ); // List attributes you want to escape
 					}
-					$translated_content = $parser->translate( $content, $this->original_language,$this->current_language, $extra_keys );
+					$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, $extra_keys );
 					$translated_content = wp_json_encode( $this->replace_url_services->replace_link_in_json( json_decode( $translated_content, true ) ) );
-					if ( apply_filters( 'weglot_escape_attribute_in_json', false ) && is_string($translated_content)) {
+					if ( apply_filters( 'weglot_escape_attribute_in_json', false ) && is_string( $translated_content ) ) {
 						$translated_content = $this->parser_services->restore_preserved_attributes( $translated_content );
 					}
+
 					return apply_filters( 'weglot_json_treat_page', $translated_content );
 				case 'xml':
 					$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
@@ -248,7 +259,6 @@ class Translate_Service_Weglot {
 
 					return apply_filters( 'weglot_xml_treat_page', $translated_content );
 				case 'html':
-
 					$content = $this->add_ai_disclaimer( $content );
 
 					if ( apply_filters( 'weglot_escape_attribute_in_html', false ) ) {
@@ -267,24 +277,23 @@ class Translate_Service_Weglot {
 						$content = $this->parser_services->preserve_words( $content, $preserve_words_list );
 					}
 
-                    if ( apply_filters( 'weglot_escape_script_templates', false ) ) {
+					if ( apply_filters( 'weglot_escape_script_templates', false ) ) {
 						$content = $this->parser_services->escape_script_templates( $content );
 					}
 
 
-
 					if ( $force_request_url ) {
-						$request_url = $this->request_url_services->get_current_canonical_url();
-						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url);
-					}else{
-						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical);
+						$request_url        = $this->request_url_services->get_current_canonical_url();
+						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical, $request_url );
+					} else {
+						$translated_content = $parser->translate( $content, $this->original_language, $this->current_language, array(), $canonical );
 					}
 
 
 					// Restore script templates
 					if ( apply_filters( 'weglot_escape_script_templates', false ) ) {
 						$translated_content = $this->parser_services->restore_script_templates( $translated_content );
-          }
+					}
 					if ( $preserve_words_enabled && is_array( $preserve_words_list ) && ! empty( $preserve_words_list ) ) {
 						$translated_content = $this->parser_services->restore_words( $translated_content, $preserve_words_list );
 					}
@@ -352,19 +361,21 @@ class Translate_Service_Weglot {
 	 * @since 2.3.0
 	 */
 	private function force_translate_cart( $content ) {
-		if(! is_string(wp_get_referer())){
+		if ( ! is_string( wp_get_referer() ) ) {
 			return $content;
 		}
 		if ( false !== strpos( wp_get_referer(), '/cart/' ) ) {
 			// This is the cart page
-			$parser = $this->parser_services->get_parser();
+			$parser           = $this->parser_services->get_parser();
 			$current_language = $this->request_url_services->create_url_object( wp_get_referer() )->getCurrentLanguage();
-			if($current_language->getInternalCode() != $this->original_language){
+			if ( $current_language->getInternalCode() != $this->original_language ) {
 				$translated_content = $parser->translate( $content, $this->original_language, $current_language->getInternalCode() );
 				$translated_content = apply_filters( 'weglot_html_treat_page', $translated_content );
+
 				return $this->weglot_render_dom( $translated_content );
 			}
 		}
+
 		return $content;
 	}
 
@@ -395,12 +406,13 @@ class Translate_Service_Weglot {
 
 		if ( ! $success ) {
 			libxml_clear_errors();
+
 			return $dom; // Return original on error
 		}
 
 		libxml_clear_errors();
 
-		$xpath = new \DOMXPath( $doc );
+		$xpath       = new \DOMXPath( $doc );
 		$xpath_query = $this->css_to_xpath( $ai_disclaimer_selector );
 
 		if ( false === $xpath_query ) {
@@ -420,7 +432,7 @@ class Translate_Service_Weglot {
 		}
 
 		// Remove XML processing instruction node to prevent it from appearing in output
-		for ( $i = $doc->childNodes->length - 1; $i >= 0; $i-- ) {
+		for ( $i = $doc->childNodes->length - 1; $i >= 0; $i -- ) {
 			$node = $doc->childNodes->item( $i );
 			if ( $node && $node->nodeType === XML_PI_NODE ) {
 				$doc->removeChild( $node );
@@ -428,9 +440,10 @@ class Translate_Service_Weglot {
 		}
 
 		$html = $doc->saveHTML();
+
 		return $html !== false ? $html : $dom;
 
-		}
+	}
 
 	/**
 	 *
@@ -448,6 +461,7 @@ class Translate_Service_Weglot {
 
 		if ( strpos( $selector, '#' ) === 0 ) {
 			$id = substr( $selector, 1 );
+
 			// Regex validation ensures $id contains only [a-zA-Z0-9_-], so no XPath escaping needed
 			return "//*[@id='" . $id . "']";
 		}
@@ -455,10 +469,12 @@ class Translate_Service_Weglot {
 		if ( strpos( $selector, '.' ) === 0 ) {
 			$class = substr( $selector, 1 );
 			$class = str_replace( "'", "", $class );
+
 			return "//*[contains(concat(' ', normalize-space(@class), ' '), ' " . $class . " ')]";
 		}
 
 		$selector = str_replace( "'", "", $selector );
+
 		return "//" . $selector;
 	}
 
@@ -509,10 +525,11 @@ class Translate_Service_Weglot {
 	 */
 	private function disable_automated_translation_services( $html ) {
 		$remove_auto_service_translate = apply_filters( 'weglot_remove_google_translate', true );
-		if($remove_auto_service_translate){
-			$pattern = '/<html(\s*>|\s+)/i';
+		if ( $remove_auto_service_translate ) {
+			$pattern     = '/<html(\s*>|\s+)/i';
 			$replacement = '<html translate="no"$1';
-			return preg_replace($pattern, $replacement, $html);
+
+			return preg_replace( $pattern, $replacement, $html );
 		}
 
 		return $html;
@@ -529,20 +546,20 @@ class Translate_Service_Weglot {
 	 * @return string
 	 * @since 2.4.0
 	 */
-	public function reverseTranslate($api_key, $l_from, $l_to, $request_url, $word, $t) {
+	public function reverseTranslate( $api_key, $l_from, $l_to, $request_url, $word, $t ) {
 
-		$requestBody = wp_json_encode([
-			"l_from" => $l_from,
-			"l_to" => $l_to,
+		$requestBody = wp_json_encode( [
+			"l_from"      => $l_from,
+			"l_to"        => $l_to,
 			"request_url" => $request_url,
-			"words" => [
-				["w" => $word, "t" => $t]
+			"words"       => [
+				[ "w" => $word, "t" => $t ]
 			]
-		]);
+		] );
 
-		$url = sprintf('%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key);
+		$url = sprintf( '%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key );
 
-		if(!is_string($requestBody)){
+		if ( ! is_string( $requestBody ) ) {
 			return "Error: Invalid request body";
 		}
 		$args = [
@@ -554,17 +571,17 @@ class Translate_Service_Weglot {
 			'data_format' => 'body',
 		];
 
-		$response = wp_remote_post($url, $args);
+		$response = wp_remote_post( $url, $args );
 
-		if (is_wp_error($response)) {
+		if ( is_wp_error( $response ) ) {
 			return "WP Error: " . $response->get_error_message();
 		}
 
-		$response_body = wp_remote_retrieve_body($response);
+		$response_body = wp_remote_retrieve_body( $response );
 
-		$responseData = json_decode($response_body, true);
+		$responseData = json_decode( $response_body, true );
 
-		if (!$responseData || !isset($responseData['ids'])) {
+		if ( ! $responseData || ! isset( $responseData['ids'] ) ) {
 			return "Error: Invalid response from API";
 		}
 
