@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Add wp-rocket coolie for cache
  * @param array<int|string,mixed> $cookies

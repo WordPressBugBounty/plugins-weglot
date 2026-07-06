@@ -83,7 +83,7 @@ class Request_Url_Service_Weglot {
 		return new Url(
 			$url,
 			$this->language_services->get_original_language(),
-			$this->language_services->get_destination_languages($this->is_allowed_private()),
+			$this->language_services->get_destination_languages($this->is_allowed_private(),$this->get_excluded_languages_for_current_url()),
 			$home_directory,
 			$this->option_services->get_exclude_urls(),
 			$this->option_services->get_option('custom_urls')
@@ -258,6 +258,41 @@ class Request_Url_Service_Weglot {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function get_excluded_languages_for_current_url() {
+		$page_unpublications = $this->option_services->get_page_unpublications();
+		if ( empty( $page_unpublications ) ) {
+			return array();
+		}
+
+		$current_path = wp_parse_url( $this->get_full_url(), PHP_URL_PATH );
+		if ( ! $current_path ) {
+			return array();
+		}
+
+		$home_dir = $this->get_home_wordpress_directory();
+		if ( $home_dir && strpos( $current_path, $home_dir ) === 0 ) {
+			$current_path = substr( $current_path, strlen( $home_dir ) );
+		}
+
+		$current_path = '/' . trim( $current_path, '/' );
+
+		foreach ( $this->language_services->get_destination_languages_external( true ) as $external_code ) {
+			$prefix = '/' . $external_code;
+			if ( $current_path === $prefix || strpos( $current_path, $prefix . '/' ) === 0 ) {
+				$current_path = substr( $current_path, strlen( $prefix ) );
+				if ( empty( $current_path ) ) {
+					$current_path = '/';
+				}
+				break;
+			}
+		}
+
+		return isset( $page_unpublications[ $current_path ] ) ? (array) $page_unpublications[ $current_path ] : array();
 	}
 
 	/**

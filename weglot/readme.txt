@@ -1,12 +1,12 @@
-=== Translate WordPress with Weglot â€“ Multilingual AI Translation ===
+=== Translate WordPress with Weglot - Multilingual AI Translation ===
 Contributors: remyb92, gmulti, wysija, wpr0ck, glx77
 Tags: translate, translation, multilingual, automatic translation, AI translation
-Requires at least: 4.5
-Tested up to: 6.9
+Requires at least: 5.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 5.5
+Stable tag: 6.1
 License: GPLv2 or later
-URI: http://www.gnu.org/licenses/gpl-3.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Translate WordPress sites with automatic AI translation into 110+ languages. Multilingual SEO, WooCommerce compatible, 110k+ sites.
 
@@ -20,18 +20,18 @@ Translate and localize your WordPress site into 110+ languages using a custom AI
 
 Weglot combines automatic machine translation with human editing control:
 
-- **[Automatic translation](https://www.weglot.com/ai-translation)** powered by DeepL, Google Translate, and Microsoft Translator.
-- **[Custom AI Language Model](https://www.weglot.com/academy/ai-language-model)** powered by OpenAI and Gemini to match your brand voice.
-- **[Multilingual SEO](https://www.weglot.com/multilingual-seo)** optimization with automatic hreflang tags, metadata, and translated URLs for better localization.
-- **[Visual translation](https://support.weglot.com/article/409-how-to-use-the-visual-editor)** editor for refining and localizing translations directly on your live site.
+- **Automatic translation** powered by DeepL, Google Translate, and Microsoft Translator.
+- **Custom AI Language Model** powered by OpenAI and Gemini to match your brand voice.
+- **Multilingual SEO** optimization with automatic hreflang tags, metadata, and translated URLs for better localization.
+- **Visual translation** editor for refining and localizing translations directly on your live site.
 - **WooCommerce translation** including products, checkout pages, and customer emails.
 - **Translation glossary** to maintain consistency across your content.
 - **110+ languages** available including regional variants.
 - **Pro tiers unlock features** designed to scale global businesses:
-	- Unlimited languages & higher word counts.
-	- Advanced multilingual SEO.
-	- Multisite & collaboration features.
-	- Priority support.
+- Unlimited languages & higher word counts.
+- Advanced multilingual SEO.
+- Multisite & collaboration features.
+- Priority support.
 
 
 ### WooCommerce Translation Features
@@ -46,32 +46,32 @@ Translate and localize your entire WooCommerce store to boost international sale
 
 ### The Weglot Advantage
 
-We focus on speed and accuracy. Our AI translation tool detects all your content instantly. You donâ€™t need to manually duplicate pages or manage complex PO files. Everything happens in the cloud, so your site speed remains fast while you scale globally. Unlike traditional translation plugins that create heavy database loads, Weglot is 100% built for performance.
+We focus on speed and accuracy. Our AI translation tool detects all your content instantly. You don’t need to manually duplicate pages or manage complex PO files. Everything happens in the cloud, so your site speed remains fast while you scale globally. Unlike traditional translation plugins that create heavy database loads, Weglot is 100% built for performance.
 
 
 ### Proven Global Results
 
-- **The Bradery**: Scaled their fashion ecommerce store to [500+ daily product translations](https://www.weglot.com/customers/the-bradery), saving hours of manual work every week.
-*â€œThe biggest win for us is the time weâ€™ve saved. It takes us about ten minutes twice a week to double-check everything is running how we want it. Everything else is done by Weglot.â€*
-AdÃ¨le Aubry, Ecommerce Manager at The Bradery
+- **The Bradery**: Scaled their fashion ecommerce store to 500+ daily product translations, saving hours of manual work every week.
+* The biggest win for us is the time we’ve saved. It takes us about ten minutes twice a week to double-check everything is running how we want it. Everything else is done by Weglot.*
+Adèle Aubry, Ecommerce Manager at The Bradery
 
-- **REVIEWS.io**: Achieved a [120% increase in German traffic](https://www.weglot.com/customers/reviews-io) and a 20% conversion boost after localizing with our AI-powered workflow.
-*â€œWe needed a product that dramatically increased the speed of website translation. Our clunky manual coding approach was time-consuming, but with Weglot, itâ€™s fast and effortless.â€*
+- **REVIEWS.io**: Achieved a 120% increase in German traffic and a 20% conversion boost after localizing with our AI-powered workflow.
+* We needed a product that dramatically increased the speed of website translation. Our clunky manual coding approach was time-consuming, but with Weglot, it’s fast and effortless.*
 Rich Ball, Marketing Manager, REVIEWS.io
 
-- **Ron Dorff**: Now generates [70% of their revenue](https://www.weglot.com/customers/ron-dorff) from international exports by providing a fully-localized customer experience.
-*â€œWeglotâ€™s interface is really friendly and easy to use. You can find all your content in a few clicks and then translate it quickly and efficiently.â€*
+- **Ron Dorff**: Now generates 70% of their revenue from international exports by providing a fully-localized customer experience.
+*Weglot interface is really friendly and easy to use. You can find all your content in a few clicks and then translate it quickly and efficiently.*
 Jamila Halloum, Digital Marketing Director at Ron Dorff.
 
 ### Important Links
 
-- [Weglot Service](https://www.weglot.com/)
-- [Weglot Terms of Service](https://www.weglot.com/terms)
-- [Weglot Security Policy](https://www.weglot.com/security)
+- https://www.weglot.com/
+- https://www.weglot.com/terms
+- https://www.weglot.com/security
 
 By using this plugin, you agree to Weglot's terms and policies. Please review these documents to understand how your data and content are managed and protected.
 
-If you decide to stop using Weglot, your website will no longer be translated. All translations are stored on Weglot's servers. However, you can export all your translations using our import/export feature before discontinuing the service to save your translations. More details on how to do this can be found [here](https://support.weglot.com/article/206-can-i-export-my-translations). If you do not have access to this feature, you can request support from Weglot to assist with the export before you leave.
+If you decide to stop using Weglot, your website will no longer be translated. All translations are stored on Weglot's servers. However, you can export all your translations using our import/export feature before discontinuing the service to save your translations. More details on how to do this can be found here: https://support.weglot.com/article/206-can-i-export-my-translations. If you do not have access to this feature, you can request support from Weglot to assist with the export before you leave.
 
 
 == Frequently Asked Questions ==
@@ -81,19 +81,19 @@ If you decide to stop using Weglot, your website will no longer be translated. A
 
 To translate WordPress with Weglot, install the plugin, add your API key, and select your languages. Your site will be automatically translated. Weglot detects all content including pages, posts, and WooCommerce products. The process uses AI-powered machine translation from DeepL and Google Translate.
 
-= What is a WordPress translation plugin?
+= What is a WordPress translation plugin? =
 
 A WordPress translation plugin should offer a mix of speed and control. Weglot provides instant AI translation with a visual editor for manual refinements. This ensures your multilingual site is both accurate and fast to launch without technical expertise.
 
-= How to translate WordPress automatically?
+= How to translate WordPress automatically? =
 
-To translate WordPress automatically, Weglot uses advanced AI engines to scan and translate your content the moment itâ€™s published. This "set and forget" approach keeps your translations synchronized across all languages without manual work.
+To translate WordPress automatically, Weglot uses advanced AI engines to scan and translate your content the moment it’s published. This "set and forget" approach keeps your translations synchronized across all languages without manual work.
 
 = Can I translate WordPress with AI? =
 
-Yes, you can translate WordPress with AI using Weglotâ€™s custom AI Language Models. Powered by OpenAI and Gemini, our tool learns from your brand guidelines and past edits to provide context-aware translations that match your brand voice.
+Yes, you can translate WordPress with AI using Weglot’s custom AI Language Models. Powered by OpenAI and Gemini, our tool learns from your brand guidelines and past edits to provide context-aware translations that match your brand voice.
 
-= Does Weglot translate WooCommerce?
+= Does Weglot translate WooCommerce? =
 
 Yes, Weglot translates WooCommerce stores completely, from the product catalog to the checkout experience. It ensures a localized buyer journey, which is critical for increasing international conversion rates.
 
@@ -113,31 +113,25 @@ To make WordPress multilingual, Weglot creates dedicated subdirectories (like /e
 
 Weglot supports multilingual SEO by automatically adding hreflang tags and translating your metadata. This helps search engines understand which version of your site to show users in different countries. Our translation tool also allows you to choose different site structures with ease, like subdirectories and subdomains.
 
-
 = Can I translate WordPress URLs? =
 
 Yes, you can translate WordPress URLs with Weglot. Localizing your slugs (e.g. /shop/ to /boutique/) improves your search engine rankings and makes your site feel more authentic to local users.
-
 
 = Does Weglot work with WordPress page builders? =
 
 Yes, Weglot works with WordPress page builders like Elementor, Divi, Gutenberg, and Beaver Builder. Because our translation tool translates content at the source code level, it can detect and translate text within any design element or widget without breaking your layout or requiring custom integration.
 
-
 = Is Weglot compatible with other SEO plugins? =
 
-Weglot is compatible with other SEO plugins such as Yoast SEO, Rank Math, and All in One SEO. While Weglot handles the technical aspects of multilingual SEO â€“ like hreflang tags and translated metadata â€“ it works alongside your existing SEO tools to ensure your site is fully optimized for global search engines.
-
+Weglot is compatible with other SEO plugins such as Yoast SEO, Rank Math, and All in One SEO. While Weglot handles the technical aspects of multilingual SEO – like hreflang tags and translated metadata – it works alongside your existing SEO tools to ensure your site is fully optimized for global search engines.
 
 = How does Weglot handle new content updates? =
 
 To handle new content updates, Weglot automatically scans your site for any changes or new posts. Once detected, the new content is instantly translated using your chosen AI Language Model. Your multilingual site stays perfectly synchronized with your original language version without any manual intervention.
 
-
 = Can I use a custom language switcher design?  =
 
 Yes, you can use a custom language switcher design with Weglot. While we provide several built-in styles (including flags and dropdowns), you can also use custom CSS to match your site's branding. You can place the switcher in your menu, as a widget, or anywhere on the page using a shortcode.
-
 
 = Is my translation data secure and private? =
 
@@ -163,15 +157,16 @@ See changelog for upgrade changes.
 
 
 == Changelog ==
-= 5.5 (04/05/2026) =
-* Improvement: Adds FiboSearch (Ajax Search for WooCommerce) compatibility by registering new third-party services
-* Improvement: Updates Replace_Url_Service_Weglot::is_link_a_file() to treat .csv as a default excluded file extension, so links to CSV downloads are no longer processed for URL replacement/translation.
-* Improvement: Keeps most Weglot option data in the frontend settings payload.
-* Improvement: Propagates an editor-provided session identifier to Weglot API calls by reading HTTP_WG_EDITOR_SESSION, sanitizing/whitelisting characters, and conditionally adding it as an editor-session header in Parser_Service_Weglot::get_client().
-* Improvement: Adds xhook (^1.6.2) to runtime dependencies in package.json (keeping slugify), likely to vendor the library via the plugin/build rather than relying on an external source.
-* Improvement: Introduces a new weglot_modify_original_content filter in Translate_Service_Weglot::weglot_treat_page() to let callers adjust the original $content (with current/original language provided) before content-type detection, canonical extraction, and translation.
-* Improvement: Significantly expands and hardens the PHPUnit suite by adding new regression tests
-* Improvement: Adds optional WordPress integration to JsonChecker: when apply_filters is available, default_keys is now passed through the list_json_ld_keys filter before parsing. This lets WordPress hosts customize which JSON-LD fields (beyond the built-in defaults and extraKeys) are extracted for translation. thanks to @andreicnegrea for the feedbacks
+
+= 6.1 (06/07/2026) =
+* Fix: The Original language dropdown in admin settings no longer lists Brazilian Portuguese (pt-br).
+* Improvement: Adds a third-party integration for the Minimal Coming Soon & Maintenance Mode WordPress plugin
+* Improvement: Fixes translated pages going blank when link rewriting hits <a> (and similar) tags with very long attribute strings—e.g. JSON in data-*—where internal preg_replace can return null and that value was assigned straight into the page HTML.
+* Improvement: WooCommerce order language persistence now hooks woocommerce_checkout_order_created and woocommerce_store_api_checkout_order_processed instead of woocommerce_new_order, so checkout language is saved for classic checkout and Store API / block checkout.
+* Improvement: Prevents the dynamic translation JS (Weglot.initialize) from falling back to translating the entire page when selector lists are misconfigured.
+* Improvement: When media_enabled is disabled, the parser now also removes the \Weglot\Parser\Check\Dom\ImageSourceSet DOM checker, preventing srcset image sources from being processed/translated along with src and data-src.
+* Improvement: Internal wp_redirect targets now keep the active language prefix on the front-end (e.g. an /about-us → /about redirect resolves to /fr/about when browsing in French); admin and AJAX redirects are untouched and it can be disabled with the weglot_active_wp_redirect filter.
+
 
 = Older versions =
 

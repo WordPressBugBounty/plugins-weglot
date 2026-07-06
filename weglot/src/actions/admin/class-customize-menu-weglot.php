@@ -98,7 +98,7 @@ class Customize_Menu_Weglot implements Hooks_Interface_Weglot {
 			return;
 		}
 
-		wp_enqueue_script( 'weglot_nav_menu', WEGLOT_URL_DIST . '/nav-js.js', array( 'jquery' ), WEGLOT_VERSION );
+		wp_enqueue_script( 'weglot_nav_menu', WEGLOT_URL_DIST . '/nav-js.js', array( 'jquery' ), WEGLOT_VERSION, true );
 
 		$data['title']        = 'Weglot switcher'; // No translate this!
 		$data['options']      = $this->option_services->get_option_by_key_v3( 'menu_switcher' );
@@ -142,7 +142,7 @@ class Customize_Menu_Weglot implements Hooks_Interface_Weglot {
 			</div>
 			<p class="button-controls">
 				<span class="add-to-menu">
-					<button type="submit" class="button-secondary submit-add-to-menu right" value="<?php esc_attr_e( 'Add to menu', 'weglot' ); ?>" name="add-post-type-menu-item" id="submit-posttype-weglot-languages"><?php esc_html_e( 'Add to Menu' ); ?></button>
+					<button type="submit" class="button-secondary submit-add-to-menu right" value="<?php esc_attr_e( 'Add to menu', 'weglot' ); ?>" name="add-post-type-menu-item" id="submit-posttype-weglot-languages"><?php esc_html_e( 'Add to Menu', 'weglot' ); ?></button>
 					<span class="spinner"></span>
 				</span>
 			</p>

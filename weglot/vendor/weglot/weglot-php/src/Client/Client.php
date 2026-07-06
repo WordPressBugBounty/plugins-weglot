@@ -116,6 +116,19 @@ class Client
     }
 
     /**
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return $this
+     */
+    public function setOption($key, $value)
+    {
+        $this->options[$key] = $value;
+
+        return $this;
+    }
+
+    /**
      * @param ClientInterface|null $httpClient
      * @param string|null          $customHeader
      *
@@ -239,6 +252,9 @@ class Client
                 $body = [];
             } else {
                 $urlParams = ['api_key' => $this->apiKey, 'v' => $this->version];
+                if (isset($this->options['live']) && $this->options['live']) {
+                    $urlParams['live'] = 1;
+                }
             }
 
             // Check JSON encoding validity before make API call
@@ -251,10 +267,10 @@ class Client
                     throw new \Exception('JSON encoding error: '.json_last_error_msg());
                 }
             }
-
+            $absoluteUrl = $this->makeAbsUrl($endpoint);
             list($rawBody, $httpStatusCode, $httpHeader) = $this->getHttpClient()->request(
                 $method,
-                $this->makeAbsUrl($endpoint),
+                $absoluteUrl,
                 $urlParams,
                 $body
             );

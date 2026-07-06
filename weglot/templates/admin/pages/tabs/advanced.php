@@ -183,3 +183,35 @@ $options_available = array(
 	</tr>
 	</tbody>
 </table>
+
+<h3 id="reset_options"><?php esc_html_e( 'Reset Configuration', 'weglot' ); ?></h3>
+<hr>
+<p><?php esc_html_e( 'If you want to restart the onboarding process, you can reset all Weglot plugin settings stored in your WordPress database. This will not affect your Weglot project or translations.', 'weglot' ); ?></p>
+<table class="form-table">
+	<tbody>
+	<tr valign="top">
+		<th scope="row" class="titledesc">
+			<label for="weglot_delete_options">
+				<?php esc_html_e( 'Reset Weglot Options', 'weglot' ); ?>
+			</label>
+		</th>
+		<td class="forminp forminp-text">
+			<?php
+			$delete_url = wp_nonce_url(
+				add_query_arg(
+					[ 'action' => 'weglot_delete_options' ],
+					admin_url( 'admin-post.php' )
+				),
+				'weglot_delete_options'
+			);
+			?>
+			<a href="<?php echo esc_url( $delete_url ); ?>"
+			   class="button"
+			   onclick="return confirm('<?php echo esc_js( __( 'Do you want to reset all Weglot settings and restart the onboarding? Your Weglot project will not be affected.', 'weglot' ) ); ?>');">
+				<?php esc_html_e( 'Reset Settings', 'weglot' ); ?>
+			</a>
+			<p class="description"><?php esc_html_e( 'This will clear the plugin configuration from your WordPress database. Your Weglot project and translations will remain intact.', 'weglot' ); ?></p>
+		</td>
+	</tr>
+	</tbody>
+</table>

@@ -2,6 +2,16 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 5.5 (04/05/2026) =
+* Improvement: Adds FiboSearch (Ajax Search for WooCommerce) compatibility by registering new third-party services
+* Improvement: Updates Replace_Url_Service_Weglot::is_link_a_file() to treat .csv as a default excluded file extension, so links to CSV downloads are no longer processed for URL replacement/translation.
+* Improvement: Keeps most Weglot option data in the frontend settings payload.
+* Improvement: Propagates an editor-provided session identifier to Weglot API calls by reading HTTP_WG_EDITOR_SESSION, sanitizing/whitelisting characters, and conditionally adding it as an editor-session header in Parser_Service_Weglot::get_client().
+* Improvement: Adds xhook (^1.6.2) to runtime dependencies in package.json (keeping slugify), likely to vendor the library via the plugin/build rather than relying on an external source.
+* Improvement: Introduces a new weglot_modify_original_content filter in Translate_Service_Weglot::weglot_treat_page() to let callers adjust the original $content (with current/original language provided) before content-type detection, canonical extraction, and translation.
+* Improvement: Significantly expands and hardens the PHPUnit suite by adding new regression tests
+* Improvement: Adds optional WordPress integration to JsonChecker: when apply_filters is available, default_keys is now passed through the list_json_ld_keys filter before parsing. This lets WordPress hosts customize which JSON-LD fields (beyond the built-in defaults and extraKeys) are extracted for translation. thanks to @andreicnegrea for the feedbacks
+
 ## 5.4 (02/03/2026) =
 * Improvement: Updates Translate_Page_Weglot::manage_trailing_slash() to bypass trailing-slash enforcement when the request targets WordPress admin or REST API endpoints
 * Improvement: Prevents sitemap XML lastmod values from being translated by adding lastmod to the default exclusion list returned by Option_Service_Weglot::get_exclude_blocks()

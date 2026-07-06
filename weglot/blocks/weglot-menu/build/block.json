@@ -1,6 +1,6 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
-  "apiVersion": 2,
+  "apiVersion": 3,
   "name": "create-block/weglot-menu",
   "version": "0.1.0",
   "title": "Weglot Widget menu",
@@ -9,7 +9,8 @@
   "icon": "smiley",
   "description": "Weglot switcher menu",
   "supports": {
-	"html": true
+	"html": true,
+	"inserter": true
   },
   "textdomain": "weglot-menu",
   "editorScript": "file:./index.js",

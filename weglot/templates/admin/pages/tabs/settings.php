@@ -18,6 +18,7 @@ $options_available = apply_filters(
 		'api_key_private' => [
 			'key'         => 'api_key_private',
 			'label'       => __( 'API Key', 'weglot' ),
+			// translators: %1$s and %2$s are opening and closing anchor tags linking to the Weglot signup page.
 			'description' => sprintf( esc_html__( 'Log in to %1$sWeglot%2$s to get your API key.', 'weglot' ), '<a target="_blank" href="' . $signup_link . '">', '</a>' ),
 		],
 		'language_from'   => [
@@ -28,6 +29,7 @@ $options_available = apply_filters(
 		'languages'       => [
 			'key'         => 'destination_language',
 			'label'       => __( 'Destination languages', 'weglot' ),
+			// translators: %1$s and %2$s are opening and closing anchor tags linking to the supported languages documentation.
 			'description' => sprintf( esc_html__( 'Choose languages you want to translate into. Supported languages can be found %1$shere%2$s.', 'weglot' ), '<a target="_blank" href="https://weglot.com/documentation/available-languages/">', '</a>' ),
 		],
 	]
@@ -88,6 +90,10 @@ $plans     = $this->user_api_services->get_plans();
 				}
 				$original_languages_possible = $language_services->get_languages_available( [ 'sort' => true ] );
 				foreach ( $original_languages_possible as $language ) {
+					// Brazilian Portuguese ("br") is not a valid original language here.
+					if ( 'pt-br' === $language->getInternalCode() ) {
+						continue;
+					}
 					?>
 					<?php if ( $this->options['has_first_settings'] ) { ?>
 						<option

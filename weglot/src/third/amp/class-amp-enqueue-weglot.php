@@ -78,7 +78,7 @@ class Amp_Enqueue_Weglot implements Hooks_Interface_Weglot {
 		/** @var Language_Service_Weglot $language_service */
 		$language_service = weglot_get_service( Language_Service_Weglot::class );
 
-		$languages_configured = $language_service->get_original_and_destination_languages( $request_url_service->is_allowed_private() );
+		$languages_configured = $language_service->get_original_and_destination_languages( $request_url_service->is_allowed_private(), $request_url_service->get_excluded_languages_for_current_url() );
 		$flags_positions      = $this->weglot_get_flags_positions();
 		$type_flags           = weglot_get_option( 'type_flags' );
 		$type_flags           = Helper_Flag_Type::get_flag_number_with_type( $type_flags );

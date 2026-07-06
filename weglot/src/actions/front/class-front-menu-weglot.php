@@ -13,6 +13,7 @@ use WeglotWP\Services\Button_Service_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
+use WeglotWP\Services\Version_Service_Weglot;
 
 /**
  *
@@ -39,6 +40,11 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 	private $language_services;
 
 	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
+
+	/**
 	 * @since 2.4.0
 	 */
 	public function __construct() {
@@ -46,6 +52,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 		$this->button_services      = weglot_get_service( Button_Service_Weglot::class );
 		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
 		$this->language_services    = weglot_get_service( Language_Service_Weglot::class );
+		$this->version_services    = weglot_get_service( Version_Service_Weglot::class );
 	}
 
 	/**
@@ -55,12 +62,21 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 	 * @return void
 	 */
 	public function hooks() {
+
 		if ( is_admin() ) {
 			return;
 		}
 
-		if ( ! $this->option_services->get_option( 'api_key' ) ) {
-			return;
+		$api_version = $this->version_services->get_version_from_api_key_private( $this->option_services->get_api_key_private() );
+
+		if ( $api_version === 1 ) {
+			if ( ! $this->option_services->get_option( 'api_key' ) ) {
+				return;
+			}
+		} else {
+			if ( ! $this->option_services->get_api_key_private() ) {
+				return;
+			}
 		}
 
 		add_filter( 'wp_get_nav_menu_items', array( $this, 'weglot_wp_get_nav_menu_items' ), 20 );
@@ -74,14 +90,13 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 	 * @return array<int|string,mixed>
 	 */
 	public function weglot_wp_get_nav_menu_items( $items ) {
-
 		// Prevent customizer.
 		if ( doing_action( 'customize_register' ) ) {
 			return $items;
 		}
 
 		// if empty destination languages we don't display the switcher.
-		if ( empty( $this->language_services->get_destination_languages( $this->request_url_services->is_allowed_private() ) ) ) {
+		if ( empty( $this->language_services->get_destination_languages( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() ) ) ) {
 			return $items;
 		}
 
@@ -123,7 +138,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 			$hide_all_languages = true;
 			$show_all_languages = true;
 			$array_excluded     = array();
-			foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private() ) as $key => $language ) {
+			foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() ) as $language ) {
 				if ( $this->request_url_services->get_weglot_url()->getExcludeOption( $language, 'language_button_displayed' ) ) {
 					$hide_all_languages = false;
 				} else {
@@ -144,7 +159,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 				$offset ++;
 			}
 
-			foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private() ) as $language ) {
+			foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() ) as $language ) {
 
 				// check if for this button we ant to exclude the button from switcher.
 				$language_button_displayed = $this->request_url_services->get_weglot_url()->getExcludeOption( $language, 'language_button_displayed' );
@@ -297,4 +312,3 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 		return $attrs;
 	}
 }
-

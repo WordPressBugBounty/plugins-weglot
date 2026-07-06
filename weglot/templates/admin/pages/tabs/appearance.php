@@ -329,13 +329,17 @@ $options_available = [
 	<tr valign="top">
 		<th scope="row"><?php esc_html_e( 'In menu?', 'weglot' ); ?></th>
 		<td>
-			<?php echo sprintf( esc_html__( 'You can place the button in a menu area. Go to %1$sAppearance → Menus%2$s and drag and drop the Weglot Translate Custom link where you want.', 'weglot' ), '<a href="' . esc_url( admin_url( 'nav-menus.php' ) ) . '">', '</a>' ); ?>
+			<?php
+			// translators: %1$s and %2$s are opening and closing anchor tags linking to the Menus admin page.
+			echo sprintf( esc_html__( 'You can place the button in a menu area. Go to %1$sAppearance → Menus%2$s and drag and drop the Weglot Translate Custom link where you want.', 'weglot' ), '<a href="' . esc_url( admin_url( 'nav-menus.php' ) ) . '">', '</a>' ); ?>
 		</td>
 	</tr>
 	<tr valign="top">
 		<th scope="row"><?php esc_html_e( 'As a widget?', 'weglot' ); ?></th>
 		<td>
-			<?php echo sprintf( esc_html__( 'You can place the button in a widget area. Go to %1$sAppearance → Widgets%2$s and drag and drop the Weglot Translate widget where you want.', 'weglot' ), '<a href="' . esc_url( admin_url( 'widgets.php' ) ) . '">', '</a>' ); ?>
+			<?php
+			// translators: %1$s and %2$s are opening and closing anchor tags linking to the Widgets admin page.
+			echo sprintf( esc_html__( 'You can place the button in a widget area. Go to %1$sAppearance → Widgets%2$s and drag and drop the Weglot Translate widget where you want.', 'weglot' ), '<a href="' . esc_url( admin_url( 'widgets.php' ) ) . '">', '</a>' ); ?>
 		</td>
 	</tr>
 	<tr valign="top">

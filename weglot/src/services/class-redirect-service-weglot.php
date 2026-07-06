@@ -90,7 +90,7 @@ class Redirect_Service_Weglot {
 	protected function get_navigator_languages() {
 		$navigator_languages = array();
 		if ( isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) { //phpcs:ignore
-			$navigator_languages = explode( ',', trim( sanitize_text_field( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) );
+			$navigator_languages = explode( ',', trim( sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) ) );
 			foreach ( $navigator_languages as &$navigator_language ) {
 				if ( strpos( $navigator_language, ';' ) !== false ) {
 					$navigator_language = substr( $navigator_language, 0, strpos( $navigator_language, ';' ) );
@@ -162,7 +162,7 @@ class Redirect_Service_Weglot {
 
 		// We retrieve the best language based on navigator languages and destination languages.
 		$navigator_languages            = $this->get_navigator_languages();
-		$destination_languages_external = $this->language_services->get_destination_languages_external( $this->request_url_services->is_allowed_private() );
+		$destination_languages_external = $this->language_services->get_destination_languages_external( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() );
 		$best_external_language         = $this->get_best_available_language( $navigator_languages, $destination_languages_external );
 		$best_language                  = $this->language_services->get_language_from_external( $best_external_language );
 
@@ -217,21 +217,18 @@ class Redirect_Service_Weglot {
 			}
 			if ( isset( $_SERVER['REQUEST_URI'] ) ) { // phpcs:ignore
 
+				$request_uri = esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) );
+
 				// Remove the 'wg-choose-original' parameter from the query string
-				$_SERVER['REQUEST_URI'] = preg_replace(
-					'/([&?])wg-choose-original=[^&]*(&|$)/',
-					'$1',
-					esc_url_raw( $_SERVER['REQUEST_URI'] )
-				);
+				$request_uri = preg_replace( '/([&?])wg-choose-original=[^&]*(&|$)/', '$1', $request_uri );
 
 				// Remove any trailing '&' or '?' left in the query string
-				$_SERVER['REQUEST_URI'] = rtrim( esc_url_raw( $_SERVER['REQUEST_URI'] ), '&?' );
+				$request_uri = rtrim( $request_uri, '&?' );
 
 				// Ensure the URL doesn't end with a '?' if no other query parameters are present
-				$_SERVER['REQUEST_URI'] = preg_replace( '/\?$/', '', esc_url_raw( $_SERVER['REQUEST_URI'] ) );
+				$request_uri = preg_replace( '/\?$/', '', $request_uri );
 
-				// Sanitize the URL
-				$_SERVER['REQUEST_URI'] = esc_url_raw( $_SERVER['REQUEST_URI'] );
+				$_SERVER['REQUEST_URI'] = $request_uri;
 
 				// Reset the URL as we removed the parameter from URL
 				$this->request_url_services->init_weglot_url();

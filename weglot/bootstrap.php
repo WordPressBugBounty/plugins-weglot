@@ -57,6 +57,8 @@ abstract class Context_Weglot {
 			'\WeglotWP\Services\Href_Lang_Service_Weglot',
 			'\WeglotWP\Services\Feature_Flags_Service_Weglot',
 			'\WeglotWP\Services\Menu_Options_Service_Weglot',
+			'\WeglotWP\Services\Version_Service_Weglot',
+			'\WeglotWP\Services\Webhook_Service_Weglot',
 
 			'\WeglotWP\Third\Amp\Amp_Service_Weglot',
 			'\WeglotWP\Third\Calderaforms\Caldera_Active',
@@ -69,15 +71,16 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\WPForms\Wpforms_Active',
 			'\WeglotWP\Third\UnderConstructionPage\Ucp_Active',
 			'\WeglotWP\Third\Maintenance\Maintenance_Active',
+			'\WeglotWP\Third\MinimalComingSoon\Minimal_Coming_Soon_Active',
 			'\WeglotWP\Third\TheEventsCalendar\Theeventscalendar_Active',
 			'\WeglotWP\Third\MailOptin\Mailoptin_Active',
 			'\WeglotWP\Third\ContactForm7\Contactform7_Active',
 			'\WeglotWP\Third\WpOptimize\Wp_Optimize_Active',
-			'\WeglotWP\Third\Iubenda\Iubenda_Active',
 			'\WeglotWP\Third\CacheEnabler\Cache_Enabler_Active',
 			'\WeglotWP\Third\Wprocket\Wprocket_Active',
 			'\WeglotWP\Third\Wprentals\Wprentals_Active',
 			'\WeglotWP\Third\Stackable\Stackable_Active',
+			'\WeglotWP\Third\Iubenda\Iubenda_Active',
 		);
 
 		self::$context->set_services( $services );
@@ -90,6 +93,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Actions\Admin\Plugin_Links_Weglot',
 			'\WeglotWP\Actions\Admin\Options_Weglot',
 			'\WeglotWP\Actions\Admin\Admin_Enqueue_Weglot',
+			'\WeglotWP\Actions\Admin\Deactivation_Feedback_Weglot',
 			'\WeglotWP\Actions\Admin\Customize_Menu_Weglot',
 			'\WeglotWP\Actions\Admin\Permalink_Weglot',
 			'\WeglotWP\Actions\Admin\Metabox_Url_Translate_Weglot',
@@ -102,7 +106,10 @@ abstract class Context_Weglot {
 			'\WeglotWP\Actions\Front\Front_Menu_Weglot',
 			'\WeglotWP\Actions\Front\Search_Weglot',
 			'\WeglotWP\Actions\Front\Redirect_Comment',
+			'\WeglotWP\Actions\Front\Redirect_Wp_Weglot',
 			'\WeglotWP\Actions\Admin\Ajax_User_Info',
+			'\WeglotWP\Actions\Admin\Ajax_Projects_Settings',
+			'\WeglotWP\Actions\Admin\Webhook_Action_Weglot',
 			'\WeglotWP\Actions\Rest\Cache_Purge_Rest_Weglot',
 
 			'\WeglotWP\Third\Amp\Amp_Enqueue_Weglot',
@@ -117,6 +124,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\Woocommercepdf\WCPDF_Weglot',
 			'\WeglotWP\Third\UnderConstructionPage\Ucp_Tracking',
 			'\WeglotWP\Third\Maintenance\Maintenance_Tracking',
+			'\WeglotWP\Third\MinimalComingSoon\Minimal_Coming_Soon_Tracking',
 			'\WeglotWP\Third\Woocommerce\Wc_Tracking_Weglot',
 			'\WeglotWP\Third\TheEventsCalendar\Theeventscalendar_Words',
 			'\WeglotWP\Third\Contactform7\Contactform7_Json_Keys',
@@ -125,7 +133,7 @@ abstract class Context_Weglot {
 			'\WeglotWP\Third\Wprocket\Wprocket_Cache',
 			'\WeglotWP\Third\Wprentals\Wprentals_translate_calendar',
 			'\WeglotWP\Third\Stackable\Stackable_Translate',
-			'\WeglotWP\Third\Iubenda\Iubenda_Weglot',
+			'\WeglotWP\Services\Version_Service_Weglot',
 		);
 
 		self::$context->set_actions( $actions );

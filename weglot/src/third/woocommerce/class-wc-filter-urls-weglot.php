@@ -335,7 +335,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 		$checkout_slug = apply_filters( 'custom_checkout_slug', 'checkout' );
 
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			if ( strpos( esc_url_raw( $_SERVER['REQUEST_URI'] ), '/' . $checkout_slug ) !== false ) {
+			if ( strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/' . $checkout_slug ) !== false ) {
 				return true;
 			}
 		}
@@ -354,7 +354,7 @@ class WC_Filter_Urls_Weglot implements Hooks_Interface_Weglot {
 	public function wg_is_custom_cart_page() {
 		$cart_slug = apply_filters( 'custom_cart_slug', 'cart' );
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-			if ( strpos( esc_url_raw( $_SERVER['REQUEST_URI'] ), '/' . $cart_slug ) !== false ) {
+			if ( strpos( esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ), '/' . $cart_slug ) !== false ) {
 				return true;
 			}
 		}

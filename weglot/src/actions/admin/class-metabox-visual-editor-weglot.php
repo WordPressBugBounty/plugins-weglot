@@ -6,10 +6,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use WeglotWP\Helpers\Helper_API;
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
+use WeglotWP\Services\User_Api_Service_Weglot;
+use WeglotWP\Services\Version_Service_Weglot;
 
 /**
  *
@@ -27,11 +30,23 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 	private $request_url_services;
 
 	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
+
+	/**
+	 * @var User_Api_Service_Weglot
+	 */
+	private $user_api_services;
+
+	/**
 	 * @since 2.1.0
 	 */
 	public function __construct() {
 		$this->option_services      = weglot_get_service( Option_Service_Weglot::class );
 		$this->request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
+		$this->version_services     = weglot_get_service( Version_Service_Weglot::class );
+		$this->user_api_services = weglot_get_service( User_Api_Service_Weglot::class );
 	}
 
 	/**
@@ -196,20 +211,42 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 	 * @throws \Exception
 	 */
 	public function get_weglot_path_status( $path, $list ): void {
-		$wg_path       = $this->request_url_services->create_url_object( $path );
-		$organization_slug = $this->option_services->get_option('organization_slug');
-		$project_slug = $this->option_services->get_option('project_slug');
-		$visual_editor = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=translations&url='.$wg_path->getUrl();
-		$visual_exclusion = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?mode=exclusions&url='.$wg_path->getUrl();
-		$url_exclusion = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/settings/exclusions#excluded-urls';
+		$wg_path      = $this->request_url_services->create_url_object( $path );
+		$project_slug = $this->option_services->get_option( 'project_slug' );
+		if ( '' === (string) $project_slug ) {
+			$this->user_api_services->get_workspace_info();
+			$project_slug = $this->option_services->get_option('slug');
+		}
+
+		$is_v2        = $this->version_services->get_onboarding_version() === 2;
+
+		if ( $is_v2 ) {
+			$workspace_slug = (string) $this->option_services->get_option( 'workspace_slug' );
+			if ( '' === $workspace_slug ) {
+				return;
+			}
+			$base           = rtrim( Helper_API::get_dashboard_url(), '/' ) . '/' . rawurlencode( $workspace_slug ) . '/' . rawurlencode( (string) $project_slug );
+			$visual_editor  = $base . '/languages';
+			$url_exclusion  = $base . '/exclusions';
+		} else {
+			$organization_slug = $this->option_services->get_option( 'organization_slug' );
+			$dashboard_base    = rtrim( Helper_API::get_dashboard_url(), '/' );
+			$visual_editor     = $dashboard_base . '/workspaces/' . $organization_slug . '/projects/' . $project_slug . '/translations/visual-editor/launch?mode=translations&url=' . $wg_path->getUrl();
+			$visual_exclusion  = $dashboard_base . '/workspaces/' . $organization_slug . '/projects/' . $project_slug . '/translations/visual-editor/launch?mode=exclusions&url=' . $wg_path->getUrl();
+			$url_exclusion     = $dashboard_base . '/workspaces/' . $organization_slug . '/projects/' . $project_slug . '/settings/exclusions#excluded-urls';
+		}
 
 		if ( $list ) {
 			echo '<a class="components-button is-secondary" href="' . esc_url( $visual_editor ) . '" target="_blank">Edit translations</a><br /><br />';
-			echo '<a class="components-button is-secondary" href="' . esc_url( $visual_exclusion ) . '" target="_blank">Block exclusions</a><br /><br />';
+			if ( ! $is_v2 ) {
+				echo '<a class="components-button is-secondary" href="' . esc_url( $visual_exclusion ) . '" target="_blank">Block exclusions</a><br /><br />';
+			}
 			echo '<a class="components-button is-secondary" href="' . esc_url( $url_exclusion ) . '" target="_blank">Url exclusions</a><br />';
 		} else {
 			echo '<a target="_blank" href="' . esc_url( $visual_editor ) . '" title="Edit your translations">Edit translations</a>';
-			echo '<br /><a target="_blank" href="' . esc_url( $visual_exclusion ) . '" title="Edit exclusions">Block exclusions</a>';
+			if ( ! $is_v2 ) {
+				echo '<br /><a target="_blank" href="' . esc_url( $visual_exclusion ) . '" title="Edit exclusions">Block exclusions</a>';
+			}
 			echo '<br /><a target="_blank" href="' . esc_url( $url_exclusion ) . '" title="Url exclusions">Url exclusions</a>';
 		}
 	}

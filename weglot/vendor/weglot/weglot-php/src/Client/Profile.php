@@ -29,9 +29,7 @@ class Profile
      */
     protected function setup($apiKey, $translationEngine): void
     {
-        $apiKeyLength = \strlen($apiKey);
-
-        if (35 === $apiKeyLength) {
+        if (\is_string($apiKey) && 0 === strpos($apiKey, 'wg_') && 35 === \strlen($apiKey)) {
             $this
                 ->setApiVersion(1)
                 ->setTranslationEngine(1);

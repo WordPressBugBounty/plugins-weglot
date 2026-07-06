@@ -7,6 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WeglotWP\Models\Hooks_Interface_Weglot;
+use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\User_Api_Service_Weglot;
 
 class Ajax_User_Info implements Hooks_Interface_Weglot {
@@ -15,8 +16,14 @@ class Ajax_User_Info implements Hooks_Interface_Weglot {
 	 */
 	private $user_services;
 
+	/**
+	 * @var Option_Service_Weglot
+	 */
+	private $option_services;
+
 	public function __construct() {
 		$this->user_services = weglot_get_service( User_Api_Service_Weglot::class );
+		$this->option_services = weglot_get_service( Option_Service_Weglot::class );
 	}
 
 	/**
@@ -31,6 +38,8 @@ class Ajax_User_Info implements Hooks_Interface_Weglot {
 		}
 
 		add_action( 'wp_ajax_get_user_info', array( $this, 'get_user_info' ) );
+		add_action( 'wp_ajax_get_workspace_info', array( $this, 'get_workspace_info' ) );
+
 	}
 
 	/**
@@ -51,6 +60,47 @@ class Ajax_User_Info implements Hooks_Interface_Weglot {
 		}
 
 		wp_send_json_success( $response );
+	}
+
+	/**
+	 * @since 3.0.0
+	 * @return void
+	 */
+	public function get_workspace_info() {
+		check_ajax_referer( 'weglot_get_workspace_info', 'security' );
+
+		$api_key = \weglot_get_api_key();
+
+		if ( empty( $api_key ) ) {
+			wp_send_json_error( array( 'message' => 'API key not found' ) );
+		}
+
+		$previous_word_count = $this->option_services->get_option_by_key_v3( 'workspace_usage_word_count' );
+		$previous_word_count = is_null( $previous_word_count ) ? null : (int) $previous_word_count;
+
+		$response = $this->user_services->get_workspace_info( $api_key );
+
+		$current_word_count = 0;
+		if ( is_array( $response ) && isset( $response['usage']['wordCount'] ) ) {
+			$current_word_count = (int) $response['usage']['wordCount'];
+		}
+
+		if ( is_array( $response ) ) {
+			$this->option_services->update_workspace_info_from_response( $response );
+		}
+
+		$has_changed = ( null === $previous_word_count ) ? true : ( $previous_word_count !== $current_word_count );
+
+		wp_send_json_success(
+			array(
+				'data' => $response,
+				'meta' => array(
+					'previous_word_count' => $previous_word_count,
+					'current_word_count'  => $current_word_count,
+					'has_changed'         => $has_changed,
+				),
+			)
+		);
 	}
 }
 

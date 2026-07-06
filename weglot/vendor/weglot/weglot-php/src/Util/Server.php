@@ -2,22 +2,11 @@
 
 namespace Weglot\Util;
 
-use DeviceDetector\Cache\StaticCache;
-use DeviceDetector\DeviceDetector;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Weglot\Client\Api\Enum\BotType;
 
 class Server
 {
-    /**
-     * @var array In-memory cache for bot detection results by user agent
-     */
-    private static $botCache = [];
-
-    /**
-     * @var StaticCache|null Singleton cache instance for DeviceDetector
-     */
-    private static $deviceDetectorCache;
-
     /**
      * @param bool $use_forwarded_host
      *
@@ -62,52 +51,27 @@ class Server
             return BotType::HUMAN;
         }
 
-        if (!isset(self::$botCache[$userAgent])) {
-            self::$botCache[$userAgent] = self::detectBotFromUserAgent($userAgent);
-        }
-
-        return self::$botCache[$userAgent];
-    }
-
-    /**
-     * @param string $userAgent
-     *
-     * @return int
-     */
-    private static function detectBotFromUserAgent($userAgent)
-    {
         if (str_contains($userAgent, 'wprocketbot')) {
             return BotType::GOOGLE;
         }
 
-        if (null === self::$deviceDetectorCache) {
-            self::$deviceDetectorCache = new StaticCache();
-        }
-
-        $dd = new DeviceDetector($userAgent);
-        $dd->setCache(self::$deviceDetectorCache);
-        $dd->parse();
-
-        if (!$dd->isBot()) {
+        $crawlerDetect = new CrawlerDetect();
+        if (!$crawlerDetect->isCrawler($userAgent)) {
             return BotType::HUMAN;
         }
 
-        $botInfo = $dd->getBot();
-
-        if (isset($botInfo['name'])) {
-            $botName = strtolower($botInfo['name']);
-            switch (true) {
-                case str_contains($botName, 'google'):
-                    return BotType::GOOGLE;
-                case str_contains($botName, 'bing'):
-                    return BotType::BING;
-                case str_contains($botName, 'yahoo'):
-                    return BotType::YAHOO;
-                case str_contains($botName, 'baidu'):
-                    return BotType::BAIDU;
-                case str_contains($botName, 'yandex'):
-                    return BotType::YANDEX;
-            }
+        $lowerUserAgent = strtolower($userAgent);
+        switch (true) {
+            case str_contains($lowerUserAgent, 'google'):
+                return BotType::GOOGLE;
+            case str_contains($lowerUserAgent, 'bing'):
+                return BotType::BING;
+            case str_contains($lowerUserAgent, 'yahoo'):
+                return BotType::YAHOO;
+            case str_contains($lowerUserAgent, 'baidu'):
+                return BotType::BAIDU;
+            case str_contains($lowerUserAgent, 'yandex'):
+                return BotType::YANDEX;
         }
 
         return BotType::OTHER;

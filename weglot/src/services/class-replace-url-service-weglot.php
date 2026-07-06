@@ -211,6 +211,11 @@ class Replace_Url_Service_Weglot {
 				continue;
 			}
 
+			$length_tags = apply_filters( 'weglot_length_replace_tags', 2000 ); // Prevent preg_replace returning null on <a> tags with very long attributes (e.g. JSON in data-*).
+			if ( strlen( (string) $sometags ) >= $length_tags || strlen( (string) $sometags2 ) >= $length_tags ) {
+				continue;
+			}
+
 			if ( ! $this->check_link( $current_url, $sometags, $sometags2 ) ) {
 				continue;
 			}
@@ -218,7 +223,7 @@ class Replace_Url_Service_Weglot {
 			$function_name = apply_filters( 'weglot_modify_link_replace_function', 'replace_' . $type, $type );
 
 			if ( method_exists( $this->replace_link_service, $function_name ) ) {
-				$translated_page = $this->replace_link_service->$function_name(
+				$result = $this->replace_link_service->$function_name(
 					$translated_page,
 					$current_url,
 					$quote1,
@@ -226,9 +231,15 @@ class Replace_Url_Service_Weglot {
 					$sometags,
 					$sometags2
 				);
+				if ( null !== $result && false !== $result ) {
+					$translated_page = $result;
+				}
 			} else {
 				if ( function_exists( $function_name ) ) {
-					$translated_page = $function_name( $translated_page, $current_url, $quote1, $quote2, $sometags, $sometags2 );
+					$result = $function_name( $translated_page, $current_url, $quote1, $quote2, $sometags, $sometags2 );
+					if ( null !== $result && false !== $result ) {
+						$translated_page = $result;
+					}
 				}
 			}
 		}

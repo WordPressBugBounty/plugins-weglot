@@ -27,8 +27,7 @@ class CdnTranslate extends Endpoint
         $this->setTranslateEntry($translateEntry);
         $currentHost = $client->getOptions()['host'];
         if ($currentHost) {
-            $cdnHost = str_replace('https://api.weglot.', 'https://cdn-api-weglot.', $currentHost);
-            $client->setOptions(['host' => $cdnHost]);
+            $client->setOption('host', str_replace('https://api.weglot.', 'https://cdn-api-weglot.', $currentHost));
         }
         parent::__construct($client);
     }

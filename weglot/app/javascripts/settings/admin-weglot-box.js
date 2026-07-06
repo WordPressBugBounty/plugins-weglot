@@ -7,6 +7,10 @@ const init_admin_weglot_box = function () {
 			$("#weglot-box-first-settings").hide();
 		})
 
+		$("#weglot-box-first-settings .weglot-visit-multilingual").on("click", function () {
+			$("#weglot-box-first-settings").hide();
+		});
+
 		$('a[href*="#"]')
 			// Remove links that don't actually link to anything
 			.not('[href="#"]')

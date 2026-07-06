@@ -4,10 +4,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// ------------------------------------------------------------------
+// Début de la nouvelle logique de routage
+// ------------------------------------------------------------------
+/** @var \WeglotWP\Services\Version_Service_Weglot $version_service */
+$version_service = weglot_get_service( Version_Service_Weglot::class );
+$onboarding_version = $version_service ? $version_service->get_onboarding_version() : 2; // Par défaut V2
+
+if ( $onboarding_version !== 1 ) {
+	// Charger le template V2
+	if ( file_exists( WEGLOT_TEMPLATES . '/admin/v2/settings.php' ) ) {
+		include_once WEGLOT_TEMPLATES . '/admin/v2/settings.php';
+		return;
+	}
+}
+// ------------------------------------------------------------------
+// Fin de la nouvelle logique de routage
+// ------------------------------------------------------------------
+
+
 use WeglotWP\Helpers\Helper_Tabs_Admin_Weglot;
 use WeglotWP\Services\Button_Service_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
+use WeglotWP\Services\Version_Service_Weglot;
 
 $option_services    = weglot_get_service( 'Option_Service_Weglot' );
 $language_services    = weglot_get_service( 'Language_Service_Weglot' );
@@ -37,6 +57,7 @@ $url_form = wp_nonce_url(
 
 <div id="wrap-weglot">
 	<?php
+
 	if ( ! $this->options['has_first_settings'] ) :
 		?>
 		<div id="weglot-wrapper-infobox" class="wrap wrap-left">
@@ -71,6 +92,7 @@ $url_form = wp_nonce_url(
 	<?php
 	endif;
 	?>
+
 	<div class="wrap">
 		<form method="post" id="mainform" action="<?php echo esc_url( $url_form ); ?>">
 			<?php
@@ -118,4 +140,3 @@ $url_form = wp_nonce_url(
 	</div>
 
 </div>
-

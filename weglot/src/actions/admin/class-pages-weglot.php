@@ -13,6 +13,7 @@ use WeglotWP\Services\Button_Service_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\User_Api_Service_Weglot;
+use WeglotWP\Services\Version_Service_Weglot;
 use WeglotWP\Third\Woocommerce\Wc_Active;
 
 /**
@@ -31,6 +32,10 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 	 */
 	private $user_api_services;
 	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
+	/**
 	 * @var array<string|int,mixed>
 	 */
 	private $options;
@@ -41,7 +46,7 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 	public function __construct() {
 		$this->option_services    = weglot_get_service( Option_Service_Weglot::class );
 		$this->user_api_services  = weglot_get_service( User_Api_Service_Weglot::class );
-
+		$this->version_services  = weglot_get_service( Version_Service_Weglot::class );
 	}
 
 	/**
@@ -69,6 +74,12 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 		$email = $current_user->user_email;
 		$organization_slug = $this->option_services->get_option('organization_slug');
 		$project_slug = $this->option_services->get_option('project_slug');
+
+		if (empty($organization_slug) || empty($project_slug)) {
+			$this->user_api_services->get_workspace_info();
+			$organization_slug = $this->option_services->get_option('organization_slug');
+			$project_slug = $this->option_services->get_option('project_slug');
+		}
 
 		$display_menu = apply_filters('display_admin_bar_menu_weglot', true, $role, $email);
 
@@ -107,12 +118,43 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 			)
 		);
 
+		$dashboard_href = '';
+		$dashboard_base = \WeglotWP\Helpers\Helper_API::get_dashboard_url();
+		$version_service = weglot_get_service( \WeglotWP\Services\Version_Service_Weglot::class );
+		$onboarding_version = $version_service ? (int) $version_service->get_onboarding_version() : 1;
+
+		// v2: /{workspace_slug}/{project_slug}/languages
+		if ( 2 === $onboarding_version ) {
+			$workspace_slug = get_option( 'weglot-translate-workspace-slug' );
+			if ( ! is_string( $workspace_slug ) || trim( $workspace_slug ) === '' ) {
+				$throttle_key = 'weglot_workspace_slug_fetch_throttle';
+				if ( false === get_transient( $throttle_key ) ) {
+					set_transient( $throttle_key, 1, MINUTE_IN_SECONDS * 5 );
+
+					$user_api = weglot_get_service( User_Api_Service_Weglot::class );
+					if ( $user_api ) {
+						$user_api->get_workspace_info();
+						$workspace_slug = get_option( 'weglot-translate-workspace-slug' );
+					}
+				}
+
+				if ( ! is_string( $workspace_slug ) || trim( $workspace_slug ) === '' ) {
+					$workspace_slug = '';
+				}
+			}
+			$project_slug   = $this->option_services->get_option('slug');
+			$dashboard_href = rtrim( $dashboard_base, '/' ) . '/' . rawurlencode( (string) $workspace_slug ) . '/' . rawurlencode( (string) $project_slug ) . '/languages';
+		} else {
+			// v1: /workspaces/{org}/projects/{project}/translations/languages/
+			$dashboard_href = rtrim( $dashboard_base, '/' ) . '/workspaces/' . rawurlencode( (string) $organization_slug ) . '/projects/' . rawurlencode( (string) $project_slug ) . '/translations/languages/';
+		}
+
 		$wp_admin_bar->add_menu(
 			array(
 				'id'     => 'weglot-dashboard',
 				'parent' => 'weglot',
 				'title'  => __( 'Weglot dashboard', 'weglot' ),
-				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/languages/' ),
+				'href'   => esc_url( $dashboard_href ),
 				'meta'   => array(
 					'target' => '_blank',
 				),
@@ -172,21 +214,23 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 		$this->options = $this->option_services->get_options();
 
 		if ( ! $this->options['has_first_settings'] ) :
-			try {
-				$user_info = $this->user_api_services->get_user_info();
+			if($this->version_services->get_version_from_api_key_private($this->options['api_key_private']) === 1) {
+				try {
+					$user_info = $this->user_api_services->get_user_info();
 
-				if ( $user_info['limit'] <= $user_info['usage'] ) {
-					if ( ! file_exists( WEGLOT_TEMPLATES_ADMIN_NOTICES . '/limit-reach.php' ) ) {
-						return;
+					if ( $user_info['limit'] <= $user_info['usage'] ) {
+						if ( ! file_exists( WEGLOT_TEMPLATES_ADMIN_NOTICES . '/limit-reach.php' ) ) {
+							return;
+						}
+						include_once WEGLOT_TEMPLATES_ADMIN_NOTICES . '/limit-reach.php';
 					}
-					include_once WEGLOT_TEMPLATES_ADMIN_NOTICES . '/limit-reach.php';
-				}
 
-				if ( isset( $user_info['allowed'] ) ) {
-					$this->option_services->set_option_by_key( 'allowed', $user_info['allowed'] );
+					if ( isset( $user_info['allowed'] ) ) {
+						$this->option_services->set_option_by_key( 'allowed', $user_info['allowed'] );
+					}
+				} catch ( \Exception $e ) {
+					// If an exception occurs, do nothing, keep wg_allowed.
 				}
-			} catch ( \Exception $e ) {
-				// If an exception occurs, do nothing, keep wg_allowed.
 			}
 		endif;
 

@@ -19,6 +19,20 @@ class User_Api_Service_Weglot {
 	protected $user_info = null;
 
 	/**
+	 * @var array<string,mixed>|null $workspace_info Information about the workspace user plan.
+	 */
+	protected $workspace_info = null;
+
+	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_service;
+
+	public function __construct() {
+		$this->version_service = weglot_get_service( Version_Service_Weglot::class );
+	}
+
+	/**
 	 * Get the plans and their details.
 	 *
 	 * @return array<string, array<string, int|array<int>>>
@@ -55,6 +69,10 @@ class User_Api_Service_Weglot {
 			$api_key = \weglot_get_api_key();
 		}
 
+		if ( $this->version_service->get_version_from_api_key_private( $api_key ) === 2 ) {
+			return array();
+		}
+
 		try {
 			$results = $this->do_request( Helper_API::get_api_url() . '/projects/owner?api_key=' . $api_key );
 			$json    = \json_decode( $results, true );
@@ -87,14 +105,78 @@ class User_Api_Service_Weglot {
 	}
 
 	/**
+	 * Get workspace information from Weglot API.
+	 *
+	 * @since 4.0.0
+	 * @return array<string,mixed>
+	 * @param null|string $api_key
+	 */
+	public function get_workspace_info( $api_key = null ) {
+		if ( null !== $this->workspace_info ) {
+			return $this->workspace_info;
+		}
+
+		if ( null === $api_key ) {
+			$api_key = \weglot_get_api_key();
+		}
+
+		try {
+			$results = $this->do_request(  Helper_API::get_api_domain($api_key) . '/workspaces/current', [], $api_key );
+			$json    = \json_decode( $results, true );
+			if ( \json_last_error() !== JSON_ERROR_NONE ) {
+				throw new \Exception( 'Unknown error with Weglot Api (workspace-0001) : ' . \json_last_error() );
+			}
+
+			$option_key = sprintf('%s-%s', WEGLOT_SLUG, 'workspace-slug');
+
+			$slug = isset($json['slug']) && is_string($json['slug']) ? sanitize_key(trim($json['slug'])) : '';
+			if ($slug !== '') {
+				update_option($option_key, $slug);
+			}
+
+			if ( isset( $json['uuid'] ) ) {
+				if ( '' == $json['uuid'] ) {
+					$error = isset( $json['detail'] ) ? $json['detail'] : 'Unknown error with Weglot Api (workspace-0003)';
+					throw new \Exception( $error );
+				}
+
+				if ( ! isset( $json['subscription'] )||  ! isset( $json['usage']) ) {
+					throw new \Exception( 'Unknown error with Weglot Api (workspace-0004)' );
+				}
+
+				$answer                = $json;
+				$this->workspace_info = $answer;
+				return $this->workspace_info;
+			}
+
+			throw new \Exception( 'Unknown error with Weglot Api (workspace-0002) : ' . $json );
+		} catch ( \Exception $e ) {
+			return array(
+				'not_exist' => false,
+			);
+		}
+	}
+
+	/**
 	 *
 	 * @param string $url
 	 * @param array<string,mixed> $parameters
+	 * @param string|null $api_key API key for Authorization header
 	 * @return string
 	 * @throws \Exception
 	 */
-	public function do_request( $url, $parameters = []) {
+	public function do_request( $url, $parameters = [], $api_key = null ) {
 		$active_sslverify = apply_filters( 'weglot_active_sslverify', true );
+
+		$headers = array(
+			'Content-type' => 'application/json',
+		);
+
+		// Add Authorization header if api_key is provided
+		if ( null !== $api_key ) {
+			$headers['Authorization'] = 'Key ' . $api_key;
+		}
+
 		if ( $parameters ) {
 			$payload = json_encode( $parameters ); //phpcs:ignore
 			if ( \json_last_error() === JSON_ERROR_NONE && is_string( $payload )) {
@@ -105,16 +187,14 @@ class User_Api_Service_Weglot {
 						'timeout'     => 3,
 						'redirection' => 5,
 						'blocking'    => true,
-						'headers'     => array(
-							'Content-type' => 'application/json',
-						),
+						'headers'     => $headers,
 						'body'        => $payload,
 						'cookies'     => array(),
 						'sslverify'   => $active_sslverify,
 					)
 				);
 			} else {
-				throw new \Exception( 'Cannot json encode parameters: ' . \json_last_error() );
+				throw new \Exception( 'Cannot json encode parameters: ' . esc_html( (string) \json_last_error() ) );
 			}
 		} else {
 			$response = wp_remote_get( //phpcs:ignore
@@ -124,9 +204,7 @@ class User_Api_Service_Weglot {
 					'timeout'     => 3,
 					'redirection' => 5,
 					'blocking'    => true,
-					'headers'     => array(
-						'Content-type' => 'application/json',
-					),
+					'headers'     => $headers,
 					'body'        => '',
 					'cookies'     => array(),
 					'sslverify'   => $active_sslverify,
@@ -136,7 +214,7 @@ class User_Api_Service_Weglot {
 
 		if ( is_wp_error( $response ) ) {
 			$error_message = $response->get_error_message();
-			throw new \Exception( 'Error doing the external request to ' . $url . ': ' . $error_message );
+			throw new \Exception( 'Error doing the external request to ' . esc_html( $url ) . ': ' . esc_html( $error_message ) );
 		} else {
 			return $response['body'];
 		}

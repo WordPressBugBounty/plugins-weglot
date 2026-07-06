@@ -9,7 +9,9 @@
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 5.5
+* Version: 6.1
+* License: GPLv2 or later
+* License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 /**
@@ -26,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '5.5' );
+define( 'WEGLOT_VERSION', '6.1' );
 define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -35,7 +37,7 @@ define( 'WEGLOT_DIR_DIST', WEGLOT_DIR . '/dist' );
 
 define( 'WEGLOT_DIRURL', plugin_dir_url( __FILE__ ) );
 define( 'WEGLOT_URL_DIST', WEGLOT_DIRURL . 'dist' );
-define( 'WEGLOT_LATEST_VERSION', '5.4' );
+define( 'WEGLOT_LATEST_VERSION', '5.5' );
 define( 'WEGLOT_DEBUG', false );
 define( 'WEGLOT_DEV', false );
 
@@ -136,9 +138,11 @@ function weglot_should_skip_init() {
 	$contexts = weglot_skip_contexts();
 
 	$page = '';
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only admin page routing, no state change.
 	if ( isset( $_GET['page'] ) ) {
 		$page = sanitize_key( wp_unslash( $_GET['page'] ) );
 	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	if ( $page && in_array( $page, $contexts['pages'], true ) ) {
 		return true;
 	}
@@ -303,6 +307,8 @@ function weglot_plugin_activate() {
 
 	Context_Weglot::weglot_get_context()->activate_plugin();
 
+	set_transient( 'weglot_activation_redirect', true, 30 );
+
 	$dir_wp_rocket = plugin_dir_path( __DIR__ ) . 'wp-rocket';
 	if ( file_exists( $dir_wp_rocket . '/wp-rocket.php' ) ) {
 		if(  weglot_get_service( Wprocket_Active::class )->is_active()) {
@@ -329,6 +335,9 @@ function weglot_plugin_deactivate() {
 
 	Context_Weglot::weglot_get_context()->deactivate_plugin();
 
+	delete_option( \WeglotWP\Services\Version_Service_Weglot::API_VERSION_OPTION_NAME );
+	delete_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_domain' ) );
+
 	$dir_wp_rocket = plugin_dir_path( __DIR__ ) . 'wp-rocket';
 	if ( file_exists( $dir_wp_rocket . '/wp-rocket.php' ) ) {
 		if(  weglot_get_service( Wprocket_Active::class )->is_active()) {
@@ -354,13 +363,14 @@ function weglot_plugin_uninstall() {
  * @return void
  */
 function weglot_rollback() {
-	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( esc_url_raw( $_GET['_wpnonce'] ), 'weglot_rollback' ) ) {
+	if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'weglot_rollback' ) ) {
 		wp_nonce_ays( '' );
 	}
 
 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 	$plugin  = 'weglot';
+	// translators: %s is the plugin name.
 	$title   = sprintf( __( '%s Update Rollback', 'weglot' ), WEGLOT_NAME );
 	$nonce   = 'upgrade-plugin_' . $plugin;
 	$url     = 'update.php?action=upgrade-plugin&plugin=' . rawurlencode( $plugin );
@@ -419,3 +429,25 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		}
 	} );
 }
+
+/**
+ * Redirect to settings page after activation.
+ * @return void
+ * @since 5.2
+ */
+function weglot_activation_redirect() {
+	// Vérifier si le transient existe
+	if ( ! get_transient( 'weglot_activation_redirect' ) ) {
+		return;
+	}
+
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- activation redirect flow, no form processing; guarded by a one-time transient.
+	delete_transient( 'weglot_activation_redirect' );
+	if ( isset( $_GET['activate-multi'] ) ) {
+		return;
+	}
+	// phpcs:enable WordPress.Security.NonceVerification.Recommended
+	wp_safe_redirect( admin_url( 'admin.php?page=weglot-settings' ) );
+	exit;
+}
+add_action( 'admin_init', 'weglot_activation_redirect' );

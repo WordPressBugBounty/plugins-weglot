@@ -45,6 +45,12 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 			'callback'            => array( $this, 'weglot_cache_purge' ),
 			'permission_callback' => array( $this, 'weglot_permission_check' ),
 		) );
+
+		register_rest_route( 'weglot/v2', '/cache/purge/(?P<slug>[a-f0-9]{32})', array(
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => array( $this, 'weglot_cache_purge_v2' ),
+			'permission_callback' => array( $this, 'weglot_permission_check_v2' ),
+		) );
 	}
 
 	/**
@@ -107,6 +113,7 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 			return new WP_Error( 'weglot_rest_invalid', 'Bad Request.', array( 'status' => 400 ) );
 		}
 
+
 		$signature_header = $request->get_header( 'x_weglot_signature' );
 		if ( ! $signature_header ) {
 			return new WP_Error( 'weglot_rest_invalid', 'Bad Request.', array( 'status' => 400 ) );
@@ -147,6 +154,38 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 
 		if ( ! hash_equals( $expected_signature, $provided_signature ) ) {
 			return new WP_Error( 'weglot_rest_invalid', 'Bad Request.', array( 'status' => 400 ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * @return WP_REST_Response
+	 */
+	public function weglot_cache_purge_v2(): WP_REST_Response {
+		delete_transient( 'weglot_cache_cdn' );
+		delete_transient( 'weglot_slugs_cache' );
+
+		return new WP_REST_Response( array(
+			'code'    => 'success',
+			'message' => 'Weglot cache purged.',
+		), 200 );
+	}
+
+	/**
+	 * @param WP_REST_Request<array<string,mixed>> $request
+	 * @return true|WP_Error
+	 */
+	public function weglot_permission_check_v2( WP_REST_Request $request ) {
+		$stored_slug   = get_option( sprintf( '%s-%s', WEGLOT_SLUG, 'webhook_route_slug' ), '' );
+		$provided_slug = $request->get_param( 'slug' );
+
+		if ( ! is_string( $stored_slug ) || '' === $stored_slug ) {
+			return new WP_Error( 'weglot_rest_invalid', 'Bad Request.', array( 'status' => 400 ) );
+		}
+
+		if ( ! hash_equals( $stored_slug, (string) $provided_slug ) ) {
+			return new WP_Error( 'weglot_rest_forbidden', 'Forbidden.', array( 'status' => 403 ) );
 		}
 
 		return true;

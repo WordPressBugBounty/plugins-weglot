@@ -32,6 +32,22 @@ abstract class Helper_Filter_Url_Weglot {
 	}
 
 	/**
+	 * Prefix the language on wp_redirect targets, unless disabled via filter.
+	 * @since 6.0
+	 * @param string $url
+	 * @return string|bool
+	 */
+	public static function filter_wp_redirect( $url ) {
+		if ( is_admin() ) {
+			return $url;
+		}
+		if ( ! apply_filters( 'weglot_active_wp_redirect', true ) ) {
+			return $url;
+		}
+		return self::filter_url_lambda( $url );
+	}
+
+	/**
 	 * Filter URL log redirection
 	 * @since 2.0
 	 * @version 2.0.2

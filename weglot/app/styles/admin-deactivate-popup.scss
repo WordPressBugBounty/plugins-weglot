@@ -1,0 +1,253 @@
+/**
+ * Weglot Deactivate Popup Styles
+ * Standalone styles for the deactivate popup on WordPress plugins page
+ */
+
+#weglot-deactivate-popup {
+	&.weglot-box-overlay {
+		position: fixed;
+		inset: 0;
+		display: flex;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.85);
+		z-index: 9999;
+		justify-content: center;
+		align-items: center;
+		font-family: "Inter", sans-serif;
+
+		.weglot-box {
+			background-color: #fff;
+			padding: 32px;
+			text-align: left;
+			box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.75);
+			border-radius: 12px;
+			width: 600px;
+			max-width: 90%;
+			position: relative;
+			max-height: 90vh;
+			overflow-y: auto;
+		}
+	}
+
+	.weglot-btn-close {
+		cursor: pointer;
+		color: #1f2937;
+		position: absolute;
+		top: 32px;
+		right: 32px;
+		z-index: 10;
+
+		img {
+			display: block;
+		}
+	}
+
+	.weglot-box--title {
+		margin: 0 0 32px;
+		color: var(--Text-base-title, #111827);
+		text-align: center;
+		/* Heading/desktop/small */
+		font-size: var(--Font-Size-xl, 20px);
+		font-style: normal;
+		font-weight: var(--Font-Weight-Semi-Bold, 600);
+		line-height: var(--Font-Line-height-text-xl, 22px); /* 110% */
+	}
+
+	.weglot-box--text {
+		margin: 0 0 16px;
+		color: var(--Text-base-body-regular, #1F2937);
+		font-size: var(--Font-Size-md, 16px);
+		font-style: normal;
+		font-weight: var(--Font-Weight-Regular, 400);
+		line-height: var(--Font-Line-height-text-md, 22.4px);
+		text-align: left;
+	}
+
+	/* Form styles */
+	.weglot-deactivate-form {
+		text-align: left;
+	}
+
+	.weglot-deactivate-reasons {
+		margin-bottom: 32px;
+	}
+
+	.weglot-reason-option {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		margin-bottom: 16px;
+		cursor: pointer;
+		position: relative;
+		padding: 0px;
+		border-radius: 8px;
+		transition: background-color 0.2s ease;
+
+		&:hover {
+			background-color: #f9fafb;
+		}
+
+		input[type="checkbox"] {
+			margin: 0;
+			position: relative;
+			top: 2px;
+			height: 16px;
+			width: 16px;
+			min-width: 16px;
+			appearance: none;
+			border: 1px solid #000;
+			border-radius: 0;
+			background: #fff;
+			cursor: pointer;
+			transition: all 0.2s ease-in-out;
+
+			&:checked {
+				background: #5046e5;
+				border-color: #5046e5;
+
+				+ .check-icon {
+					opacity: 1;
+					transform: scale(1);
+				}
+			}
+		}
+	}
+
+	.check-icon {
+		position: absolute;
+		top: 2px;
+		left: 0px;
+		height: 16px;
+		width: 16px;
+		pointer-events: none;
+		color: #fff;
+		opacity: 0;
+		transform: scale(0.75);
+		transition: all 0.2s ease-in-out;
+	}
+
+	.reason-label {
+		color: var(--Text-base-body-regular, #1F2937);
+		font-size: var(--Font-Size-sm, 14px);
+		font-style: normal;
+		font-weight: var(--Font-Weight-Regular, 400);
+		line-height: var(--Font-Line-height-text-sm, 19.6px);
+		margin-left: 12px;
+	}
+
+	/* Form fields */
+	.weglot-form-field {
+		margin-bottom: 32px;
+
+		label {
+			display: block;
+			color: #111827;
+			font-size: 14px;
+			line-height: 20px;
+			font-weight: 600;
+			margin-bottom: 8px;
+			text-align: left;
+		}
+
+		input[type="email"],
+		textarea {
+			width: 100%;
+			padding: 12px;
+			border: 1px solid #d1d5db;
+			border-radius: 8px;
+			background-color: #fff;
+			outline: none;
+			color: #1f2937;
+			font-size: 14px;
+			font-family: "Inter", sans-serif;
+			transition: border-color 0.2s ease;
+
+			&::placeholder {
+				color: #9ca3af;
+			}
+
+			&:focus {
+				border-color: #473ae0;
+				outline: none;
+				box-shadow: none;
+			}
+		}
+
+		textarea {
+			resize: vertical;
+			min-height: 80px;
+		}
+	}
+
+	/* Buttons */
+	.weglot-deactivate-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		width: 100%;
+		margin-top: 32px;
+	}
+
+	.weglot-btn-skip {
+		width: 100%;
+		padding: 8px 12px;
+		border-radius: 8px;
+		background-color: #fff;
+		border: 1px solid #d1d5db;
+		color: #1f2937;
+		text-align: center;
+		font-size: 14px;
+		font-weight: 400;
+		line-height: 19.6px;
+		cursor: pointer;
+		text-decoration: none;
+		transition: background-color 0.2s ease;
+
+		&:hover {
+			background-color: #f9fafb;
+		}
+
+		&:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+		}
+	}
+
+	.weglot-btn-deactivate {
+		width: 100%;
+		padding: 8px 12px;
+		border-radius: 8px;
+		background-color: #473ae0;
+		color: #fff !important;
+		text-align: center;
+		font-size: 14px;
+		font-weight: 400;
+		line-height: 19.6px;
+		cursor: pointer;
+		text-decoration: none;
+		transition: background-color 0.2s ease;
+		border: none;
+
+		&:hover {
+			background-color: #3730a3;
+			color: #fff !important;
+		}
+
+		&:focus {
+			outline: none;
+			box-shadow: none;
+		}
+
+		&:disabled {
+			opacity: 0.6;
+			cursor: not-allowed;
+			background-color: #6b7280;
+		}
+	}
+}

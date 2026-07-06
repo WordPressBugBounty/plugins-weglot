@@ -92,7 +92,7 @@ class Button_Service_Weglot {
 		} else {
 			$with_name = $this->option_services->get_option_button( 'with_name' );
 			if ( $with_name ) {
-				$name = ( $this->option_services->get_option( 'is_fullname' ) ) ? $language_entry->getLocalName() : strtoupper( $language_entry->getExternalCode() );
+				$name = ( $this->option_services->get_option_button( 'is_fullname' ) ) ? $language_entry->getLocalName() : strtoupper( $language_entry->getExternalCode() );
 			} else {
 				$name = '';
 				remove_filter( 'the_title', 'twenty_twenty_one_post_title' );
@@ -161,7 +161,7 @@ class Button_Service_Weglot {
 		$is_dropdown               = $this->option_services->get_option_button( 'is_dropdown' );
 		$display_original_language = $this->request_url_services->get_weglot_url()->getExcludeOption( $original_language, 'language_button_displayed' );
 		$language_button_displayed = $this->request_url_services->get_weglot_url()->getExcludeOption( $weglot_url->getCurrentLanguage(), 'language_button_displayed' );
-		$destination_languages     = $this->language_services->get_destination_languages( $this->request_url_services->is_allowed_private() );
+		$destination_languages     = $this->language_services->get_destination_languages( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() );
 
 		// if empty destination languages we don't display the switcher.
 		if ( empty( $destination_languages ) ) {
@@ -171,7 +171,7 @@ class Button_Service_Weglot {
 
 		$hide_all_language = true;
 		$array_excluded    = array();
-		foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private() ) as $key => $language ) {
+		foreach ( $this->language_services->get_original_and_destination_languages( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() ) as $language ) {
 			if ( $this->request_url_services->get_weglot_url()->getExcludeOption( $language, 'language_button_displayed' ) ) {
 				$hide_all_language = false;
 			}

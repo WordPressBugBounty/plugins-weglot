@@ -22,6 +22,10 @@ class Schema_Option_V3 {
 	/**
 	 * @var string
 	 */
+	public $public_key;
+	/**
+	 * @var string
+	 */
 	public $api_key_private;
 	/**
 	 * @var bool
@@ -150,6 +154,10 @@ class Schema_Option_V3 {
 	/**
 	 * @var string
 	 */
+	public $switchers;
+	/**
+	 * @var string
+	 */
 	public $active_wc_reload;
 	/**
 	 * @var string
@@ -198,6 +206,7 @@ class Schema_Option_V3 {
 	public static function get_schema_options_v3_compatible() {
 		$schema = array(
 			'api_key'                   => 'api_key',
+			'public_key'                => 'public_key',
 			'api_key_private'           => 'api_key_private',
 			'allowed'                   => 'allowed',
 			'original_language'         => 'language_from',
@@ -213,12 +222,19 @@ class Schema_Option_V3 {
 					}
 
 					foreach ( $languages as $item ) {
+						if ( array_key_exists( 'enabled', $item ) ) {
+							$public = $item['enabled'];
+						} elseif ( array_key_exists( 'public', $item ) ) {
+							$public = $item['public'];
+						} else {
+							$public = null;
+						}
 						$destinations[] = array(
 							'language_to'       => isset($item['language_to']) ? $item['language_to'] : null,
 							'custom_code'       => isset($item['custom_code']) ? $item['custom_code'] : null,
 							'custom_name'       => isset($item['custom_name']) ? $item['custom_name'] : null,
 							'custom_local_name' => isset($item['custom_local_name']) ? $item['custom_local_name'] : null,
-							'public'            => isset($item['enabled']) ? $item['enabled'] : null,
+							'public'            => $public,
 						);
 
 					}
@@ -231,10 +247,16 @@ class Schema_Option_V3 {
 				'fn'   => function ( $languages ) {
 					$private = array();
 					foreach ( $languages as $item ) {
-						if ( ! $item['enabled'] ) {
-							$private[ $item['language_to'] ] = true;
+						$lang = isset( $item['language_to'] ) ? $item['language_to'] : null;
+						if ( null === $lang ) {
+							continue;
+						}
+						if ( array_key_exists( 'enabled', $item ) ) {
+							$private[ $lang ] = ! $item['enabled'];
+						} elseif ( array_key_exists( 'public', $item ) ) {
+							$private[ $lang ] = ! $item['public'];
 						} else {
-							$private[ $item['language_to'] ] = false;
+							$private[ $lang ] = false;
 						}
 					}
 
@@ -297,6 +319,7 @@ class Schema_Option_V3 {
 			'page_views_enabled'        => 'page_views_enabled',
 			'flag_css'                  => 'flag_css',
 			'menu_switcher'             => 'menu_switcher',
+			'switchers'                 => 'switchers',
 			'active_wc_reload'          => 'active_wc_reload',
 			'versions'                  => 'versions',
 			'slugTranslation'           => 'versions.slugTranslation',

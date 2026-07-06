@@ -314,6 +314,7 @@ class Translate_Service_Weglot {
 				default:
 					$name_filter = sprintf( 'weglot_%s_treat_page', $type );
 
+					// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- hook name is always prefixed with "weglot_"
 					return apply_filters( $name_filter, $content, $parser, $this->original_language, $this->current_language );
 			}
 		} catch ( ApiError $e ) {

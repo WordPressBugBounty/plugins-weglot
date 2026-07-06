@@ -40,12 +40,21 @@ class Parser_Service_Weglot {
 	private $preserved_words = [];
 
 	/**
+	 * @var Version_Service_Weglot|null
+	 */
+	private $version_service_weglot;
+	/**
 	 * @since 2.0
 	 */
 	public function __construct() {
 		$this->option_services         = weglot_get_service( Option_Service_Weglot::class );
 		$this->dom_checkers_services   = weglot_get_service( Dom_Checkers_Service_Weglot::class );
 		$this->regex_checkers_services = weglot_get_service( Regex_Checkers_Service_Weglot::class );
+		try {
+			$this->version_service_weglot = weglot_get_service( Version_Service_Weglot::class );
+		} catch ( \Exception $e ) {
+			$this->version_service_weglot = null;
+		}
 	}
 
 	/**
@@ -54,21 +63,44 @@ class Parser_Service_Weglot {
 	 * @since 3.0.0
 	 */
 	public function get_client() {
-		$api_key            = $this->option_services->get_api_key( true );
+		$api_version = $this->version_service_weglot
+			? $this->version_service_weglot->get_version_from_api_key_private( $this->option_services->get_api_key_private() )
+			: 1;
+		if(1 === $api_version){
+			$api_key            = $this->option_services->get_api_key( true );
+		}elseif(2 === $api_version){
+			$api_key            = $this->option_services->get_api_key_private();
+		}else{
+			$api_key            = $this->option_services->get_api_key( true );
+		}
+
 		$version            = $this->option_services->get_version();
 		$translation_engine = $this->option_services->get_translation_engine();
 		if ( empty( $translation_engine ) ) {
 			$translation_engine = 3;
 		}
 
-		$client = new Client(
-			$api_key,
-			$translation_engine,
-			$version,
-			array(
-				'host' => Helper_API::get_api_url(),
-			)
-		);
+		if($api_version === 1 ){
+			$client = new Client(
+				$api_key,
+				$translation_engine,
+				$version,
+				array(
+					'host' => Helper_API::get_api_url(),
+				)
+			);
+		}else{
+			$client = new Client(
+				$api_key,
+				$translation_engine,
+				$version,
+				array(
+					'host' => Helper_API::get_api_domain($api_key),
+					'live' => 1,
+				)
+			);
+		}
+
 		$client->getHttpClient()->addHeader( 'weglot-integration: WordPress Plugin' );
 		$editor_session = isset( $_SERVER['HTTP_WG_EDITOR_SESSION'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_WG_EDITOR_SESSION'] ) ) : null;
 		if ( $editor_session ) {
@@ -77,7 +109,9 @@ class Parser_Service_Weglot {
 				$client->getHttpClient()->addHeader( 'editor-session: ' . $editor_session );
 			}
 		}
-
+		if(2 === $api_version){
+			$client->getHttpClient()->addHeader('Authorization: Key ' . $api_key );
+		}
 		return $client;
 	}
 
@@ -126,6 +160,7 @@ class Parser_Service_Weglot {
 		if ( ! $media_enabled ) {
 			$remove_checker[] = '\Weglot\Parser\Check\Dom\ImageDataSource';
 			$remove_checker[] = '\Weglot\Parser\Check\Dom\ImageSource';
+			$remove_checker[] = '\Weglot\Parser\Check\Dom\ImageSourceSet';
 		}
 
 		if ( ! empty( $remove_checker ) ) {
@@ -293,7 +328,6 @@ class Parser_Service_Weglot {
 	 */
 	public function restore_preserved_attributes( string $html ): string {
 		foreach ( $this->preserved as $token => $original ) {
-			// match quote+token+same-quote, preserving any leading slash
 			$html = preg_replace_callback(
 				'/(\\\\?)([\'"])' . preg_quote( $token, '/' ) . '\1\2/',
 				function( $m ) use ( $original ) {
@@ -302,7 +336,6 @@ class Parser_Service_Weglot {
 				$html
 			);
 		}
-		// clear stash if you reuse this instance
 		$this->preserved = [];
 		return $html;
 	}
@@ -371,15 +404,12 @@ class Parser_Service_Weglot {
 			$conditions[] = 'class=["\'](?:[^"\']*\s)?(?:' . implode( '|', $class_regex_parts ) . ')(?:\s[^"\']*)?["\']';
 		}
 
-		// If nothing to do, return unchanged
 		$has_attr_conditions = ! empty( $conditions );
 		$has_contains_conditions = is_array( $contains_patterns ) && ! empty( $contains_patterns );
 		if ( ! $has_attr_conditions && ! $has_contains_conditions ) {
 			return $html;
 		}
 
-		// Build regex: capture attributes and content for post-check
-		// 1 = attributes part (without <script and >), 2 = inner content
 		$pattern = '/<script\b([^>]*)>(.*?)<\/script>/is';
 
 		$result = preg_replace_callback(
@@ -390,7 +420,6 @@ class Parser_Service_Weglot {
 
 				$should_preserve = false;
 
-				// Attribute-based match (existing behavior)
 				if ( $has_attr_conditions ) {
 					$attr_pattern = '/(?:' . implode( '|', $conditions ) . ')/i';
 					if ( preg_match( $attr_pattern, $attrs ) ) {
@@ -398,16 +427,13 @@ class Parser_Service_Weglot {
 					}
 				}
 
-				// Content-based match (new behavior)
 				if ( ! $should_preserve && $has_contains_conditions ) {
 					foreach ( $contains_patterns as $cp ) {
 						if ( ! is_string( $cp ) || $cp === '' ) {
 							continue;
 						}
-						// treat each entry as a regex fragment (no delimiters expected)
 						$test_result = @preg_match( '/'.$cp.'/is', '' );
 						if ( false === $test_result ) {
-							// Invalid regex pattern, skip it
 							continue;
 						}
 						if ( preg_match( '/'.$cp.'/is', $content ) ) {
@@ -425,16 +451,13 @@ class Parser_Service_Weglot {
 				$i++;
 				$token = "__WG_SCRIPT_TEMPLATE_{$i}__";
 
-				// Store the entire script tag
 				$this->preserved[ $token ] = $m[0];
 
-				// Replace with a simple placeholder comment
 				return "<!-- {$token} -->";
 			},
 			$html
 		);
 
-		// Return original HTML if preg_replace_callback failed
 		return $result !== null ? $result : $html;
 	}
 
@@ -446,10 +469,8 @@ class Parser_Service_Weglot {
 	 */
 	public function restore_script_templates( string $html ): string {
 		foreach ( $this->preserved as $token => $original ) {
-			// Only restore script template tokens
 			if ( strpos( $token, '__WG_SCRIPT_TEMPLATE_' ) === 0 ) {
 				$html = str_replace( "<!-- {$token} -->", $original, $html );
-				// Remove from preserved array to avoid conflicts
 				unset( $this->preserved[ $token ] );
 			}
 		}

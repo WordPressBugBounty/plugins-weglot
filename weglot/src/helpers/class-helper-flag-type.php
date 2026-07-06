@@ -98,7 +98,7 @@ class Helper_Flag_Type {
 		}
 
 		wp_enqueue_style( 'new-flag-css', WEGLOT_DIRURL . 'dist/css/new-flags.css', array(), WEGLOT_VERSION );
-		wp_register_style( 'custom-flag-handle', false );
+		wp_register_style( 'custom-flag-handle', false, array(), WEGLOT_VERSION );
 		wp_enqueue_style( 'custom-flag-handle' );
 		wp_add_inline_style( 'custom-flag-handle', $custom_flag_css );
 		return $custom_flag_css;

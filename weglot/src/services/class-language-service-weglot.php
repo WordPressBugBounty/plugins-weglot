@@ -122,15 +122,19 @@ class Language_Service_Weglot {
 		}
 
 		$this->languages       = $this->get_languages_available( array( 'sort' => true ) );
-		$destination_languages = $this->option_services->get_destination_languages();
 		$original_language     = $this->get_original_language();
 
 		if ( null !== $original_language && ! empty( $this->get_original_language_name_custom() ) ) {
 			$this->languages = $this->add_language( $original_language->getInternalCode(), $original_language->getExternalCode(), $this->get_original_language_name_custom(), $this->get_original_language_name_custom(), $original_language->isRtl() );
 		}
 
+		$destination_languages = $this->option_services->get_destination_languages();
+		if ( ! is_array( $destination_languages ) ) {
+			$destination_languages = array();
+		}
+
 		foreach ( $destination_languages as $d ) {
-			/** @var LanguageEntry $language_data */
+			/** @var LanguageEntry|null $language_data */
 			$language_data = $this->languages->getCode( $d['language_to'] );
 			if ( ! $language_data ) {
 				$this->languages = $this->add_language( $d['language_to'], $d['custom_code'], $d['custom_name'], $d['custom_local_name'] );
@@ -185,15 +189,22 @@ class Language_Service_Weglot {
 	 * Get destination languages as language entries
 	 *
 	 * @param bool $allowed_private
+	 * @param array<string> $excluded_languages
 	 *
 	 * @return LanguageEntry[]
 	 */
-	public function get_destination_languages( $allowed_private = false ) {
+	public function get_destination_languages( $allowed_private = false, array $excluded_languages = array() ) {
 		$destination_languages_as_array = $this->option_services->get_destination_languages();
-		$destination_languages          = array();
+		if ( ! is_array( $destination_languages_as_array ) ) {
+			$destination_languages_as_array = array();
+		}
+		$destination_languages = array();
 		foreach ( $destination_languages_as_array as $destination_language_as_array ) {
-			if ( ! empty( $destination_language_as_array['public'] ) || $allowed_private ) {
-				$language = $this->get_language_from_internal( $destination_language_as_array['language_to'] );
+			$lang_code       = $destination_language_as_array['language_to'];
+			$is_public       = ! empty( $destination_language_as_array['public'] ) || $allowed_private;
+			$is_not_excluded = $allowed_private || ! in_array( $lang_code, $excluded_languages, true );
+			if ( $is_public && $is_not_excluded ) {
+				$language = $this->get_language_from_internal( $lang_code );
 				if ( $language ) {
 					$destination_languages[] = $language;
 				}
@@ -207,15 +218,16 @@ class Language_Service_Weglot {
 	 * Get destination languages as language entries
 	 *
 	 * @param bool $allowed_private
+	 * @param array<string> $excluded_languages
 	 *
 	 * @return string[]
 	 */
-	public function get_destination_languages_external( $allowed_private = false ) {
+	public function get_destination_languages_external( $allowed_private = false, array $excluded_languages = array() ) {
 		return array_map(
 			function ( $l ) {
 				return $l->getExternalCode();
 			},
-			$this->get_destination_languages( $allowed_private )
+			$this->get_destination_languages( $allowed_private, $excluded_languages )
 		);
 	}
 
@@ -226,14 +238,19 @@ class Language_Service_Weglot {
 	 */
 	public function get_original_language() {
 		$original_language_code = $this->option_services->get_option( 'original_language' );
+		if(null === $original_language_code){
+			$original_language_code = $this->option_services->get_option( 'language_from' );
+		}
+
+		if ( ! is_string( $original_language_code ) || '' === trim( $original_language_code ) ) {
+			return null;
+		}
 
 		return $this->get_language_from_internal( $original_language_code );
 	}
 
 	/**
-	 * Get original language as language entry
-	 *
-	 * @return LanguageEntry
+	 * @return string|null
 	 */
 	public function get_original_language_name_custom() {
 		return $this->option_services->get_option( 'language_from_custom_name' );
@@ -242,12 +259,13 @@ class Language_Service_Weglot {
 	/**
 	 * Get original language and destination languages as language entries
 	 *
-	 * @param bool $allowed_private
+	 * @param bool     $allowed_private
+	 * @param string[] $excluded_languages
 	 *
 	 * @return LanguageEntry[]
 	 */
-	public function get_original_and_destination_languages( $allowed_private = false ) {
-		$languages = $this->get_destination_languages( $allowed_private );
+	public function get_original_and_destination_languages( $allowed_private = false, $excluded_languages = array() ) {
+		$languages = $this->get_destination_languages( $allowed_private, $excluded_languages );
 		array_unshift( $languages, $this->get_original_language() );
 
 		return $languages;

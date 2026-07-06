@@ -81,7 +81,7 @@ class Bootstrap_Weglot {
 		$key   = end( $parts );
 
 		if ( ! array_key_exists( $key, $this->services ) ) {
-			throw new Exception( 'Service : ' . $name . ' not exist' );
+			throw new Exception( 'Service : ' . esc_html( $name ) . ' not exist' );
 		}
 
 		if ( is_string( $this->services[ $key ] ) ) {
