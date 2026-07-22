@@ -44,6 +44,18 @@ class UCP_Tracking implements Hooks_Interface_Weglot {
 		}
 
 		add_filter( 'weglot_tabs_admin_options_available', array( $this, 'weglot_ucp_tracking' ) );
+		add_filter( 'weglot_register_url', array( $this, 'weglot_ucp_register_url' ) );
+	}
+
+	/**
+	 * Add the referral param to the v2 register link.
+	 *
+	 * @param string $url
+	 * @return string
+	 * @since 6.1
+	 */
+	public function weglot_ucp_register_url( $url ) {
+		return add_query_arg( 'fpr', 'ucp', $url );
 	}
 
 

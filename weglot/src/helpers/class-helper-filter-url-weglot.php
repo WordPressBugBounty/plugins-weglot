@@ -44,6 +44,13 @@ abstract class Helper_Filter_Url_Weglot {
 		if ( ! apply_filters( 'weglot_active_wp_redirect', true ) ) {
 			return $url;
 		}
+		// Only prefix internal redirects; an absolute URL pointing to another host must be left untouched.
+		// Host is case-insensitive (RFC 3986 §3.2.2) and wp_parse_url() does not normalise it.
+		$target_host = wp_parse_url( $url, PHP_URL_HOST );
+		$home_host   = wp_parse_url( home_url(), PHP_URL_HOST );
+		if ( is_string( $target_host ) && 0 !== strcasecmp( $target_host, (string) $home_host ) ) {
+			return $url;
+		}
 		return self::filter_url_lambda( $url );
 	}
 

@@ -59,7 +59,7 @@
                     <form id="weglot-deactivate-form" class="weglot-deactivate-form">
                         <div class="weglot-deactivate-reasons">
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="no_longer_need">
+                                <input type="radio" name="reason" value="no_longer_need">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -67,7 +67,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="translation_quality">
+                                <input type="radio" name="reason" value="translation_quality">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -75,7 +75,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="price_too_high">
+                                <input type="radio" name="reason" value="price_too_high">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -83,7 +83,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="too_complex">
+                                <input type="radio" name="reason" value="too_complex">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -91,7 +91,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="missing_features">
+                                <input type="radio" name="reason" value="missing_features">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -99,7 +99,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="technical_issues">
+                                <input type="radio" name="reason" value="technical_issues">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -107,7 +107,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="found_alternative">
+                                <input type="radio" name="reason" value="found_alternative">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -115,7 +115,7 @@
                             </label>
 
                             <label class="weglot-reason-option">
-                                <input type="checkbox" name="reason" value="other">
+                                <input type="radio" name="reason" value="other">
                                 <svg class="check-icon" viewBox="0 0 16 16">
                                     <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
@@ -125,17 +125,23 @@
 
                         <div class="weglot-form-field">
                             <label for="weglot-comment">Add a comment (optional)</label>
-                            <textarea id="weglot-comment" name="comment" rows="4" placeholder="Tell us more about your experience..."></textarea>
+                            <textarea id="weglot-comment" name="comment" rows="2" placeholder="Tell us more about your experience..."></textarea>
                         </div>
 
-                        <div class="weglot-form-field">
-                            <label for="weglot-email">Can we follow up? We'd love to better understand your feedback</label>
-                            <input type="email" id="weglot-email" name="email" placeholder="Email address">
-                        </div>
+                        <label class="weglot-reason-option weglot-consent-option">
+                            <input type="checkbox" id="weglot-consent" name="consent" value="1">
+                            <svg class="check-icon" viewBox="0 0 16 16">
+                                <path d="M4 8.25L6.5 10.75L12 5.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span class="reason-label">
+                                I'd be happy to share more about my feedback
+                                <span class="weglot-consent-subtext">A quick email exchange. We'll reach out at your account email: <strong>${weglotDeactivateData.userEmail}</strong></span>
+                            </span>
+                        </label>
 
                         <div class="weglot-deactivate-buttons">
+                        	<button type="submit" class="weglot-btn-deactivate">Send feedback & deactivate</button>
                             <button type="button" class="weglot-btn-skip">Skip and deactivate</button>
-                            <button type="submit" class="weglot-btn-deactivate">Send feedback & deactivate</button>
                         </div>
                     </form>
                 </div>
@@ -185,7 +191,7 @@
                 nonce: weglotDeactivateData.nonce,
                 reasons: reasons,
                 comment: $popup.find('#weglot-comment').val(),
-                email: $popup.find('#weglot-email').val()
+                consent: $popup.find('#weglot-consent').is(':checked') ? '1' : '0'
             };
 
             // Disable submit button during request

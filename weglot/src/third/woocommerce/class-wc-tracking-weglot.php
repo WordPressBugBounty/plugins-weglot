@@ -40,6 +40,18 @@ class Wc_Tracking_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		add_filter( 'weglot_tabs_admin_options_available', array( $this, 'weglot_wc_tracking' ) );
+		add_filter( 'weglot_register_url', array( $this, 'weglot_wc_register_url' ) );
+	}
+
+	/**
+	 * Add the referral param to the v2 register link.
+	 *
+	 * @param string $url
+	 * @return string
+	 * @since 6.1
+	 */
+	public function weglot_wc_register_url( $url ) {
+		return add_query_arg( 'fp_ref', 'woocommerce', $url );
 	}
 
 

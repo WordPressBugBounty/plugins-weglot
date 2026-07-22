@@ -2,6 +2,23 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 6.2 (22/07/2026) =
+* Improvement: Reworked the deactivation feedback form — you now pick a single reason (radio buttons), and the optional follow-up uses a consent checkbox tied to your logged-in account email instead of a free-text email field. Primary actions were reordered and radio/checkbox controls are styled distinctly.
+* Fix: Feedback emails are no longer sent using the site admin address as sender. They are now sent from wordpress@{site host} with Reply-To set to your email only when you tick the consent box, reducing DMARC/SPF rejections.
+* Improvement: Translation and email translation now authenticate with an Authorization header derived from your private API key, instead of passing the key as a query parameter.
+* Improvement: Added a weglot_register_url filter on the "Get your key" link in the settings; the WooCommerce, Maintenance, UnderConstructionPage and Minimal Coming Soon integrations append their referral parameters.
+* Improvement: Hid the "Enable multilingual search" option in the plugin settings.
+
+## 6.1 (06/07/2026) =
+* Improvement: Introduces V2 admin experiences wired through new JS entry points: live private API key checks against get_project_settings, a two-step onboarding flow, and a dashboard with dirty-state save bar, AJAX weglot_save_settings_v2, toasts, copy-to-clipboard, and read-only language pickers. Private mode admin init is dropped in favor of workspace info.
+* Fix: The Original language dropdown in admin settings no longer lists Brazilian Portuguese (pt-br).
+* Improvement: Adds a third-party integration for the Minimal Coming Soon & Maintenance Mode WordPress plugin
+* Improvement: Fixes translated pages going blank when link rewriting hits <a> (and similar) tags with very long attribute strings—e.g. JSON in data-*—where internal preg_replace can return null and that value was assigned straight into the page HTML.
+* Improvement: WooCommerce order language persistence now hooks woocommerce_checkout_order_created and woocommerce_store_api_checkout_order_processed instead of woocommerce_new_order, so checkout language is saved for classic checkout and Store API / block checkout.
+* Improvement: Prevents the dynamic translation JS (Weglot.initialize) from falling back to translating the entire page when selector lists are misconfigured.
+* Improvement: When media_enabled is disabled, the parser now also removes the \Weglot\Parser\Check\Dom\ImageSourceSet DOM checker, preventing srcset image sources from being processed/translated along with src and data-src.
+* Improvement: Internal wp_redirect targets now keep the active language prefix on the front-end (e.g. an /about-us → /about redirect resolves to /fr/about when browsing in French); admin and AJAX redirects are untouched and it can be disabled with the weglot_active_wp_redirect filter.
+
 ## 5.5 (04/05/2026) =
 * Improvement: Adds FiboSearch (Ajax Search for WooCommerce) compatibility by registering new third-party services
 * Improvement: Updates Replace_Url_Service_Weglot::is_link_a_file() to treat .csv as a default excluded file extension, so links to CSV downloads are no longer processed for URL replacement/translation.

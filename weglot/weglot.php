@@ -9,7 +9,7 @@
 * Domain Path: /languages/
 * WC requires at least: 4.0
 * WC tested up to: 9.5
-* Version: 6.1
+* Version: 6.2
 * License: GPLv2 or later
 * License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'WEGLOT_NAME', 'Weglot' );
 define( 'WEGLOT_SLUG', 'weglot-translate' );
 define( 'WEGLOT_OPTION_GROUP', 'group-weglot-translate' );
-define( 'WEGLOT_VERSION', '6.1' );
+define( 'WEGLOT_VERSION', '6.2' );
 define( 'WEGLOT_PHP_MIN', '7.4' );
 define( 'WEGLOT_BNAME', plugin_basename( __FILE__ ) );
 define( 'WEGLOT_DIR', __DIR__ );
@@ -37,7 +37,7 @@ define( 'WEGLOT_DIR_DIST', WEGLOT_DIR . '/dist' );
 
 define( 'WEGLOT_DIRURL', plugin_dir_url( __FILE__ ) );
 define( 'WEGLOT_URL_DIST', WEGLOT_DIRURL . 'dist' );
-define( 'WEGLOT_LATEST_VERSION', '5.5' );
+define( 'WEGLOT_LATEST_VERSION', '6.1' );
 define( 'WEGLOT_DEBUG', false );
 define( 'WEGLOT_DEV', false );
 

@@ -221,6 +221,7 @@ class Admin_Enqueue_Weglot implements Hooks_Interface_Weglot {
 			array(
 				'closeIconUrl' => WEGLOT_DIRURL . 'app/images/v2/close.svg',
 				'nonce'        => wp_create_nonce( 'weglot_deactivation_feedback' ),
+				'userEmail'    => wp_get_current_user()->user_email,
 			)
 		);
 	}

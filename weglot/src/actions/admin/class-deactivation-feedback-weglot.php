@@ -39,10 +39,20 @@ class Deactivation_Feedback_Weglot implements Hooks_Interface_Weglot {
 		$raw_reasons = wp_unslash( $_POST['reasons'] ?? [] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized via array_map( 'sanitize_text_field' ) on next line
 		$reasons     = is_array( $raw_reasons ) ? array_map( 'sanitize_text_field', $raw_reasons ) : [];
 		$comment     = sanitize_textarea_field( wp_unslash( $_POST['comment'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$email       = sanitize_email( wp_unslash( $_POST['email'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$consent     = isset( $_POST['consent'] ) && '1' === sanitize_text_field( wp_unslash( $_POST['consent'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified above
 
 		$site_url    = get_site_url();
 		$admin_email = get_option( 'admin_email' );
+
+		// Send From an address on the site's own domain so it passes SPF/DMARC
+		// on the receiving side; spoofing admin_email (often a gmail.com address)
+		// gets the message silently rejected by strict DMARC policies.
+		$site_host    = wp_parse_url( $site_url, PHP_URL_HOST );
+		$default_from = 'wordpress@' . $site_host;
+
+		// Without explicit consent we must never expose the user's personal email;
+		// fall back to the neutral site address instead.
+		$user_email  = $consent ? sanitize_email( wp_get_current_user()->user_email ) : $default_from;
 
 		$reason_labels = array(
 			'no_longer_need'      => 'I no longer need website translations',
@@ -60,7 +70,9 @@ class Deactivation_Feedback_Weglot implements Hooks_Interface_Weglot {
 		$email_body = '<html><body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">';
 		$email_body .= '<h2 style="color: #473ae0;">Weglot Plugin Deactivation Feedback</h2>';
 		$email_body .= '<p><strong>Site URL:</strong> ' . esc_html( $site_url ) . '</p>';
-		$email_body .= '<p><strong>Admin Email:</strong> ' . esc_html( $admin_email ) . '</p>';
+		if ( $consent ) {
+			$email_body .= '<p><strong>Admin Email:</strong> ' . esc_html( $admin_email ) . '</p>';
+		}
 
 		if ( ! empty( $reasons ) ) {
 			$email_body .= '<h3 style="color: #1f2937; margin-top: 20px;">Reasons for deactivation:</h3>';
@@ -77,24 +89,23 @@ class Deactivation_Feedback_Weglot implements Hooks_Interface_Weglot {
 			$email_body .= '<p style="background: #f9fafb; padding: 15px; border-left: 3px solid #473ae0;">' . nl2br( esc_html( $comment ) ) . '</p>';
 		}
 
-		if ( ! empty( $email ) ) {
+		if ( $consent ) {
 			$email_body .= '<h3 style="color: #1f2937; margin-top: 20px;">Follow-up email:</h3>';
-			$email_body .= '<p>' . esc_html( $email ) . '</p>';
+			$email_body .= '<p>' . esc_html( $user_email ) . '</p>';
 		}
 
 		$email_body .= '<hr style="margin-top: 30px; border: none; border-top: 1px solid #e0e0e0;">';
 		$email_body .= '<p style="color: #6b7280; font-size: 12px;">This feedback was sent automatically from the Weglot WordPress plugin.</p>';
 		$email_body .= '</body></html>';
 
+		$reply_to = $user_email;
+
 		// Email headers
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
-			'From: ' . $admin_email,
+			'From: WordPress <' . $default_from . '>',
+			'Reply-To: ' . $reply_to,
 		);
-
-		if ( ! empty( $email ) ) {
-			$headers[] = 'Reply-To: ' . $email;
-		}
 
 		// Send email
 		// @phpstan-ignore-next-line -- WordPress stubs not resolved in current PHPStan config

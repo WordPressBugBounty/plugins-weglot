@@ -40,6 +40,10 @@ class Option_Service_Weglot {
 	 * @var null|array<string, mixed>
 	 */
 	protected $slugs_from_api = null;
+	/**
+	 * @var bool Re-entrancy guard: get_slugs_from_api_with_api_key() can call get_options(), which loads slugs again.
+	 */
+	protected $is_loading_slugs = false;
 
 	const NO_OPTIONS = 'OPTIONS_NOT_FOUND';
 
@@ -311,58 +315,69 @@ class Option_Service_Weglot {
 		if ( $this->slugs_from_api || ! $active_slugs ) {
 			return $this->slugs_from_api;
 		}
-		$custom_timeout = apply_filters( 'custom_http_request_timeout', 3 );
-		$slugs          = array();
-		$settings       = get_transient( 'weglot_cache_cdn' );
-		if ( empty( $settings ) ) {
-			$settings = $this->get_options();
+
+		// Prevent infinite recursion: get_options() below can call back into slug loading.
+		if ( $this->is_loading_slugs ) {
+			return array();
 		}
-		$slug_translation_version = $settings['versions']['slugTranslation'] ?? null;
-		foreach ( $destinations_languages as $destinations_language ) {
+		$this->is_loading_slugs = true;
 
-			if ( $slug_translation_version != null ) {
-				$url = sprintf(
-					'%s/translations/slugs?api_key=%s&language_to=%s&v=%s',
-					Helper_API::get_api_url(),
-					$api_key,
-					$destinations_language,
-					$slug_translation_version
-				);
-			} else {
-				$url = sprintf(
-					'%s/translations/slugs?api_key=%s&language_to=%s',
-					Helper_API::get_api_url(),
-					$api_key,
-					$destinations_language
-				);
+		try {
+			$custom_timeout = apply_filters( 'custom_http_request_timeout', 3 );
+			$slugs          = array();
+			$settings       = get_transient( 'weglot_cache_cdn' );
+			if ( empty( $settings ) ) {
+				$settings = $this->get_options();
 			}
+			$slug_translation_version = $settings['versions']['slugTranslation'] ?? null;
+			foreach ( $destinations_languages as $destinations_language ) {
 
-			$response = wp_remote_get( $url, array( 'timeout' => $custom_timeout ) ); // phpcs:ignore
-
-			if ( is_wp_error( $response ) ) {
-				continue;
-			}
-			try {
-				$body = json_decode( $response['body'], true );
-
-				if ( is_array( $body ) ) {
-					foreach ( $body as $key => $slug ) {
-						if ( $key === $slug || empty( $slug ) ) {
-							unset( $body[ $key ] );
-						}
-					}
-					$slugs[ $destinations_language ] = array_flip( $body );
-
+				if ( $slug_translation_version != null ) {
+					$url = sprintf(
+						'%s/translations/slugs?api_key=%s&language_to=%s&v=%s',
+						Helper_API::get_api_url(),
+						$api_key,
+						$destinations_language,
+						$slug_translation_version
+					);
+				} else {
+					$url = sprintf(
+						'%s/translations/slugs?api_key=%s&language_to=%s',
+						Helper_API::get_api_url(),
+						$api_key,
+						$destinations_language
+					);
 				}
-			} catch ( Exception $e ) {
-				continue;
+
+				$response = wp_remote_get( $url, array( 'timeout' => $custom_timeout ) ); // phpcs:ignore
+
+				if ( is_wp_error( $response ) ) {
+					continue;
+				}
+				try {
+					$body = json_decode( $response['body'], true );
+
+					if ( is_array( $body ) ) {
+						foreach ( $body as $key => $slug ) {
+							if ( $key === $slug || empty( $slug ) ) {
+								unset( $body[ $key ] );
+							}
+						}
+						$slugs[ $destinations_language ] = array_flip( $body );
+
+					}
+				} catch ( Exception $e ) {
+					continue;
+				}
 			}
+
+			set_transient( 'weglot_slugs_cache', $slugs, apply_filters( 'weglot_get_slugs_cache_duration', 0 ) );
+			$this->slugs_from_api = $slugs;
+
+			return $slugs;
+		} finally {
+			$this->is_loading_slugs = false;
 		}
-
-		set_transient( 'weglot_slugs_cache', $slugs, apply_filters( 'weglot_get_slugs_cache_duration', 0 ) );
-		$this->slugs_from_api = $slugs;
-
-		return $slugs;
 	}
 
 	/**

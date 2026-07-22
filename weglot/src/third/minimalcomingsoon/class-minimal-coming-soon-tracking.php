@@ -44,6 +44,18 @@ class Minimal_Coming_Soon_Tracking implements Hooks_Interface_Weglot {
 		}
 
 		add_filter( 'weglot_tabs_admin_options_available', array( $this, 'weglot_minimal_coming_soon_tracking' ) );
+		add_filter( 'weglot_register_url', array( $this, 'weglot_minimal_coming_soon_register_url' ) );
+	}
+
+	/**
+	 * Add the referral param to the v2 register link.
+	 *
+	 * @param string $url
+	 * @return string
+	 * @since 6.1
+	 */
+	public function weglot_minimal_coming_soon_register_url( $url ) {
+		return add_query_arg( 'fp_ref', 'minimal-coming-soon', $url );
 	}
 
 

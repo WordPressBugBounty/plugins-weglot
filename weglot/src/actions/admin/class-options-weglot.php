@@ -209,7 +209,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 			$options['api_key_private'] = $keep_api_key_private;
 			// I keep it cause don't have it from api settings
 		}
-		if($api_version === 1){
+		if($api_version === 1 && $this->option_services->get_has_first_settings()){
 			$has_api_key = '' !== trim( $api_key_private );
 			$has_language_from = isset( $options['language_from'] ) && '' !== trim( $options['language_from'] );
 			$has_languages = isset( $options['languages'] ) && is_array( $options['languages'] ) && count( $options['languages'] ) > 0;
@@ -217,6 +217,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 			$has_only_api_key = $has_api_key && ! $has_language_from && ! $has_languages;
 			if($has_only_api_key){
 				update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key_private );
+				delete_transient( 'weglot_cache_cdn' );
 				wp_redirect( $redirect_url ); //phpcs:ignore
 				exit;
 			}
@@ -263,10 +264,10 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 				if ( $response['success'] && is_array( $response['result'] ) ) {
 					delete_transient( 'weglot_cache_cdn' );
 
-					$api_key_private = $this->option_services->get_api_key_private();
+					$stored_api_key_private = $this->option_services->get_api_key_private();
 					$option_v2 = $this->option_services->get_options_from_v2();
 
-					if ( ! $api_key_private && $option_v2 ) {
+					if ( ! $stored_api_key_private && $option_v2 ) {
 						$options_bdd['custom_urls']             = $option_v2['custom_urls'];
 						$options_bdd['menu_switcher']           = $option_v2['menu_switcher'];
 						$options_bdd['has_first_settings']      = $option_v2['has_first_settings'];

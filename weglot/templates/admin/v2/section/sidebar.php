@@ -40,7 +40,7 @@ $current_tab = isset( $_GET['tabs'] ) ? sanitize_key( $_GET['tabs'] ) : ''; // p
 			<div class="info-word-used">Words used <span>0 / 0</span></div>
 			<a href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/modal?tab=billing'); ?>" class="upgrade-btn" target="_blank"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/bolt.svg' ); ?>" alt="">Upgrade</a>
 		</div>
-		<div class="faq-link">Looking for assistance?<br>Check out the <a href="https://support.weglot.com/fr/category/71-wordpress" target="_blank" title="Weglot FAQ">FAQ</a></div>
+		<div class="faq-link">Looking for assistance?<br>Ask our team at<br><b>help@weglot.com</b><br>or check out the <a href="https://help.weglot.com/" target="_blank" title="Weglot FAQ">FAQ</a></div>
 	</div>
 
 </nav>

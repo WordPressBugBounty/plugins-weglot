@@ -25,6 +25,7 @@
 			width: 600px;
 			max-width: 90%;
 			position: relative;
+			top: 15px;
 			max-height: 90vh;
 			overflow-y: auto;
 		}
@@ -88,6 +89,7 @@
 			background-color: #f9fafb;
 		}
 
+		input[type="radio"],
 		input[type="checkbox"] {
 			margin: 0;
 			position: relative;
@@ -102,15 +104,43 @@
 			cursor: pointer;
 			transition: all 0.2s ease-in-out;
 
+			// WordPress admin forms.css injects a marker (bullet on radios, checkmark on checkboxes) via ::before; suppress it so it doesn't overlap .check-icon
+			&::before {
+				content: none;
+			}
+
 			&:checked {
 				background: #5046e5;
 				border-color: #5046e5;
-
-				+ .check-icon {
-					opacity: 1;
-					transform: scale(1);
-				}
 			}
+		}
+
+		// Reasons use radios: circular shape, no checkmark (solid disc when selected).
+		input[type="radio"] {
+			border-radius: 50%;
+		}
+
+		// Consent uses a checkbox: square shape with the checkmark revealed when checked.
+		input[type="checkbox"]:checked + .check-icon {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	.weglot-consent-option {
+		margin-bottom: 24px;
+	}
+
+	.weglot-consent-subtext {
+		display: block;
+		margin-top: 4px;
+		color: #6b7280;
+		font-size: 13px;
+		line-height: 18px;
+
+		strong {
+			color: #1f2937;
+			font-weight: 600;
 		}
 	}
 

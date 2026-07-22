@@ -48,6 +48,10 @@ class Translate_Service_Weglot {
 	 * @var Generate_Switcher_Service_Weglot
 	 */
 	private $generate_switcher_service;
+	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
 
 
 	/**
@@ -60,6 +64,7 @@ class Translate_Service_Weglot {
 		$this->parser_services           = weglot_get_service( Parser_Service_Weglot::class );
 		$this->generate_switcher_service = weglot_get_service( Generate_Switcher_Service_Weglot::class );
 		$this->language_services         = weglot_get_service( Language_Service_Weglot::class );
+		$this->version_services          = weglot_get_service( Version_Service_Weglot::class );
 	}
 
 
@@ -558,16 +563,27 @@ class Translate_Service_Weglot {
 			]
 		] );
 
-		$url = sprintf( '%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key );
-
 		if ( ! is_string( $requestBody ) ) {
 			return "Error: Invalid request body";
 		}
+
+		$api_version = $this->version_services->get_version_from_api_key_private( $api_key );
+
+		$headers = [
+			'Content-Type' => 'application/json',
+		];
+
+		if ( 2 === $api_version ) {
+			// v2 authenticates on the project API domain via an Authorization header, not a ?api_key= query param.
+			$url                     = sprintf( '%s/translate', Helper_API::get_api_domain( $api_key ) );
+			$headers['Authorization'] = 'Key ' . $api_key;
+		} else {
+			$url = sprintf( '%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key );
+		}
+
 		$args = [
 			'body'        => $requestBody,
-			'headers'     => [
-				'Content-Type' => 'application/json',
-			],
+			'headers'     => $headers,
 			'method'      => 'POST',
 			'data_format' => 'body',
 		];

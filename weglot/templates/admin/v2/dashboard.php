@@ -160,7 +160,7 @@ include_once __DIR__ . '/section/context.php';
 					<span class="option-label">Translate mobile-optimized pages (AMP)</span>
 					<span class="option-desc">Make sure your translated pages load fast and display correctly on mobile devices.</span>
 				</label>
-				<label class="option-row">
+				<label class="option-row" style="display: none;">
 					<input type="checkbox" name="translate_search" <?php checked( $option_services->get_option_custom_settings( 'translate_search' ), true ); ?>/>
 					<svg class="check-icon" viewBox="0 0 16 16">
 						<path

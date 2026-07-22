@@ -10,7 +10,7 @@ use WeglotWP\Services\Version_Service_Weglot;
 
 $version_service = weglot_get_service( Version_Service_Weglot::class );
 
-$dashboard_url   = Helper_API::get_register_url( true );
+$dashboard_url   = apply_filters( 'weglot_register_url', Helper_API::get_register_url( true ) );
 $weglot_options  = weglot_get_options();
 $option_services = weglot_get_service( 'Option_Service_Weglot' );
 $url_form        = wp_nonce_url(
