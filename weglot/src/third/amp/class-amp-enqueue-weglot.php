@@ -83,7 +83,7 @@ class Amp_Enqueue_Weglot implements Hooks_Interface_Weglot {
 		$type_flags           = weglot_get_option( 'type_flags' );
 		$type_flags           = Helper_Flag_Type::get_flag_number_with_type( $type_flags );
 		$with_flags           = weglot_get_option( 'with_flags' );
-		$amp_css_custom = file_get_contents( WEGLOT_DIR_DIST . '/css/front-amp-css.css' );
+		$amp_css_custom = file_get_contents( WEGLOT_DIR_DIST . '/css/front-amp-css.css' ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown -- Local plugin asset, not a remote request.
 		$css = "";
 		if( is_string($amp_css_custom)){
 			$css                  = str_replace( '../images/', WEGLOT_URL_DIST . '/images/', $amp_css_custom);

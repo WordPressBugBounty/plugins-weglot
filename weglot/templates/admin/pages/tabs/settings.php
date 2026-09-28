@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WeglotWP\Helpers\Helper_Tabs_Admin_Weglot;
+use WeglotWP\Services\Option_Service_Weglot;
 
 // manage link to add utm for tracking where in instawp env.
 $instawp     = get_option( 'weglot_instawp' );
@@ -38,6 +39,9 @@ $options_available = apply_filters(
 $user_info = $this->user_api_services->get_user_info();
 $plans     = $this->user_api_services->get_plans();
 
+$option_services      = weglot_get_service( Option_Service_Weglot::class );
+$api_key_is_read_only = $option_services->has_api_key_private_constant();
+
 ?>
 
 <h3 id="main_configuration"><?php esc_html_e( 'Main configuration', 'weglot' ); ?></h3>
@@ -58,9 +62,15 @@ $plans     = $this->user_api_services->get_plans();
 				type="text"
 				required
 				placeholder="wg_XXXXXXXXXXXX"
-				value="<?php echo esc_attr( $this->options[ $options_available['api_key_private']['key'] ] ); ?>"
+				value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+				<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
 			>
 			<br>
+			<?php if ( $api_key_is_read_only ) : ?>
+				<p class="description">
+					<?php esc_html_e( 'Defined by the WEGLOT_API_KEY_PRIVATE constant in your server configuration. It is never stored in the database and cannot be edited here.', 'weglot' ); ?>
+				</p>
+			<?php endif; ?>
 			<?php
 			if ( $this->options['has_first_settings'] ) {
 				?>

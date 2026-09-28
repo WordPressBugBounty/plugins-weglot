@@ -71,7 +71,7 @@ class Version_Service_Weglot implements Hooks_Interface_Weglot {
 			return (int) $saved_version;
 		}
 
-		$api_key_private = get_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ) );
+		$api_key_private = weglot_get_service( Option_Service_Weglot::class )->get_api_key_private();
 		if ( $api_key_private ) {
 			$version_to_set = $this->get_version_from_api_key_private($api_key_private);
 		} else {

@@ -4,12 +4,12 @@ namespace Weglot\Client\Endpoint;
 
 use Weglot\Client\Api\Exception\ApiError;
 use Weglot\Client\Api\Exception\InputAndOutputCountMatchException;
-use Weglot\Client\Api\Exception\InvalidWordTypeException;
-use Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Client\Api\Exception\MissingWordsOutputException;
-use Weglot\Client\Api\TranslateEntry;
 use Weglot\Client\Client;
 use Weglot\Client\Factory\Translate as TranslateFactory;
+use Weglot\Parser\Definitions\Exception\InvalidWordTypeException;
+use Weglot\Parser\Definitions\Exception\MissingRequiredParamException;
+use Weglot\Parser\Definitions\TranslateEntry;
 
 class CdnTranslate extends Endpoint
 {

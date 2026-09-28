@@ -46,6 +46,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/weglot/simple_html_dom"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/weglot/weglot-parser-php"
         }
     ],
     "autoload": {
@@ -66,6 +70,7 @@
         "psr/cache": "^1.0 || ^2.0 || ^3.0",
         "weglot/simplehtmldom": "^0.8",
         "weglot/translation-definitions": "^2.0",
+        "weglot/weglot-parser-php": "^0.1.0",
         "symfony/polyfill-php80": "^1.31",
         "jaybizzle/crawler-detect": "^1.3"
     },

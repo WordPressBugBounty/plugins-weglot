@@ -19,7 +19,7 @@ class Dom_Checkers_Service_Weglot {
 
 	/**
 	 * @since 2.0
-	 * @return array<string,string>
+	 * @return array<int, string>
 	 */
 	public function get_dom_checkers() {
 		$scanned_directory = scandir( __DIR__ . '/../domcheckers' );

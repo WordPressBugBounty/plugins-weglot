@@ -11,10 +11,11 @@ use Weglot\Client\Api\LanguageEntry;
 use WeglotWP\Helpers\Helper_API;
 use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Hooks_Interface_Weglot;
-use Weglot\Client\Api\Enum\BotType;
-use Weglot\Util\Server;
+use Weglot\Parser\Definitions\Enum\BotType;
+use Weglot\Parser\Util\Server;
 use WeglotWP\Services\Href_Lang_Service_Weglot;
 use WeglotWP\Services\Language_Service_Weglot;
+use WeglotWP\Services\Noindex_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\Redirect_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
@@ -60,6 +61,10 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 */
 	private $href_lang_services;
 	/**
+	 * @var Noindex_Service_Weglot
+	 */
+	private $noindex_services;
+	/**
 	 * @var Feature_Flags_Service_Weglot
 	 */
 	private $feature_flags_services;
@@ -78,6 +83,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		$this->redirect_services      = weglot_get_service( Redirect_Service_Weglot::class );
 		$this->translate_services     = weglot_get_service( Translate_Service_Weglot::class );
 		$this->href_lang_services     = weglot_get_service( Href_Lang_Service_Weglot::class);
+		$this->noindex_services       = weglot_get_service( Noindex_Service_Weglot::class );
 		$this->feature_flags_services = weglot_get_service( Feature_Flags_Service_Weglot::class );
 		$this->language_services      = weglot_get_service( Language_Service_Weglot::class );
 		$this->version_services       = weglot_get_service( Version_Service_Weglot::class );
@@ -100,12 +106,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 			}
 		}
 
-		//check if is elementor preview.
-		$elementor_preview = filter_input(INPUT_GET, 'elementor-preview', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-		$break_dance_edit = filter_input(INPUT_GET, '_breakdance_doing_ajax', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-
-		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] || $elementor_preview || $break_dance_edit) {
+		if ( Helper_Is_Admin::is_wp_admin() || 'wp-login.php' === $GLOBALS['pagenow'] || $this->is_page_builder_editing() ) {
 			return;
 		}
 
@@ -123,7 +124,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		$api_version = $this->version_services->get_version_from_api_key_private( $this->option_services->get_api_key_private() );
 
 		if ( $api_version === 1 ) {
-			if ( ! $this->option_services->get_option( 'api_key' ) ) {
+			if ( ! $this->option_services->get_api_key( true ) ) {
 				return;
 			}
 		} else {
@@ -136,9 +137,40 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		$this->prepare_rtl_language();
 		add_action( 'init', array( $this, 'weglot_init' ), 11 );
 		add_action( 'wp_head', array( $this, 'weglot_href_lang' ) );
+		// Late, so the tag lands after the one printed by any SEO plugin: search engines
+		// combine every robots meta tag and apply the most restrictive directives.
+		add_action( 'wp_head', array( $this, 'weglot_noindex' ), 99 );
 		add_action( 'wp_head', array( $this, 'weglot_custom_settings' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_switcher_templatefile' ) );
+		add_filter( 'script_loader_tag', array( $this, 'add_switcher_sri_attributes' ), 10, 2 );
 		add_action( 'wp_head', array( $this, 'weglot_dynamics' ) );
+	}
+
+	/**
+	 * Whether the request comes from a page builder editing or previewing a page.
+	 * Those contexts must never be translated: the builder edits the original content.
+	 *
+	 * @return boolean
+	 */
+	protected function is_page_builder_editing() {
+		$query_params = apply_filters(
+			'weglot_page_builder_query_params',
+			array(
+				'elementor-preview', // Elementor.
+				'_breakdance_doing_ajax', // Breakdance.
+				'in-front-editor', // Brizy.
+				'is-editor-iframe', // Brizy.
+				'brizy_media', // Brizy.
+			)
+		);
+
+		foreach ( (array) $query_params as $query_param ) {
+			if ( filter_input( INPUT_GET, $query_param, FILTER_SANITIZE_FULL_SPECIAL_CHARS ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -327,6 +359,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		// We initialize the URL here for the first time, the current language might be wrong in case of ajax with the language in a referer because at this time wp_doing_ajax is always false.
 		$this->current_language = $this->request_url_services->get_current_language();
 
+		// Ajax and REST endpoints are not navigable documents: get_current_language() infers their
+		// language from HTTP_REFERER, so a referer on a translated page makes every redirect below
+		// target the endpoint itself, which browsers retry forever. Same guard as check_need_to_redirect().
+		if ( wp_doing_ajax() || wg_is_rest() ) {
+			return;
+		}
+
 		// If the URL has a GET parameter wg-choose-original we need to set / unset the cookie and redirect.
 		$this->redirect_services->verify_no_redirect();
 
@@ -494,6 +533,15 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 
 	/**
 	 * @return void
+	 * @since 6.3
+	 * @see wp_head
+	 */
+	public function weglot_noindex() {
+		echo $this->noindex_services->generate_noindex_tag(); //phpcs:ignore
+	}
+
+	/**
+	 * @return void
 	 * @since 2.0
 	 * @version 2.3.0
 	 * @see wp_head
@@ -596,8 +644,9 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$template_file = array_merge( $template_file );
 				foreach ( $template_file as $filename ) {
 					$filename_esc = esc_attr( 'weglot-switcher-' . $filename['name'] );
-					if ( isset( $filename['hash'] ) && ! empty( $filename['hash'] ) ) {
-						$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . $filename['name'] . '.' . $filename['hash'] ) . '.min.js';
+					$hash         = isset( $filename['hash'] ) ? $filename['hash'] : '';
+					if ( '' !== $hash ) {
+						$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . $filename['name'] . '.' . $hash ) . '.min.js';
 					} else {
 						$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . $filename['name'] ) . '.min.js';
 					}
@@ -609,6 +658,8 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 						WEGLOT_VERSION, // Version (cache-busting hash is already in the URL)
 						true // Load in the footer
 					);
+
+					$this->set_switcher_integrity( $filename_esc, $filename['name'], $hash );
 				}
 			}
 		}else{
@@ -635,8 +686,80 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					WEGLOT_VERSION, // Version (cache-busting hash is already in the URL)
 					true // Load in the footer
 				);
+
+				$this->set_switcher_integrity(
+					$filename_esc_js,
+					$template_default['name'] ?? '',
+					$template_default['hash'] ?? ''
+				);
 			}
 		}
+	}
+
+	/**
+	 * Attach the Subresource Integrity digest published by the CDN to an enqueued switcher script.
+	 *
+	 * The digest is only attached when the hash used to build the URL matches the one currently
+	 * advertised in versions.json. A project pinned to an older template build would otherwise get
+	 * the digest of a different file, and the browser would refuse to run the switcher.
+	 *
+	 * @param string $handle        Script handle.
+	 * @param string $template_name Template name as published on the CDN.
+	 * @param string $hash          Hash used to build the script URL.
+	 *
+	 * @return void
+	 */
+	protected function set_switcher_integrity( $handle, $template_name, $hash ) {
+		if ( ! is_string( $hash ) || '' === $hash ) {
+			return;
+		}
+
+		$template = $this->get_template_hash( $template_name );
+
+		if ( ! is_array( $template ) || ! isset( $template['hash'], $template['integrity'] ) ) {
+			return;
+		}
+
+		if ( $template['hash'] !== $hash || ! is_string( $template['integrity'] ) || '' === $template['integrity'] ) {
+			return;
+		}
+
+		wp_script_add_data( $handle, 'weglot_integrity', $template['integrity'] );
+	}
+
+	/**
+	 * Add the integrity and crossorigin attributes to switcher scripts carrying an SRI digest.
+	 *
+	 * SRI fails closed: a digest that does not match the bytes received makes the browser drop the
+	 * script entirely, with no fallback. The `weglot_switcher_sri_enabled` filter is the escape
+	 * hatch for setups where a third party rewrites or proxies the script after we emit the tag.
+	 *
+	 * @param string $tag    The complete script tag.
+	 * @param string $handle Script handle.
+	 *
+	 * @return string
+	 */
+	public function add_switcher_sri_attributes( $tag, $handle ) {
+		if ( ! apply_filters( 'weglot_switcher_sri_enabled', true, $handle ) ) {
+			return $tag;
+		}
+
+		$scripts = wp_scripts();
+
+		$integrity = $scripts->get_data( $handle, 'weglot_integrity' );
+
+		if ( ! is_string( $integrity ) || '' === $integrity ) {
+			return $tag;
+		}
+
+		$attributes = sprintf(
+			' integrity="%s" crossorigin="anonymous"',
+			esc_attr( $integrity )
+		);
+
+		$tag_with_sri = preg_replace( '#^(\s*<script\b)#', '$1' . $attributes, $tag, 1 );
+
+		return is_string( $tag_with_sri ) ? $tag_with_sri : $tag;
 	}
 
 
@@ -742,6 +865,20 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		$add_dynamics = apply_filters( 'weglot_translate_dynamics', false );
 
 		if ( $add_dynamics ) {
+			$js_autoswitch = apply_filters( 'weglot_autoredirect_js', false );
+
+			// The JS lib drives the browser-language redirect from the original language page,
+			// so it can never be skipped when auto_switch is on.
+			if ( ! $js_autoswitch && ! apply_filters( 'weglot_load_dynamics_in_original_language', true ) ) {
+				$original = $this->language_services->get_original_language();
+				$current  = $this->request_url_services->get_current_language();
+
+				if ( null !== $original && null !== $current
+					&& $current->getInternalCode() === $original->getInternalCode() ) {
+					return;
+				}
+			}
+
 			// Get the current URL
 			$current_full_url = weglot_get_current_full_url();
 			if ( ! is_string( $current_full_url ) ) {
@@ -761,10 +898,6 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				if ( isset( $parsed_url['port'] ) ) {
 					$current_url .= ':' . $parsed_url['port'];
 				}
-			}
-
-			if ( isset( $parsed_url['port'] ) ) {
-				$current_url .= ':' . $parsed_url['port'];
 			}
 
 			if ( isset( $parsed_url['path'] ) ) {
@@ -790,10 +923,14 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				return; // Do nothing if the current URL is not in the allowed list
 			}
 
+			// Let an integration load the script on the current request without having to
+			// overwrite the site wide `weglot_allowed_urls` list of every other consumer.
+			$load_script = apply_filters( 'weglot_load_dynamics_script', $load_script );
+
 			if ( $load_script ) {
 				$api_key = $this->version_services->get_onboarding_version() === 2
 					? weglot_get_option( 'public_key' )
-					: weglot_get_option( 'api_key' );
+					: $this->option_services->get_api_key( true );
 
 				// Define default values
 				$default_whitelist = [
@@ -811,11 +948,18 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					[ 'value' => '.wisepops-tab' ],
 				];
 
+				// Postal addresses rendered client-side never reach the PHP parser, so they must be
+				// excluded again here for the JS engine.
+				$default_excluded_blocks = [
+					[ 'value' => 'address' ],
+				];
+
 				$default_proxify_iframes  = [
 				];
 				// Apply filters
 				$whitelist = apply_filters( 'weglot_whitelist_selectors', $default_whitelist );
 				$dynamics  = apply_filters( 'weglot_dynamics_selectors', $default_dynamics );
+				$excluded_blocks = apply_filters( 'weglot_excluded_blocks_selectors', $default_excluded_blocks );
 				$proxify_iframes  = apply_filters( 'weglot_proxify_iframes', $default_proxify_iframes );
 
 				// Prevent the JS lib from translating everything when no selectors are configured.
@@ -825,13 +969,16 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				if ( ! is_array( $dynamics ) || [] === $dynamics ) {
 					$dynamics = [ [ 'value' => '.__weglot_no_dynamic__' ] ];
 				}
-				$js_autoswitch     = apply_filters( 'weglot_autoredirect_js', false );
+				if ( ! is_array( $excluded_blocks ) ) {
+					$excluded_blocks = [];
+				}
 				$hide_switcher     = apply_filters( 'weglot_hide_switcher_js', true );
 
 				$weglotConfig = [
 					'api_key' => esc_js($api_key),
 					'whitelist' => $whitelist,
 					'dynamics' => $dynamics,
+					'excluded_blocks' => $excluded_blocks,
 					'proxify_iframes' => $proxify_iframes,
 					'hide_switcher' => $hide_switcher ? 'true' : 'false',
 					'auto_switch' => $js_autoswitch ? 'true' : 'false',
@@ -841,12 +988,27 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					$weglotConfig['language_to'] = esc_js(weglot_get_current_language());
 				}
 
+				// Opt-in: deferring widens the window where dynamic content can show untranslated.
+				// It is also refused when auto_switch is on, as it would delay the browser-language
+				// redirect until after DOM parsing and flash the original language page.
+				$defer_lib = ! $js_autoswitch && apply_filters( 'weglot_defer_dynamics_js', false );
+
 				?>
-				<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- weglot.min.js is the Weglot live translation engine and must be served from the Weglot CDN; it cannot be bundled or enqueued locally. ?>
-				<script type="text/javascript" src="<?php echo esc_url( Helper_API::get_root_cdn_base() ); ?>/weglot.min.js"></script>
-				<script>
-					Weglot.initialize(<?php echo wp_json_encode($weglotConfig); ?>);
-				</script>
+				<?php if ( $defer_lib ) : ?>
+					<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- weglot.min.js is the Weglot live translation engine and must be served from the Weglot CDN; it cannot be bundled or enqueued locally. ?>
+					<script type="text/javascript" id="weglot-lib" defer src="<?php echo esc_url( Helper_API::get_root_cdn_base() ); ?>/weglot.min.js"></script>
+					<script>
+						document.getElementById( 'weglot-lib' ).addEventListener( 'load', function () {
+							Weglot.initialize(<?php echo wp_json_encode($weglotConfig); ?>);
+						} );
+					</script>
+				<?php else : ?>
+					<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript -- weglot.min.js is the Weglot live translation engine and must be served from the Weglot CDN; it cannot be bundled or enqueued locally. ?>
+					<script type="text/javascript" src="<?php echo esc_url( Helper_API::get_root_cdn_base() ); ?>/weglot.min.js"></script>
+					<script>
+						Weglot.initialize(<?php echo wp_json_encode($weglotConfig); ?>);
+					</script>
+				<?php endif; ?>
 				<?php
 			}
 		}

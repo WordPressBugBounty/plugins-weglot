@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitf6602841d556aee2fe921e68123043df
+class ComposerStaticInita2a8f36d57fc4205b7d63bdab483d936
 {
     public static $files = array (
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
@@ -14,6 +14,7 @@ class ComposerStaticInitf6602841d556aee2fe921e68123043df
     public static $prefixLengthsPsr4 = array (
         'W' =>
         array (
+            'Weglot\\Parser\\' => 14,
             'Weglot\\' => 7,
             'WeglotLanguages\\' => 16,
         ),
@@ -36,6 +37,10 @@ class ComposerStaticInitf6602841d556aee2fe921e68123043df
     );
 
     public static $prefixDirsPsr4 = array (
+        'Weglot\\Parser\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/weglot/weglot-parser-php/src',
+        ),
         'Weglot\\' =>
         array (
             0 => __DIR__ . '/..' . '/weglot/weglot-php/src',
@@ -85,10 +90,10 @@ class ComposerStaticInitf6602841d556aee2fe921e68123043df
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitf6602841d556aee2fe921e68123043df::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitf6602841d556aee2fe921e68123043df::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitf6602841d556aee2fe921e68123043df::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitf6602841d556aee2fe921e68123043df::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInita2a8f36d57fc4205b7d63bdab483d936::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInita2a8f36d57fc4205b7d63bdab483d936::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInita2a8f36d57fc4205b7d63bdab483d936::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInita2a8f36d57fc4205b7d63bdab483d936::$classMap;
 
         }, null, ClassLoader::class);
     }

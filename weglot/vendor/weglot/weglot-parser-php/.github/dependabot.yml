@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Actions are pinned to commit SHAs in the workflows, so nothing bumps them on its
+  # own. Dependabot rewrites both the hash and its trailing version comment.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns:
+          - '*'

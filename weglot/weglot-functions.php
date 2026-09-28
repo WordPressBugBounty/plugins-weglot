@@ -212,7 +212,7 @@ function weglot_is_eligible_url( $url ) {
  * @version 3.0.0
  */
 function weglot_get_api_key() {
-	return weglot_get_option( 'api_key_private' );
+	return weglot_get_service( Option_Service_Weglot::class )->get_api_key_private();
 }
 
 /**

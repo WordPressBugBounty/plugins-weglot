@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Weglot\Parser\Parser;
-use Weglot\Util\SourceType;
+use Weglot\Parser\Util\SourceType;
 use WeglotWP\Helpers\Helper_Replace_Url_Weglot;
 
 
@@ -300,7 +300,7 @@ class Replace_Url_Service_Weglot {
 
 		$admin_url         = admin_url();
 		$parsed_url        = wp_parse_url( $current_url );
-		$server_host       = apply_filters( 'weglot_check_link_server_host', $_SERVER['HTTP_HOST'] ); //phpcs:ignore
+		$server_host       = apply_filters( 'weglot_check_link_server_host', $this->request_url_services->get_server_host() );
 		$check_current_url = $this->request_url_services->create_url_object( $current_url );
 
 		$host           = '';

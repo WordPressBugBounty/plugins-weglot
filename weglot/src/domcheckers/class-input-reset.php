@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Weglot\Parser\Check\Dom\AbstractDomChecker;
-use Weglot\Client\Api\Enum\WordType;
+use Weglot\Parser\Definitions\Enum\WordType;
 
 
 /**

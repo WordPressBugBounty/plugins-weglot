@@ -2,6 +2,9 @@
 
 namespace Weglot\Client\Api\Exception;
 
+use Weglot\Parser\Definitions\Exception\AbstractException;
+use Weglot\Parser\Definitions\Exception\WeglotCode;
+
 class InputAndOutputCountMatchException extends AbstractException
 {
     public function __construct(array $jsonBody)

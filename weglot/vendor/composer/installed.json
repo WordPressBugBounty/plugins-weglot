@@ -329,18 +329,78 @@
             "install-path": "../weglot/translation-definitions"
         },
         {
-            "name": "weglot/weglot-php",
-            "version": "1.9.8",
-            "version_normalized": "1.9.8.0",
+            "name": "weglot/weglot-parser-php",
+            "version": "0.1.2",
+            "version_normalized": "0.1.2.0",
             "source": {
                 "type": "git",
-                "url": "git@github.com:weglot/weglot-php.git",
-                "reference": "d3572d2071936b889bae58c4c2e56b3eafda396c"
+                "url": "git@github.com:weglot/weglot-parser-php.git",
+                "reference": "cc77f3408bd5c843cc16e38919ed7e85365dfda2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/d3572d2071936b889bae58c4c2e56b3eafda396c",
-                "reference": "d3572d2071936b889bae58c4c2e56b3eafda396c",
+                "url": "https://api.github.com/repos/weglot/weglot-parser-php/zipball/cc77f3408bd5c843cc16e38919ed7e85365dfda2",
+                "reference": "cc77f3408bd5c843cc16e38919ed7e85365dfda2",
+                "shasum": ""
+            },
+            "require": {
+                "jaybizzle/crawler-detect": "^1.2",
+                "php": ">=7.4",
+                "symfony/polyfill-php80": "^1.31",
+                "weglot/simplehtmldom": "^0.8"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.64",
+                "phpstan/phpstan": "^2.0",
+                "phpunit/phpunit": "^9.6 || ^10.5 || ^11.4"
+            },
+            "time": "2026-08-04T13:51:39+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Weglot\\Parser\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Weglot\\Parser\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "phpstan": [
+                    "vendor/bin/phpstan analyse"
+                ],
+                "cs": [
+                    "vendor/bin/php-cs-fixer fix"
+                ],
+                "test": [
+                    "vendor/bin/phpunit tests"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Standalone DOM parser for Weglot — extracts and applies translatable content without API calls",
+            "support": {
+                "source": "https://github.com/weglot/weglot-parser-php/tree/0.1.2",
+                "issues": "https://github.com/weglot/weglot-parser-php/issues"
+            },
+            "install-path": "../weglot/weglot-parser-php"
+        },
+        {
+            "name": "weglot/weglot-php",
+            "version": "1.9.9",
+            "version_normalized": "1.9.9.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:weglot/weglot-php.git",
+                "reference": "5e5a71914b6d405c6bc8671fc39bbf194d45ea59"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/weglot/weglot-php/zipball/5e5a71914b6d405c6bc8671fc39bbf194d45ea59",
+                "reference": "5e5a71914b6d405c6bc8671fc39bbf194d45ea59",
                 "shasum": ""
             },
             "require": {
@@ -351,7 +411,8 @@
                 "psr/cache": "^1.0 || ^2.0 || ^3.0",
                 "symfony/polyfill-php80": "^1.31",
                 "weglot/simplehtmldom": "^0.8",
-                "weglot/translation-definitions": "^2.0"
+                "weglot/translation-definitions": "^2.0",
+                "weglot/weglot-parser-php": "^0.1.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^2 || ^3.64",
@@ -361,7 +422,7 @@
                 "symfony/cache": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1",
                 "symfony/dotenv": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1"
             },
-            "time": "2026-06-16T13:04:48+00:00",
+            "time": "2026-07-23T14:17:45+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {

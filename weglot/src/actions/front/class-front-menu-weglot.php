@@ -70,7 +70,7 @@ class Front_Menu_Weglot implements Hooks_Interface_Weglot {
 		$api_version = $this->version_services->get_version_from_api_key_private( $this->option_services->get_api_key_private() );
 
 		if ( $api_version === 1 ) {
-			if ( ! $this->option_services->get_option( 'api_key' ) ) {
+			if ( ! $this->option_services->get_api_key( true ) ) {
 				return;
 			}
 		} else {

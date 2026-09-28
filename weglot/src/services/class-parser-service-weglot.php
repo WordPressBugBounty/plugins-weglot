@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Exception;
 use WeglotWP\Helpers\Helper_API;
 use Weglot\Client\Client;
-use Weglot\Parser\Parser;
+use Weglot\Parser\TranslatingParser;
 use Weglot\Parser\ConfigProvider\ServerConfigProvider;
 use Weglot\Parser\ConfigProvider\ConfigProviderInterface;
 
@@ -116,7 +116,7 @@ class Parser_Service_Weglot {
 	}
 
 	/**
-	 * @return Parser
+	 * @return TranslatingParser
 	 * @throws Exception
 	 * @since 2.0
 	 * @version 2.2.2
@@ -139,9 +139,18 @@ class Parser_Service_Weglot {
 			$config->loadFromServer();
 		}
 
+		// loadFromServer() resolves the URL from $_SERVER, which holds the proxy internal hostname
+		// behind a reverse proxy. Realign it on the resolved public host without touching the
+		// canonical argument, so that loadFromServer() keeps its own 404 handling.
+		try {
+			$request_url_services = weglot_get_service( Request_Url_Service_Weglot::class );
+			$config->setUrl( $request_url_services->replace_host( $config->getUrl() ) );
+		} catch ( Exception $e ) {
+			// Service container not fully populated yet, keep the URL resolved from $_SERVER.
+		}
+
 		$client = $this->get_client();
-		$safe_custom_switchers = is_array( $custom_switchers ) ? $custom_switchers : [];
-		$parser = new Parser( $client, $config, $exclude_blocks, $safe_custom_switchers, $whitelist_blocks, $translate_inside_exclusions_blocks );
+		$parser = new TranslatingParser( $client, $config, $exclude_blocks, $custom_switchers, $whitelist_blocks, $translate_inside_exclusions_blocks );
 
 		$parser->getDomCheckerProvider()->addCheckers( $this->dom_checkers_services->get_dom_checkers() );
 		$parser->getRegexCheckerProvider()->addCheckers( $this->regex_checkers_services->get_regex_checkers() );

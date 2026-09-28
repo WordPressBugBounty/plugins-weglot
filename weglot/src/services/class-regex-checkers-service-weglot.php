@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Weglot\Parser\Check\Regex\RegexChecker;
-use Weglot\Util\SourceType;
+use Weglot\Parser\Util\SourceType;
 use Weglot\Util\Text;
 use WeglotWP\Models\Third_Active_Interface_Weglot;
 
@@ -27,7 +27,7 @@ class Regex_Checkers_Service_Weglot {
 	}
 
 	/**
-	 * @return array<string,mixed>
+	 * @return array<int, RegexChecker>
 	 * @throws \Exception
 	 * @since 2.0
 	 */

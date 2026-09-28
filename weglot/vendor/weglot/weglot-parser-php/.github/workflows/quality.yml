@@ -1,0 +1,69 @@
+name: PHP Quality
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  quality:
+    name: Quality — PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.3']
+
+    env:
+      # The built-in GITHUB_TOKEN lifts GitHub API rate limits for Composer dist downloads.
+      # The private simple_html_dom repo itself is cloned over SSH (see the deploy-key step).
+      COMPOSER_AUTH: |
+        {
+          "github-oauth": {
+            "github.com": "${{ secrets.GITHUB_TOKEN }}"
+          }
+        }
+
+    steps:
+      # Third-party actions are pinned to a full commit SHA: a moving tag could be
+      # repointed at malicious code, a commit hash cannot.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up SSH for the private simple_html_dom repo
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SIMPLE_HTML_DOM_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Cache Composer vendor
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php }}-${{ hashFiles('composer.json') }}
+          restore-keys: ${{ runner.os }}-php-${{ matrix.php }}-
+
+      # No composer.lock is committed (PHPUnit 11 would break the PHP 7.4 job),
+      # so resolve the highest dependency set compatible with each PHP version.
+      # --prefer-source clones the private simple_html_dom over SSH (deploy key)
+      # instead of hitting the GitHub archive API, which the built-in token can't reach.
+      - name: Install dependencies
+        run: composer update --prefer-source --no-interaction --no-progress
+
+      - name: Validate PHP style
+        run: vendor/bin/php-cs-fixer --dry-run --diff fix
+
+      - name: Run PHPStan
+        if: always()
+        run: composer phpstan -- --no-progress
+
+      - name: Run PHPUnit
+        if: always()
+        run: vendor/bin/phpunit

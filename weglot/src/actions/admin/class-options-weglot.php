@@ -113,7 +113,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 			wp_send_json_error( array( 'message' => 'Invalid API key.' ) );
 		}
 
-		update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key_private );
+		$this->option_services->set_api_key_private( $api_key_private );
 
 
 		$options = $this->option_services->get_options();
@@ -216,7 +216,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 
 			$has_only_api_key = $has_api_key && ! $has_language_from && ! $has_languages;
 			if($has_only_api_key){
-				update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key_private );
+				$this->option_services->set_api_key_private( $api_key_private );
 				delete_transient( 'weglot_cache_cdn' );
 				wp_redirect( $redirect_url ); //phpcs:ignore
 				exit;
@@ -301,11 +301,11 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 					$this->option_services->set_options( $options_bdd );
 
 					if($api_version === 2){
-						update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $keep_api_key_private );
+						$this->option_services->set_api_key_private( $keep_api_key_private );
 						set_transient( 'weglot_cache_cdn', $options, apply_filters( 'weglot_get_options_from_cdn_cache_duration', 300 ) );
 					}else{
-						update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key_private );
-						update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key' ), $response['result']['api_key'] );
+						$this->option_services->set_api_key_private( $api_key_private );
+						$this->option_services->set_api_key( $response['result']['api_key'] );
 					}
 
 					// get menu options.
@@ -356,21 +356,25 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 	 */
 
 	public function sanitize_options_settings( $options, $has_first_settings = false, $version_api = 1 ) {
-		if($version_api === 1){
-			$user_info = [];
-			$switchers = [];
-			$definitions = [];
-		}else{
-			$user_info = $this->user_api_services->get_user_info( $options['api_key_private'] );
-			$switchers = $this->option_services->get_switchers_editor_button();
-			$definitions = $this->option_services->get_option('definitions');
-		}
+		// The user API only exists in v2: a v1 private key would just spend an HTTP request to
+		// get nothing back.
+		$user_info = $version_api === 1 ? [] : $this->user_api_services->get_user_info( $options['api_key_private'] );
+
+		// Both keys are read-only in the settings form, so the current settings are their only
+		// source here. Skipping this lookup made the POST to /projects/settings below overwrite
+		// them with an empty array, wiping the switchers built in the dashboard on every save.
+		$switchers   = $this->option_services->get_switchers_editor_button();
+		$definitions = $this->option_services->get_option('definitions');
 
 		// Limit language.
 		$limit = 30;
 		if ( isset( $user_info['languages_limit'] ) ) {
 			$limit = $user_info['languages_limit'];
 		}
+		// The v2 API omits the key entirely for a project with no language configured, and
+		// array_splice() takes its first argument by reference, so a missing key auto-vivifies
+		// to null and is a fatal TypeError on PHP 8.
+		$options['languages'] = $options['languages'] ?? array();
 		$options['languages'] = array_splice( $options['languages'], 0, $limit );
 
 		$default_options = $this->option_services->get_options_default();

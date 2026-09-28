@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Weglot\Client\Api\LanguageEntry;
 use Weglot\Util\Url;
-use Weglot\Util\Server;
+use Weglot\Parser\Util\Server;
 use WeglotWP\Third\Amp\Amp_Service_Weglot;
 
 
@@ -161,6 +161,63 @@ class Request_Url_Service_Weglot {
 
 
 	/**
+	 * Resolve the public host of the current request.
+	 *
+	 * Behind a reverse proxy the origin receives its own internal hostname in the Host header,
+	 * the public domain being carried only by X-Forwarded-Host. Since that header is supplied by
+	 * the client, trusting it is opt-in through the `weglot_use_forwarded_host` filter and must
+	 * only be enabled when the proxy overwrites it.
+	 *
+	 * @param bool $use_forwarded_host
+	 *
+	 * @return string
+	 * @since 3.1.0
+	 */
+	public function get_server_host( $use_forwarded_host = false ) {
+		$use_forwarded = apply_filters( 'weglot_use_forwarded_host', $use_forwarded_host );
+
+		$host = Server::getHost( $_SERVER, $use_forwarded ); //phpcs:ignore
+
+		// X-Forwarded-Host carries a comma-separated chain when several proxies are hit.
+		if ( is_string( $host ) && strpos( $host, ',' ) !== false ) {
+			$host = trim( strtok( $host, ',' ) );
+		}
+
+		return apply_filters( 'weglot_server_host', $host );
+	}
+
+	/**
+	 * Replace the host of a given URL by the resolved public host.
+	 *
+	 * @param string $url
+	 *
+	 * @return string
+	 * @since 3.1.0
+	 */
+	public function replace_host( $url ) {
+		$parsed = wp_parse_url( $url );
+
+		if ( ! is_array( $parsed ) || ! isset( $parsed['host'] ) ) {
+			return $url;
+		}
+
+		$host = $this->get_server_host();
+
+		if ( ! is_string( $host ) || '' === $host || $parsed['host'] === $host ) {
+			return $url;
+		}
+
+		$replaced = preg_replace(
+			'#^(https?://)' . preg_quote( $parsed['host'], '#' ) . '#i',
+			'$1' . $host,
+			$url,
+			1
+		);
+
+		return is_string( $replaced ) ? $replaced : $url;
+	}
+
+	/**
 	 * @param mixed $use_forwarded_host
 	 *
 	 * @return string
@@ -168,7 +225,7 @@ class Request_Url_Service_Weglot {
 	 *
 	 */
 	public function get_full_url( $use_forwarded_host = false ) {
-		return Server::fullUrl( $_SERVER, $use_forwarded_host ); //phpcs:ignore
+		return Server::getProtocol( $_SERVER ) . '://' . $this->get_server_host( $use_forwarded_host ) . $_SERVER['REQUEST_URI']; //phpcs:ignore
 	}
 
 	/**

@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Weglot\Util\SourceType;
+use Weglot\Parser\Util\SourceType;
 
 
 /**

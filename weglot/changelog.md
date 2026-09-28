@@ -2,6 +2,21 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 6.3 (28/09/2026) =
+* Improvement: The API key can now be supplied by a PHP constant (WEGLOT_API_KEY_PRIVATE, or WEGLOT_API_KEY on v1 projects) instead of the database, for hosts that keep secrets in their server configuration such as WordPress VIP. When the constant is set, the settings screen shows the key read-only and never writes it back.
+* Improvement: Switcher scripts served from cdn.weglot.com now carry a Subresource Integrity digest, so the browser can verify the bytes it received.
+* Improvement: The address tag is now excluded by default from dynamic (client-side) translation, so postal addresses in the WooCommerce block cart and block checkout are left untranslated. The new weglot_excluded_blocks_selectors filter lets you add your own selectors.
+* Improvement: Formstack forms are now translated. They are rendered client side, after WordPress has served the page, so the server-side parser never saw them; the integration also keeps the fields' accessible names in step with the translated labels. Thanks to WestLight Energy, who had been maintaining this as an mu-plugin.
+* Improvement: Adds two opt-in filters to keep the dynamic translation library off the critical path. Setting weglot_defer_dynamics_js to true loads it with defer and initializes it on its load event so it stops blocking page rendering, and setting weglot_load_dynamics_in_original_language to false skips loading it altogether in the original language, where it has nothing to translate. Both filters are ignored when weglot_autoredirect_js is enabled, since the library performs the browser-language redirect in that case. Default behavior is unchanged.
+* Improvement: A new weglot_noindex_urls filter keeps chosen translated URLs out of search engines without removing them from the language, for pages worth translating but not worth indexing (cart, thank-you page, single-market landing pages). Rules match the original path, so they survive a translated-slug change.
+* Fix: Ajax and REST requests are no longer redirected to themselves when the referring page is in a translated language. In subdirectory mode this produced an infinite 301 loop that could break features relying on REST or admin-ajax, such as a currency switcher or a funnel bootstrap. Thanks to Milan Petrović (https://github.com/milllan) for the detailed report and analysis.
+* Fix: Saving any tab of the settings page on a v1 project no longer empties the language switchers built in the dashboard.
+* Fix: Saving the Weglot settings no longer causes a fatal error on PHP 8 when the submitted options carry no languages key, which could take the whole admin down.
+* Fix: The Brizy page builder editor is no longer translated. Brizy edits the original content in a front-end iframe, so Weglot was translating the editor and saving the translated markup back as source content. The new weglot_page_builder_query_params filter lets you exclude other builders the same way.
+* Fix: Behind a reverse proxy (Cloudflare, Kinsta, WP Engine…), switcher links, hreflang tags and internal link rewriting now resolve to the public domain instead of the origin's internal hostname. Opt in with the weglot_use_forwarded_host filter, or force the host with weglot_server_host.
+* Fix: The current URL compared against the weglot_allowed_urls filter no longer has its port appended twice, which prevented the comparison from ever matching on sites served from a non-standard port.
+* Fix: Stored API domains are now refreshed when the settings cache is purged by the project webhook, so a project moved to another API domain keeps translating.
+
 ## 6.2 (22/07/2026) =
 * Improvement: Reworked the deactivation feedback form — you now pick a single reason (radio buttons), and the optional follow-up uses a consent checkbox tied to your logged-in account email instead of a free-text email field. Primary actions were reordered and radio/checkbox controls are styled distinctly.
 * Fix: Feedback emails are no longer sent using the site admin address as sender. They are now sent from wordpress@{site host} with Reply-To set to your email only when you tick the consent box, reducing DMARC/SPF rejections.

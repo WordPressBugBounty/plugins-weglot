@@ -2,6 +2,8 @@
 
 namespace Weglot\Client\Api\Exception;
 
+use Weglot\Parser\Definitions\Exception\WeglotCode;
+
 class MissingWordsOutputException extends \Exception
 {
     public function __construct()

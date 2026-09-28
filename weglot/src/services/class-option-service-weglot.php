@@ -411,6 +411,10 @@ class Option_Service_Weglot {
 	 * @since 3.0.0
 	 */
 	public function get_api_key( $compatibility = false ) {
+		if ( $this->has_api_key_constant() ) {
+			return apply_filters( 'weglot_get_api_key', trim( (string) constant( 'WEGLOT_API_KEY' ) ) );
+		}
+
 		$api_key = get_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key' ), false );
 
 		if ( ! $compatibility || $api_key ) {
@@ -598,11 +602,74 @@ class Option_Service_Weglot {
 	}
 
 	/**
+	 * Whether the v1 API key is supplied by the WEGLOT_API_KEY constant rather than the database.
+	 *
+	 * On a v1 project this is the key the translation client authenticates with, so a host that
+	 * keeps secrets out of the database needs it alongside WEGLOT_API_KEY_PRIVATE.
+	 *
+	 * @return bool
+	 * @since 6.3
+	 */
+	public function has_api_key_constant() {
+		return defined( 'WEGLOT_API_KEY' ) && '' !== trim( (string) constant( 'WEGLOT_API_KEY' ) );
+	}
+
+	/**
+	 * Persists the v1 API key, unless it is supplied by the WEGLOT_API_KEY constant.
+	 *
+	 * @param string $api_key
+	 * @return void
+	 * @since 6.3
+	 */
+	public function set_api_key( $api_key ) {
+		if ( $this->has_api_key_constant() ) {
+			return;
+		}
+
+		update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key' ), $api_key );
+	}
+
+	/**
+	 * Whether the API key is supplied by the WEGLOT_API_KEY_PRIVATE constant rather than the database.
+	 *
+	 * Hosts that keep secrets outside the database (WordPress VIP environment variables, Docker
+	 * secrets, .env files) define the constant in their configuration. When they do, the key is
+	 * read-only: the settings screen shows it disabled and never writes it back.
+	 *
+	 * @return bool
+	 * @since 6.3
+	 */
+	public function has_api_key_private_constant() {
+		// constant() rather than the bare name: the constant is defined by the host, so PHPStan
+		// cannot discover it and reports it as unknown.
+		return defined( 'WEGLOT_API_KEY_PRIVATE' ) && '' !== trim( (string) constant( 'WEGLOT_API_KEY_PRIVATE' ) );
+	}
+
+	/**
 	 * @return string
 	 * @since 3.0.0
 	 */
 	public function get_api_key_private() {
+		if ( $this->has_api_key_private_constant() ) {
+			return trim( (string) constant( 'WEGLOT_API_KEY_PRIVATE' ) );
+		}
+
 		return get_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ) );
+	}
+
+	/**
+	 * Persists the API key, unless it is supplied by the WEGLOT_API_KEY_PRIVATE constant.
+	 *
+	 * @param string $api_key_private
+	 * @return void
+	 * @since 6.3
+	 */
+	public function set_api_key_private( $api_key_private ) {
+		if ( $this->has_api_key_private_constant() ) {
+			return;
+		}
+
+		update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key_private );
 	}
 
 
@@ -820,7 +887,7 @@ class Option_Service_Weglot {
 	 *
 	 * Returns the array "switchers" from the custom_settings or an empty array
 	 *
-	 * @return array<string,mixed>|boolean|int
+	 * @return array<int, array<string, mixed>>
 	 * @since 3.0.0
 	 */
 	public function get_switchers_editor_button() {

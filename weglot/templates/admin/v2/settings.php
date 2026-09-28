@@ -90,6 +90,7 @@ $url_form        = wp_nonce_url(
 				<p>Enter your API key to get started</p>
 
 			<?php endif; ?>
+			<?php $api_key_is_read_only = $option_services->has_api_key_private_constant(); ?>
 			<div class="input-wrapper">
 				<label for="api-key">Weglot API key</label>
 				<input
@@ -98,7 +99,14 @@ $url_form        = wp_nonce_url(
 					name="<?php echo esc_attr( sprintf( '%s[api_key_private]', WEGLOT_SLUG ) ); ?>"
 					placeholder="Please enter your API Key"
 					value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+					<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
 				>
+				<?php if ( $api_key_is_read_only ) : ?>
+					<p class="description">
+						Defined by the <code>WEGLOT_API_KEY_PRIVATE</code> constant in your server
+						configuration. It is never stored in the database and cannot be edited here.
+					</p>
+				<?php endif; ?>
 				<div id="next-step-info">
 					<p>Next step - Generate your first translations</p>
 					<div class="steps">

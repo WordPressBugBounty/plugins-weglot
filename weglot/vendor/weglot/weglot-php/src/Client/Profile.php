@@ -15,8 +15,8 @@ class Profile
     protected $translationEngine;
 
     /**
-     * @param string $apiKey
-     * @param int    $translationEngine
+     * @param string|null $apiKey
+     * @param int         $translationEngine
      */
     public function __construct($apiKey, $translationEngine)
     {
@@ -24,12 +24,12 @@ class Profile
     }
 
     /**
-     * @param string $apiKey
-     * @param int    $translationEngine
+     * @param string|null $apiKey
+     * @param int         $translationEngine
      */
     protected function setup($apiKey, $translationEngine): void
     {
-        if (\is_string($apiKey) && 0 === strpos($apiKey, 'wg_') && 35 === \strlen($apiKey)) {
+        if (\is_string($apiKey) && str_starts_with($apiKey, 'wg_') && 35 === \strlen($apiKey)) {
             $this
                 ->setApiVersion(1)
                 ->setTranslationEngine(1);

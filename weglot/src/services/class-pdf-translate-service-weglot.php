@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Weglot\Parser\Parser;
+use Weglot\Parser\TranslatingParser;
 use Weglot\Parser\ConfigProvider\ServerConfigProvider;
 
 
@@ -26,6 +26,10 @@ class Pdf_Translate_Service_Weglot {
 	 * @var Language_Service_Weglot
 	 */
 	private $language_services;
+	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
 
 	/**
 	 * @since 3.7
@@ -34,6 +38,7 @@ class Pdf_Translate_Service_Weglot {
 		$this->option_services   = weglot_get_service( Option_Service_Weglot::class );
 		$this->parser_services   = weglot_get_service( Parser_Service_Weglot::class );
 		$this->language_services = weglot_get_service( Language_Service_Weglot::class );
+		$this->version_services  = weglot_get_service( Version_Service_Weglot::class );
 	}
 
 
@@ -48,7 +53,9 @@ class Pdf_Translate_Service_Weglot {
 	 * @version 3.7
 	 */
 	public function translate_pdf( $content, $language ) {
-		$api_key = $this->option_services->get_option( 'api_key' );
+		$api_key_private = $this->option_services->get_api_key_private();
+		$api_version     = $this->version_services->get_version_from_api_key_private( $api_key_private );
+		$api_key         = ( 2 === $api_version ) ? $api_key_private : $this->option_services->get_api_key( true );
 
 		if ( ! $api_key ) {
 			return $content;
@@ -60,7 +67,7 @@ class Pdf_Translate_Service_Weglot {
 
 			$config             = new ServerConfigProvider();
 			$client             = $this->parser_services->get_client();
-			$parser             = new Parser( $client, $config, $exclude_blocks );
+			$parser             = new TranslatingParser( $client, $config, $exclude_blocks );
 			$translated_content = $parser->translate( $content, $original_language, $language ); //phpcs:ignore
 
 			return array(

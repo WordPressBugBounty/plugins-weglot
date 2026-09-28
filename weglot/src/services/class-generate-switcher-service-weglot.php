@@ -81,7 +81,7 @@ class Generate_Switcher_Service_Weglot {
 
 	/**
 	 * @param string $dom the final HTML.
-	 * @param array<int|string,mixed> $switchers the array of switchers from settings.
+	 * @param array<int, array<string, mixed>> $switchers the array of switchers from settings.
 	 *
 	 * @return string|bool
 	 * @throws \Exception

@@ -2,8 +2,8 @@
 
 namespace Weglot\Client\Api;
 
-use Weglot\Client\Api\Shared\AbstractCollection;
-use Weglot\Client\Api\Shared\AbstractCollectionEntry;
+use Weglot\Parser\Definitions\Shared\AbstractCollection;
+use Weglot\Parser\Definitions\Shared\AbstractCollectionEntry;
 
 /**
  * @phpstan-extends AbstractCollection<LanguageEntry>

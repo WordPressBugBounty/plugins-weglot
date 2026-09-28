@@ -163,6 +163,10 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 	 * @return WP_REST_Response
 	 */
 	public function weglot_cache_purge_v2(): WP_REST_Response {
+		// Refreshed first, then the transients are dropped: the refresh repopulates
+		// weglot_cache_cdn from the API endpoint, while the front must keep reading it from the CDN.
+		$this->refresh_api_domains();
+
 		delete_transient( 'weglot_cache_cdn' );
 		delete_transient( 'weglot_slugs_cache' );
 
@@ -170,6 +174,47 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 			'code'    => 'success',
 			'message' => 'Weglot cache purged.',
 		), 200 );
+	}
+
+	/**
+	 * Refreshes the stored regional API domains from the project settings.
+	 *
+	 * The options are only overwritten when the API answers successfully. Keeping the
+	 * previous values on failure avoids Helper_API::get_api_domain() falling back to the
+	 * default base URL, which would send /translate calls to the wrong host.
+	 *
+	 * @return void
+	 */
+	private function refresh_api_domains(): void {
+		$api_key = $this->option_services->get_api_key_private();
+
+		if ( ! is_string( $api_key ) || '' === trim( $api_key ) ) {
+			return;
+		}
+
+		$response = $this->option_services->get_options_from_api_with_api_key( $api_key, true, true );
+
+		if ( ! isset( $response['success'] ) || true !== $response['success'] ) {
+			return;
+		}
+
+		$result = isset( $response['result'] ) && is_array( $response['result'] ) ? $response['result'] : array();
+
+		foreach ( array( 'api_domain', 'api_base_url' ) as $field ) {
+			if ( ! isset( $result[ $field ] ) || ! is_string( $result[ $field ] ) ) {
+				continue;
+			}
+
+			// Stored trimmed like Helper_API::get_api_domain() does: the reader returns the option
+			// as-is and concatenates it into request URLs.
+			$value = trim( $result[ $field ] );
+
+			if ( '' === $value ) {
+				continue;
+			}
+
+			update_option( sprintf( '%s-%s', WEGLOT_SLUG, $field ), $value );
+		}
 	}
 
 	/**

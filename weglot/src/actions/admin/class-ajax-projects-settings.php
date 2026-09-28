@@ -90,14 +90,16 @@ class Ajax_Projects_Settings implements Hooks_Interface_Weglot {
 			weglot_get_service( Webhook_Service_Weglot::class )->replace_webhook( $api_key );
 		}
 
-		update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ), $api_key );
+		$this->option_services->set_api_key_private( $api_key );
 
+		// Stored trimmed like Helper_API::get_api_domain() does: the reader returns the option
+		// as-is and concatenates it into request URLs.
 		if ( isset( $response['result']['api_domain'] ) && is_string( $response['result']['api_domain'] ) && '' !== trim( $response['result']['api_domain'] ) ) {
-			update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_domain' ), $response['result']['api_domain'] );
+			update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_domain' ), trim( $response['result']['api_domain'] ) );
 		}
 
 		if ( isset( $response['result']['api_base_url'] ) && is_string( $response['result']['api_base_url'] ) && '' !== trim( $response['result']['api_base_url'] ) ) {
-			update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_base_url' ), $response['result']['api_base_url'] );
+			update_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_base_url' ), trim( $response['result']['api_base_url'] ) );
 		}
 
 		if ( isset( $response['result']['languages'] ) && is_array( $response['result']['languages'] ) && ! empty( $response['result']['languages'] ) ) {

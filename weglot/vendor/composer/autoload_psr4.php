@@ -6,6 +6,7 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Weglot\\Parser\\' => array($vendorDir . '/weglot/weglot-parser-php/src'),
     'Weglot\\' => array($vendorDir . '/weglot/weglot-php/src'),
     'WeglotLanguages\\' => array($vendorDir . '/weglot/weglot-php/node_modules/@weglot/languages/dist'),
     'Symfony\\Polyfill\\Php80\\' => array($vendorDir . '/symfony/polyfill-php80'),

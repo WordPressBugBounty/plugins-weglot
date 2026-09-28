@@ -1,0 +1,39 @@
+{
+    "name": "weglot/weglot-parser-php",
+    "type": "library",
+    "description": "Standalone DOM parser for Weglot — extracts and applies translatable content without API calls",
+    "license": "proprietary",
+    "require": {
+        "php": ">=7.4",
+        "weglot/simplehtmldom": "^0.8",
+        "jaybizzle/crawler-detect": "^1.2",
+        "symfony/polyfill-php80": "^1.31"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:weglot/simple_html_dom.git",
+            "no-api": true
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Weglot\\Parser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Weglot\\Parser\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^9.6 || ^10.5 || ^11.4",
+        "friendsofphp/php-cs-fixer": "^3.64"
+    },
+    "scripts": {
+        "phpstan": "vendor/bin/phpstan analyse",
+        "cs": "vendor/bin/php-cs-fixer fix",
+        "test": "vendor/bin/phpunit tests"
+    }
+}

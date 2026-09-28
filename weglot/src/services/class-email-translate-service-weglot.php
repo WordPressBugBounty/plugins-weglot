@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use Weglot\Parser\Parser;
+use Weglot\Parser\TranslatingParser;
 use Weglot\Parser\ConfigProvider\ServerConfigProvider;
 
 
@@ -64,12 +64,12 @@ class Email_Translate_Service_Weglot {
 
 			$config             = new ServerConfigProvider();
 			$client             = $this->parser_services->get_client();
-			$parser             = new Parser( $client, $config, $exclude_blocks );
+			$parser             = new TranslatingParser( $client, $config, $exclude_blocks );
 			$translated_subject = $parser->translate( '<p>' . $args['subject'] . '</p>', $original_language, $language ); //phpcs:ignore
 
 			$config             = new ServerConfigProvider();
 			$client             = $this->parser_services->get_client();
-			$parser             = new Parser( $client, $config, $exclude_blocks );
+			$parser             = new TranslatingParser( $client, $config, $exclude_blocks );
 			$translated_message = $parser->translate( $args['message'], $original_language, $language ); //phpcs:ignore
 
 			return array(

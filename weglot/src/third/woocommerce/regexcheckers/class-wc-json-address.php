@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Weglot\Parser\Check\Regex\RegexChecker;
-use Weglot\Util\SourceType;
+use Weglot\Parser\Util\SourceType;
 
 
 /**

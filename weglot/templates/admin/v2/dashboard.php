@@ -24,9 +24,22 @@ include_once __DIR__ . '/section/context.php';
 	<div class="container">
 		<h1>General</h1>
 		<form class="weglot-form" id="weglot-form">
+			<?php $api_key_is_read_only = $option_services->has_api_key_private_constant(); ?>
 			<label for="api-key">API Key</label>
-			<input type="text" id="api-key" name="api-key" value="<?php echo esc_attr( $option_services->get_option( 'api_key_private' ) ); ?>">
+			<input
+				type="text"
+				id="api-key"
+				name="api-key"
+				value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+				<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
+			>
 			<span class="error-message" aria-live="polite" style="display: none;">The API key is invalid. Please double check and try again.</span>
+			<?php if ( $api_key_is_read_only ) : ?>
+				<p class="description">
+					Defined by the <code>WEGLOT_API_KEY_PRIVATE</code> constant in your server
+					configuration. It is never stored in the database and cannot be edited here.
+				</p>
+			<?php endif; ?>
 			<label for="source-lang">Source language</label>
 			<div class="source-lang-label wg-<?php echo esc_attr( $language_services->get_original_language()->getExternalCode() ); ?>">
 			</div>
