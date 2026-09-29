@@ -2,6 +2,17 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 6.4 (29/09/2026) =
+* New: Weglot 2.0, an all-new experience with a redesigned dashboard, publishing workflow, Visual Editor, and Translation List.
+* New: An AI Translation Model that translates around your Brand Profile and Translation Guidelines.
+* New: Image Translation to translate the text inside your images from the Visual Editor.
+* New: Weglot MCP to review and update translations from your AI assistant.
+* New: Agency Workflow and Word Count.
+* Improvement: Built-in multilingual visibility with automatic hreflang tags, translated metadata, and publish or unpublish per language.
+
+## 6.3.1 (29/09/2026) =
+* Fix: Code written for Weglot 6.2 or earlier that uses one of the class names Weglot 6.3 moved to its new parser library (for example Weglot\Client\Api\Enum\WordType, used by the weglot_get_dom_checkers example of the developer documentation) no longer causes a fatal error on translated pages.
+
 ## 6.3 (28/09/2026) =
 * Improvement: The API key can now be supplied by a PHP constant (WEGLOT_API_KEY_PRIVATE, or WEGLOT_API_KEY on v1 projects) instead of the database, for hosts that keep secrets in their server configuration such as WordPress VIP. When the constant is set, the settings screen shows the key read-only and never writes it back.
 * Improvement: Switcher scripts served from cdn.weglot.com now carry a Subresource Integrity digest, so the browser can verify the bytes it received.

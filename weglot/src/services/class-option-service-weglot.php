@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Exception;
-use http\Env\Request;
 use Morphism\Morphism;
 use Weglot\Util\Regex;
 use Weglot\Util\Regex\RegexEnum;

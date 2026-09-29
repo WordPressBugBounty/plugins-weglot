@@ -3,7 +3,7 @@
         'name' => 'weglot/translate-wordpress',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => '174e9f0a5efd5d3525c8711c781aa70992750c2e',
+        'reference' => '518011cafb0dbf12eeae4afed5c2cf16fafc93e3',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'weglot/translate-wordpress' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => '174e9f0a5efd5d3525c8711c781aa70992750c2e',
+            'reference' => '518011cafb0dbf12eeae4afed5c2cf16fafc93e3',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
