@@ -133,15 +133,17 @@ class Option_Service_Weglot {
 	 *
 	 * Neither transient is tied to the key it was built for: after switching key (database to
 	 * WEGLOT_API_KEY_PRIVATE, rotation, a wrong key corrected) the old options were still served,
-	 * and a CDN refusal cached as NO_OPTIONS never expires. The fingerprint is a salted hash, so a
-	 * salt rotation costs one extra fetch.
+	 * and a CDN refusal cached as NO_OPTIONS never expires.
+	 *
+	 * hash() rather than wp_hash(): with Yoast SEO Premium the options are read while weglot.php is
+	 * being included, before WordPress loads pluggable.php (src/third/yoast/redirect-premium.php).
 	 *
 	 * @param string $api_key
 	 * @return void
 	 * @since 6.4
 	 */
 	private function purge_options_cache_if_key_changed( $api_key ) {
-		$fingerprint        = wp_hash( $api_key );
+		$fingerprint        = hash( 'sha256', $api_key );
 		$stored_fingerprint = get_option( self::OPTIONS_CACHE_KEY_OPTION );
 
 		if ( $stored_fingerprint === $fingerprint ) {

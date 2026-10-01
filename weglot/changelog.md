@@ -2,6 +2,9 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 6.4.2 (01/10/2026) =
+* Fix: Weglot no longer causes a fatal error (Call to undefined function wp_hash()) on the front end of sites running Yoast SEO Premium, a regression of 6.4.1.
+
 ## 6.4.1 (30/09/2026) =
 * Fix: The front end no longer shows a fatal error (Cannot unset string offsets) when the Weglot CDN refuses the API key, for example right after a wrong key was set. The site is served untranslated instead, until the key is corrected.
 * Improvement: The settings cache is now refreshed automatically when the API key changes (database key replaced by the WEGLOT_API_KEY_PRIVATE constant, key rotation, wrong key corrected), so clearing the transients by hand is no longer needed.
