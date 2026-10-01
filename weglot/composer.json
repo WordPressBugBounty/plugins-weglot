@@ -48,7 +48,6 @@
 		"wp-coding-standards/wpcs": "^3.4.1",
 		"phpunit/phpunit": "^9.6.33",
 		"roave/security-advisories": "dev-master",
-		"phpseclib/phpseclib": "^2.0",
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.1",
 		"automattic/vipwpcs": "^3.0",
 		"yoast/phpunit-polyfills": "^1.0",

@@ -47,6 +47,11 @@ class Option_Service_Weglot {
 	const NO_OPTIONS = 'OPTIONS_NOT_FOUND';
 
 	/**
+	 * Option holding a fingerprint of the API key that filled the options cache, never the key.
+	 */
+	const OPTIONS_CACHE_KEY_OPTION = 'weglot_cache_cdn_key';
+
+	/**
 	 * @var Version_Service_Weglot
 	 */
 	private $version_service_weglot;
@@ -124,6 +129,38 @@ class Option_Service_Weglot {
 	}
 
 	/**
+	 * Drops the options and slugs caches when they were filled for another API key.
+	 *
+	 * Neither transient is tied to the key it was built for: after switching key (database to
+	 * WEGLOT_API_KEY_PRIVATE, rotation, a wrong key corrected) the old options were still served,
+	 * and a CDN refusal cached as NO_OPTIONS never expires. The fingerprint is a salted hash, so a
+	 * salt rotation costs one extra fetch.
+	 *
+	 * @param string $api_key
+	 * @return void
+	 * @since 6.4
+	 */
+	private function purge_options_cache_if_key_changed( $api_key ) {
+		$fingerprint        = wp_hash( $api_key );
+		$stored_fingerprint = get_option( self::OPTIONS_CACHE_KEY_OPTION );
+
+		if ( $stored_fingerprint === $fingerprint ) {
+			return;
+		}
+
+		// No fingerprint yet: the cache predates this check. Adopt it instead of purging every
+		// site on update, which would refetch the slugs of every language at once, unless it
+		// holds a CDN refusal that would otherwise never expire.
+		$is_first_check = false === $stored_fingerprint;
+		if ( ! $is_first_check || self::NO_OPTIONS === get_transient( 'weglot_cache_cdn' ) ) {
+			delete_transient( 'weglot_cache_cdn' );
+			delete_transient( 'weglot_slugs_cache' );
+		}
+
+		update_option( self::OPTIONS_CACHE_KEY_OPTION, $fingerprint, true );
+	}
+
+	/**
 	 * @param string $api_key
 	 *
 	 * @return array<string,mixed>
@@ -143,6 +180,7 @@ class Option_Service_Weglot {
 		$cache_transient = apply_filters( 'weglot_get_options_from_cdn_cache', true );
 
 		if ( $cache_transient ) {
+			$this->purge_options_cache_if_key_changed( $api_key );
 			$options = get_transient( 'weglot_cache_cdn' );
 			if ( $options ) {
 				$this->options_cdn = $options;

@@ -548,7 +548,9 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function weglot_custom_settings() {
 		$settings = get_transient( 'weglot_cache_cdn' );
-		if ( empty( $settings ) ) {
+		// After a CDN 403 the transient holds the NO_OPTIONS string, and unset() on a string
+		// offset is a fatal error on every front page.
+		if ( ! is_array( $settings ) || array() === $settings ) {
 			$settings = $this->option_services->get_options();
 		}
 		unset( $settings['api_key'] );

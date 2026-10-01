@@ -4,7 +4,7 @@ Tags: translate, translation, multilingual, automatic translation, AI translatio
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 6.4
+Stable tag: 6.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -205,15 +205,12 @@ Your translation data is secure and private with Weglot. We are fully GDPR compl
 
 See changelog for upgrade changes.
 
+
 == Changelog ==
 
-= 6.4 (29/09/2026) =
-* New: Weglot 2.0, an all-new experience with a redesigned dashboard, publishing workflow, Visual Editor, and Translation List.
-* New: An AI Translation Model that translates around your Brand Profile and Translation Guidelines.
-* New: Image Translation to translate the text inside your images from the Visual Editor.
-* New: Weglot MCP to review and update translations from your AI assistant.
-* New: Agency Workflow and Word Count.
-* Improvement: Built-in multilingual visibility with automatic hreflang tags, translated metadata, and publish or unpublish per language.
+= 6.4.1 (30/09/2026) =
+* Fix: The front end no longer shows a fatal error (Cannot unset string offsets) when the Weglot CDN refuses the API key, for example right after a wrong key was set. The site is served untranslated instead, until the key is corrected.
+* Improvement: The settings cache is now refreshed automatically when the API key changes (database key replaced by the WEGLOT_API_KEY_PRIVATE constant, key rotation, wrong key corrected), so clearing the transients by hand is no longer needed.
 
 = Older versions =
 
