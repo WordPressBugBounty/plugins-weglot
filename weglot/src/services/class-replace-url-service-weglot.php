@@ -128,7 +128,9 @@ class Replace_Url_Service_Weglot {
 					$json[ $key ] = $this->replace_link_in_dom( $val );
 				} else {
 					if ( in_array( $key, $replace_urls, true ) && $this->check_link( $val ) ) {
-						$json[ $key ] = $this->replace_link_service->replace_url( $val, $this->request_url_services->get_current_language() );
+						// The rewritten URL is urldecoded by the parser; strip any HTML breakout before it
+						// is echoed into the AJAX JSON response a client may inject into the DOM.
+						$json[ $key ] = esc_url_raw( $this->replace_link_service->replace_url( $val, $this->request_url_services->get_current_language() ) );
 					}
 				}
 			}

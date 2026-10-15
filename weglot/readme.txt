@@ -4,7 +4,7 @@ Tags: translate, translation, multilingual, automatic translation, AI translatio
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 6.4.2
+Stable tag: 6.4.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -207,6 +207,9 @@ See changelog for upgrade changes.
 
 
 == Changelog ==
+
+= 6.4.3 (15/10/2026) =
+* Security: translated-page link URLs are now escaped on output, fixing a stored cross-site scripting (XSS) issue where a crafted URL could break out of a link attribute on translated pages.
 
 = 6.4.2 (01/10/2026) =
 * Fix: Weglot no longer causes a fatal error (Call to undefined function wp_hash()) on the front end of sites running Yoast SEO Premium, a regression of 6.4.1.

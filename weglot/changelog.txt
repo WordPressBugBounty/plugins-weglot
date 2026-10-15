@@ -1,3 +1,3 @@
 *** Weglot Translate Changelog ***
-2026-10-01 - version 6.4.2
-* Fix - Weglot no longer causes a fatal error (Call to undefined function wp_hash()) on the front end of sites running Yoast SEO Premium, a regression of 6.4.1.
+2026-10-15 - version 6.4.3
+* Security - Translated-page link URLs are now escaped on output, fixing a stored cross-site scripting (XSS) issue where a crafted URL could break out of a link attribute on translated pages.

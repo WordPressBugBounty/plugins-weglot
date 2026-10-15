@@ -2,6 +2,9 @@
 <img src="https://cdn.weglot.com/logo/logo-hor.png" height="40" />
 
 # Change Log
+## 6.4.3 (15/10/2026) =
+* Security: Translated-page link URLs are now escaped on output, fixing a stored cross-site scripting (XSS) issue where a crafted URL could break out of a link attribute on translated pages.
+
 ## 6.4.2 (01/10/2026) =
 * Fix: Weglot no longer causes a fatal error (Call to undefined function wp_hash()) on the front end of sites running Yoast SEO Premium, a regression of 6.4.1.
 
