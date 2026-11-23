@@ -1,3 +1,5 @@
+import t from './admin-i18n';
+
 const init_v2_api_key_check = function () {
 	document.addEventListener('DOMContentLoaded', () => {
 		if (!document.querySelector('.wrapper_v2')) {
@@ -47,18 +49,18 @@ const init_v2_api_key_check = function () {
 		const handleApiKeyValidation = () => {
 			const key = apiKeyInput.val().trim();
 
-			connectButton.prop('disabled', true).text('Checking...');
+			connectButton.prop('disabled', true).text(t('checking', 'Checking...'));
 			apiKeyInput.removeClass('is-valid is-invalid'); // Réinitialise l'état visuel
 
 			// Champ vide : texte par défaut, rien à vérifier.
 			if (key.length === 0) {
-				connectButton.text('Connect Weglot');
+				connectButton.text(t('connect', 'Connect Weglot'));
 				return;
 			}
 
 			// Clé trop courte : on sait qu'elle est invalide, pas besoin d'appeler l'API.
 			if (key.length < API_KEY_MIN_LENGTH) {
-				connectButton.text('Invalid API Key');
+				connectButton.text(t('invalid_api_key', 'Invalid API Key'));
 				apiKeyInput.addClass('is-invalid');
 				return;
 			}
@@ -74,17 +76,17 @@ const init_v2_api_key_check = function () {
 				success: ({ success }) => {
 					if (success) {
 						// Clé valide
-						connectButton.prop('disabled', false).text('Connect Weglot');
+						connectButton.prop('disabled', false).text(t('connect', 'Connect Weglot'));
 						apiKeyInput.removeClass('is-invalid').addClass('is-valid');
 					} else {
 						// Clé invalide (réponse de l'API)
-						connectButton.prop('disabled', true).text('Invalid API Key');
+						connectButton.prop('disabled', true).text(t('invalid_api_key', 'Invalid API Key'));
 						apiKeyInput.removeClass('is-valid').addClass('is-invalid');
 					}
 				},
 				error: () => {
 					// Erreur AJAX
-					connectButton.prop('disabled', true).text('Error - Please try again');
+					connectButton.prop('disabled', true).text(t('error_try_again', 'Error - Please try again'));
 					apiKeyInput.removeClass('is-valid').addClass('is-invalid');
 				}
 			});
@@ -105,7 +107,7 @@ const init_v2_api_key_check = function () {
 		}
 
 		$('#weglot-settings-v2-form').on('submit', () => {
-			connectButton.prop('disabled', true).text('Activating...');
+			connectButton.prop('disabled', true).text(t('activating', 'Activating...'));
 		});
 	});
 };

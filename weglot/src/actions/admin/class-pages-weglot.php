@@ -74,8 +74,10 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 		$email = $current_user->user_email;
 		$organization_slug = $this->option_services->get_option('organization_slug');
 		$project_slug = $this->option_services->get_option('project_slug');
+		$onboarding_version = $this->version_services ? (int) $this->version_services->get_onboarding_version() : 1;
 
-		if (empty($organization_slug) || empty($project_slug)) {
+		// Weglot 2 settings carry no organization_slug: this v1 refresh would call the API on every render.
+		if ( 2 !== $onboarding_version && ( '' === (string) $organization_slug || '' === (string) $project_slug ) ) {
 			$this->user_api_services->get_workspace_info();
 			$organization_slug = $this->option_services->get_option('organization_slug');
 			$project_slug = $this->option_services->get_option('project_slug');
@@ -118,35 +120,11 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 			)
 		);
 
-		$dashboard_href = '';
-		$dashboard_base = \WeglotWP\Helpers\Helper_API::get_dashboard_url();
-		$version_service = weglot_get_service( \WeglotWP\Services\Version_Service_Weglot::class );
-		$onboarding_version = $version_service ? (int) $version_service->get_onboarding_version() : 1;
-
-		// v2: /{workspace_slug}/{project_slug}/languages
 		if ( 2 === $onboarding_version ) {
-			$workspace_slug = get_option( 'weglot-translate-workspace-slug' );
-			if ( ! is_string( $workspace_slug ) || trim( $workspace_slug ) === '' ) {
-				$throttle_key = 'weglot_workspace_slug_fetch_throttle';
-				if ( false === get_transient( $throttle_key ) ) {
-					set_transient( $throttle_key, 1, MINUTE_IN_SECONDS * 5 );
-
-					$user_api = weglot_get_service( User_Api_Service_Weglot::class );
-					if ( $user_api ) {
-						$user_api->get_workspace_info();
-						$workspace_slug = get_option( 'weglot-translate-workspace-slug' );
-					}
-				}
-
-				if ( ! is_string( $workspace_slug ) || trim( $workspace_slug ) === '' ) {
-					$workspace_slug = '';
-				}
-			}
-			$project_slug   = $this->option_services->get_option('slug');
-			$dashboard_href = rtrim( $dashboard_base, '/' ) . '/' . rawurlencode( (string) $workspace_slug ) . '/' . rawurlencode( (string) $project_slug ) . '/languages';
+			$dashboard_href = \WeglotWP\Helpers\Helper_API::build_dashboard_project_url( $this->user_api_services->get_workspace_slug(), (string) $project_slug, 'languages' );
 		} else {
 			// v1: /workspaces/{org}/projects/{project}/translations/languages/
-			$dashboard_href = rtrim( $dashboard_base, '/' ) . '/workspaces/' . rawurlencode( (string) $organization_slug ) . '/projects/' . rawurlencode( (string) $project_slug ) . '/translations/languages/';
+			$dashboard_href = rtrim( \WeglotWP\Helpers\Helper_API::get_dashboard_url(), '/' ) . '/workspaces/' . rawurlencode( (string) $organization_slug ) . '/projects/' . rawurlencode( (string) $project_slug ) . '/translations/languages/';
 		}
 
 		$wp_admin_bar->add_menu(
@@ -161,12 +139,19 @@ class Pages_Weglot implements Hooks_Interface_Weglot {
 			)
 		);
 
+		if ( 2 === $onboarding_version ) {
+			// No lang parameter: the visitor picks the language in the editor.
+			$visual_editor_href = \WeglotWP\Helpers\Helper_API::build_dashboard_project_url( $this->user_api_services->get_workspace_slug(), (string) $project_slug, 'visual-editor', array( 'url' => $url_to_edit ) );
+		} else {
+			$visual_editor_href = 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?url='.$url_to_edit.'&mode=translations';
+		}
+
 		$wp_admin_bar->add_menu(
 			array(
 				'id'     => 'weglot-visual-editor',
 				'parent' => 'weglot',
 				'title'  => __( 'Edit with visual editor', 'weglot' ),
-				'href'   => esc_url( 'https://dashboard.weglot.com/workspaces/' . $organization_slug . '/projects/'. $project_slug .'/translations/visual-editor/launch?url='.$url_to_edit.'&mode=translations' ),
+				'href'   => esc_url( $visual_editor_href ),
 				'meta'   => array(
 					'target' => '_blank',
 				),

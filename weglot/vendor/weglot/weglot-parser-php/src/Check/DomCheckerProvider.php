@@ -53,6 +53,11 @@ class DomCheckerProvider
     protected $translationEngine;
 
     /**
+     * @var \SplObjectStorage<simple_html_dom_node, null>|null
+     */
+    protected $unmergeableNodes;
+
+    /**
      * @param int $translationEngine
      */
     public function __construct(Parser $parser, $translationEngine)
@@ -254,6 +259,7 @@ class DomCheckerProvider
     {
         $nodes = [];
         $checkers = $this->getCheckers();
+        $this->unmergeableNodes = 3 == $this->getTranslationEngine() ? $this->findUnmergeableNodes($dom) : null;
 
         foreach ($checkers as $class) {
             list($selector, $property, $defaultWordType) = $class::toArray();
@@ -305,6 +311,8 @@ class DomCheckerProvider
                 }
             }
         }
+
+        $this->unmergeableNodes = null;
 
         return $nodes;
     }
@@ -495,7 +503,50 @@ class DomCheckerProvider
      */
     public function isBlock($node)
     {
+        if (null !== $this->unmergeableNodes && $this->unmergeableNodes->contains($node)) {
+            return true;
+        }
+
         return !$this->isInline($node) && !$this->isText($node) && !('br' === $node->tag);
+    }
+
+    /**
+     * Seen as blocks, these nodes stop the merge in numberOfTextNodeInParentAfterChild(). Their
+     * descendants are included because the JS engine tests closest(): nothing inside a matched
+     * element is merged either.
+     *
+     * @return \SplObjectStorage<simple_html_dom_node, null>|null
+     */
+    protected function findUnmergeableNodes(simple_html_dom $dom)
+    {
+        $selectors = $this->getParser()->getMergedSelectorsRemove();
+
+        if (empty($selectors)) {
+            return null;
+        }
+
+        /** @var \SplObjectStorage<simple_html_dom_node, null> $nodes */
+        $nodes = new \SplObjectStorage();
+        foreach ($selectors as $selector) {
+            foreach ($dom->find($selector) as $match) {
+                $this->attachWithDescendants($match, $nodes);
+            }
+        }
+
+        return $nodes;
+    }
+
+    /**
+     * @param simple_html_dom_node                          $node
+     * @param \SplObjectStorage<simple_html_dom_node, null> $nodes
+     */
+    private function attachWithDescendants($node, \SplObjectStorage $nodes): void
+    {
+        $nodes->attach($node);
+
+        foreach ($node->nodes as $child) {
+            $this->attachWithDescendants($child, $nodes);
+        }
     }
 
     /**

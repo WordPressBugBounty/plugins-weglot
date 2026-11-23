@@ -1124,6 +1124,7 @@ class simple_html_dom
     protected $cursor;
     protected $parent;
     protected $noise = array();
+    protected $noise_prefix = '';
     protected $token_blank = " \t\r\n";
     protected $token_equal = ' =/>';
     protected $token_slash = " />\r\n\t";
@@ -1156,6 +1157,7 @@ class simple_html_dom
 
     public function __construct($str=null, $lowercase=true, $forceTagsClosed=true, $target_charset=WG_DEFAULT_TARGET_CHARSET, $stripRN=true, $defaultBRText=WG_DEFAULT_BR_TEXT, $defaultSpanText=WG_DEFAULT_SPAN_TEXT)
     {
+        $this->noise_prefix = $this->generate_noise_prefix();
         if ($str) {
             if (preg_match("/^http:\/\//i", $str) || is_file($str)) {
                 $this->load_file($str);
@@ -1311,6 +1313,7 @@ class simple_html_dom
         $this->pos = 0;
         $this->cursor = 1;
         $this->noise = array();
+        $this->noise_prefix = $this->generate_noise_prefix();
         $this->nodes = array();
         $this->lowercase = $lowercase;
         $this->WG_DEFAULT_BR_TEXT = $defaultBRText;
@@ -1789,7 +1792,7 @@ class simple_html_dom
         $count = preg_match_all($pattern, $this->doc, $matches, PREG_SET_ORDER|PREG_OFFSET_CAPTURE);
 
         for ($i=$count-1; $i>-1; --$i) {
-            $key = '___noise___'.sprintf('% 5d', count($this->noise)+1000);
+            $key = $this->noise_prefix.sprintf('% 5d', count($this->noise)+1000);
             if (is_object($debugObject)) {
                 $debugObject->debugLog(2, 'key is: ' . $key);
             }
@@ -1805,6 +1808,21 @@ class simple_html_dom
         }
     }
 
+    // The key must be unknown to whoever wrote the HTML: a key it can predict lets it pull any protected region into one
+    // of its attributes. Lowercase hex only, since '=' and '/' are tokenizer delimiters and tag names get lowercased.
+    protected function generate_noise_prefix()
+    {
+        try {
+            $random = bin2hex(random_bytes(8));
+        } catch (\Exception $e) {
+            // No CSPRNG on this host. The prefix is drawn after the HTML is written, so it only has to
+            // be unknown to its author, not cryptographically strong.
+            $random = substr(hash('sha256', uniqid('', true) . mt_rand()), 0, 16);
+        }
+
+        return '___noise' . $random . '___';
+    }
+
     // restore noise to html content
     public function restore_noise($text)
     {
@@ -1813,23 +1831,29 @@ class simple_html_dom
             $debugObject->debugLogEntry(1);
         }
 
-        while (($pos=strpos($text, '___noise___'))!==false) {
-            // Sometimes there is a broken piece of markup, and we don't GET the pos+11 etc... token which indicates a problem outside of us...
-            if (strlen($text) > $pos+15) {
-                $key = '___noise___'.$text[$pos+11].$text[$pos+12].$text[$pos+13].$text[$pos+14].$text[$pos+15];
+        $prefix_length = strlen($this->noise_prefix);
+        if (0 === $prefix_length) {
+            return $text;
+        }
+
+        // Keep re-scanning from the start: a restored value can itself hold a key (a comment inside a script).
+        while (($pos=strpos($text, $this->noise_prefix))!==false) {
+            // Sometimes there is a broken piece of markup, and we don't GET the full key, which indicates a problem outside of us...
+            if (strlen($text) >= $pos+$prefix_length+5) {
+                $key = substr($text, $pos, $prefix_length+5);
                 if (is_object($debugObject)) {
                     $debugObject->debugLog(2, 'located key of: ' . $key);
                 }
 
                 if (isset($this->noise[$key])) {
-                    $text = substr($text, 0, $pos).$this->noise[$key].substr($text, $pos+16);
+                    $text = substr($text, 0, $pos).$this->noise[$key].substr($text, $pos+$prefix_length+5);
                 } else {
-                    // do this to prevent an infinite loop.
-                    $text = substr($text, 0, $pos).'UNDEFINED NOISE FOR KEY: '.$key . substr($text, $pos+16);
+                    // Never write the prefix back, or the loop finds it again and never ends.
+                    $text = substr($text, 0, $pos).'UNDEFINED NOISE FOR KEY' . substr($text, $pos+$prefix_length+5);
                 }
             } else {
-                // There is no valid key being given back to us... We must get rid of the ___noise___ or we will have a problem.
-                $text = substr($text, 0, $pos).'NO NUMERIC NOISE KEY' . substr($text, $pos+11);
+                // There is no valid key being given back to us... We must get rid of the prefix or we will have a problem.
+                $text = substr($text, 0, $pos).'NO NUMERIC NOISE KEY' . substr($text, $pos+$prefix_length);
             }
         }
         return $text;

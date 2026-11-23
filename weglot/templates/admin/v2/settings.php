@@ -48,8 +48,8 @@ $url_form        = wp_nonce_url(
 					 height="158" alt=""/>
 			</div>
 			<?php if ( $weglot_options['has_first_settings'] ) : ?>
-				<h1>Translate your website</h1>
-				<p>Connect Weglot and make your website accessible to audiences around the world.</p>
+				<h1><?php esc_html_e( 'Translate your website', 'weglot' ); ?></h1>
+				<p><?php esc_html_e( 'Connect Weglot and make your website accessible to audiences around the world.', 'weglot' ); ?></p>
 
 			<?php endif; ?>
 
@@ -67,8 +67,8 @@ $url_form        = wp_nonce_url(
 </svg>
   </span>
 				<p class="btn-text">
-					New to Weglot?<br />
-					<span class="btn-subtext">Get your free key in 2 minutes</span>
+					<?php esc_html_e( 'New to Weglot?', 'weglot' ); ?><br />
+					<span class="btn-subtext"><?php esc_html_e( 'Get your free key in 2 minutes', 'weglot' ); ?></span>
 				</p>
 
 				<span class="btn-icon-right">
@@ -77,7 +77,7 @@ $url_form        = wp_nonce_url(
   </span>
 			</a>
 
-			<p id="have-api-key">Already have an API key? <a href="#" class="display-step-2">Activate Weglot immediately</a></p>
+			<p id="have-api-key"><?php esc_html_e( 'Already have an API key?', 'weglot' ); ?> <a href="#" class="display-step-2"><?php esc_html_e( 'Activate Weglot immediately', 'weglot' ); ?></a></p>
 
 		</div>
 		<div class="wrapper_v2 step-2">
@@ -86,49 +86,54 @@ $url_form        = wp_nonce_url(
 					 alt=""/>
 			</div>
 			<?php if ( $weglot_options['has_first_settings'] ) : ?>
-				<h1>Activate Weglot</h1>
-				<p>Enter your API key to get started</p>
+				<h1><?php esc_html_e( 'Activate Weglot', 'weglot' ); ?></h1>
+				<p><?php esc_html_e( 'Enter your API key to get started', 'weglot' ); ?></p>
 
 			<?php endif; ?>
 			<?php $api_key_is_read_only = $option_services->has_api_key_private_constant(); ?>
 			<div class="input-wrapper">
-				<label for="api-key">Weglot API key</label>
+				<label for="api-key"><?php esc_html_e( 'Weglot API key', 'weglot' ); ?></label>
 				<input
 					type="text"
 					id="api-key"
 					name="<?php echo esc_attr( sprintf( '%s[api_key_private]', WEGLOT_SLUG ) ); ?>"
-					placeholder="Please enter your API Key"
-					value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+					placeholder="<?php esc_attr_e( 'Please enter your API Key', 'weglot' ); ?>"
+					value="<?php echo esc_attr( $option_services->get_displayed_api_key_private() ); ?>"
 					<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
 				>
 				<?php if ( $api_key_is_read_only ) : ?>
 					<p class="description">
-						Defined by the <code>WEGLOT_API_KEY_PRIVATE</code> constant in your server
-						configuration. It is never stored in the database and cannot be edited here.
+						<?php
+						printf(
+							/* translators: %s: name of the PHP constant holding the API key. */
+							esc_html__( 'Defined by the %s constant in your server configuration. It is never stored in the database and cannot be edited here. Only the last 4 characters are shown.', 'weglot' ),
+							'<code>WEGLOT_API_KEY_PRIVATE</code>'
+						);
+						?>
 					</p>
 				<?php endif; ?>
 				<div id="next-step-info">
-					<p>Next step - Generate your first translations</p>
+					<p><?php esc_html_e( 'Next step - Generate your first translations', 'weglot' ); ?></p>
 					<div class="steps">
 						<div class="step">
 							<div class="badge">1</div>
-							<p>Browse your website</p>
+							<p><?php esc_html_e( 'Browse your website', 'weglot' ); ?></p>
 						</div>
 
 						<div class="step">
 							<div class="badge">2</div>
-							<p>Visit a few pages (home, products, blog...)</p>
+							<p><?php esc_html_e( 'Visit a few pages (home, products, blog...)', 'weglot' ); ?></p>
 						</div>
 
 						<div class="step">
 							<div class="badge">3</div>
-							<p>See your site translated instantly ✨.</p>
+							<p><?php esc_html_e( 'See your site translated instantly ✨.', 'weglot' ); ?></p>
 						</div>
 					</div>
 
 				</div>
-				<button type="submit" id="btn-connect" class="btn-connect" disabled>Activate Weglot</button>
-				<a href="#" id="go-back">Back</a>
+				<button type="submit" id="btn-connect" class="btn-connect" disabled><?php esc_html_e( 'Activate Weglot', 'weglot' ); ?></button>
+				<a href="#" id="go-back"><?php esc_html_e( 'Back', 'weglot' ); ?></a>
 			</div>
 		</div>
 	</form>

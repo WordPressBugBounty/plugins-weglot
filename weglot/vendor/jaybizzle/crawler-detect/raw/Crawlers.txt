@@ -23,6 +23,7 @@
 ^Hello from Palo Alto Networks
 ^HTTPClient\/
 ^HTTPing
+^IronFountain-Leads
 ^Java\/
 ^Jeode\/
 ^Jetty\/
@@ -43,11 +44,13 @@
 ^Ruby|Ruby\/[0-9]
 ^symbolicator\/
 ^Swurl 
+^TheWebReport
 ^TLS tester 
 ^twine\/
 ^ureq
 ^visionheight\.com\/scan
 ^VSE\/[0-9]
+^webshopok-kutatas
 ^WordPress\.com
 ^XRL\/[0-9]
 ^ZmEu
@@ -479,6 +482,7 @@ Google Search Console
 Google Web Preview
 Google-Ads
 Google-Adwords
+Google-Agent
 Google-AMPHTML
 Google-Apps-Script
 Google-Calendar-Importer
@@ -497,6 +501,7 @@ Google-Structured-Data-Testing-Tool
 Google-Transparency-Report
 google-xrawler
 Google-Youtube-Links
+GoogleAgent-Mariner
 GoogleAssociationService
 GoogleDocs
 GoogleHC\/
@@ -767,6 +772,7 @@ MegaIndex\.ru
 MeltwaterNews
 Melvil Rawi
 MemGator
+meta-externalagent
 Metaspinner
 MetaURI
 MFC_Tear_Sample
@@ -786,6 +792,7 @@ Miniflux
 mio_httpc
 Miro-HttpClient
 Mister PiX
+MistralAI-User
 mixdata dot com
 mixed-content-scan
 mixnode
@@ -874,6 +881,7 @@ Norton-Safeweb
 Notifixious
 notifyninja
 NotionEmbedder
+NovaAct
 nuhk
 nutch
 Nuzzel
@@ -937,6 +945,7 @@ peerindex
 Peew
 PeoplePal
 Perlu -
+Perplexity-User
 PhantomJS Screenshoter
 PhantomJS\/
 Photon\/
@@ -1372,6 +1381,7 @@ webtech\/
 WebThumbnail
 Webthumb\/
 WebWhacker
+Webzio-Extended
 WebZIP
 WeLikeLinks
 WEPA

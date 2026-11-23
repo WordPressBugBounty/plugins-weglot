@@ -8,6 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
+use WeglotWP\Services\Slug_Translation_V2_Service_Weglot;
 
 use WP_REST_Server;
 use WP_REST_Request;
@@ -169,6 +170,13 @@ class Cache_Purge_Rest_Weglot implements Hooks_Interface_Weglot {
 
 		delete_transient( 'weglot_cache_cdn' );
 		delete_transient( 'weglot_slugs_cache' );
+
+		// Marked outdated rather than deleted: the next request refreshes the slugs while the
+		// current ones are still served, instead of every visitor waiting on the API.
+		$slug_translation_v2 = weglot_get_service( Slug_Translation_V2_Service_Weglot::class );
+		if ( $slug_translation_v2 instanceof Slug_Translation_V2_Service_Weglot ) {
+			$slug_translation_v2->mark_stale();
+		}
 
 		return new WP_REST_Response( array(
 			'code'    => 'success',

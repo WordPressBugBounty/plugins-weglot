@@ -187,12 +187,17 @@ class Parser_Service_Weglot {
 	 */
 	public function escape_vue_attributes( $content ) {
 		// Escape attributes that start with "v-" (e.g. v-for, v-bind:src, etc.)
-		$content = preg_replace( '/\bv-([\w-]+)=/', 'data-vue-v-$1=', $content );
+		$escaped = preg_replace( '/\bv-([\w-]+)=/', 'data-vue-v-$1=', $content );
+		if ( null !== $escaped ) {
+			$content = $escaped;
+		}
 
 		// Escape shorthand Vue.js directives starting with ":" by ensuring we match the start of the attribute.
 		// This regex looks for either the beginning of the string (^) or any whitespace (\s)
 		// followed by ":" and then the attribute name.
-		return preg_replace( '/(^|\s):([\w-]+)=/', '$1data-vue-bind-$2=', $content );
+		$escaped = preg_replace( '/(^|\s):([\w-]+)=/', '$1data-vue-bind-$2=', $content );
+
+		return null === $escaped ? $content : $escaped;
 	}
 
 	/**
@@ -203,10 +208,15 @@ class Parser_Service_Weglot {
 	 */
 	public function restore_vue_attributes( $content ) {
 		// Restore attributes replaced for "v-" directives.
-		$content = preg_replace( '/\bdata-vue-v-([\w-]+)=/', 'v-$1=', $content );
+		$restored = preg_replace( '/\bdata-vue-v-([\w-]+)=/', 'v-$1=', $content );
+		if ( null !== $restored ) {
+			$content = $restored;
+		}
 
 		// Restore the shorthand directives for attributes starting with a colon.
-		return preg_replace( '/(^|\s)data-vue-bind-([\w-]+)=/', '$1:$2=', $content );
+		$restored = preg_replace( '/(^|\s)data-vue-bind-([\w-]+)=/', '$1:$2=', $content );
+
+		return null === $restored ? $content : $restored;
 	}
 
 
@@ -303,7 +313,7 @@ class Parser_Service_Weglot {
 
 		$list = implode( '|', array_map( 'preg_quote', $attrs ) );
 
-		return preg_replace_callback(
+		$preserved = preg_replace_callback(
 			'/\b(' . $list . ')=(\\\\?)([\'"])(.*?)\2\3/s',
 			function( $m ) {
 				static $i = 0;
@@ -325,6 +335,8 @@ class Parser_Service_Weglot {
 			},
 			$html
 		);
+
+		return null === $preserved ? $html : $preserved;
 	}
 
 
@@ -337,13 +349,16 @@ class Parser_Service_Weglot {
 	 */
 	public function restore_preserved_attributes( string $html ): string {
 		foreach ( $this->preserved as $token => $original ) {
-			$html = preg_replace_callback(
+			$restored = preg_replace_callback(
 				'/(\\\\?)([\'"])' . preg_quote( $token, '/' ) . '\1\2/',
 				function( $m ) use ( $original ) {
 					return $m[1] . $m[2] . $original . $m[1] . $m[2];
 				},
 				$html
 			);
+			if ( null !== $restored ) {
+				$html = $restored;
+			}
 		}
 		$this->preserved = [];
 		return $html;

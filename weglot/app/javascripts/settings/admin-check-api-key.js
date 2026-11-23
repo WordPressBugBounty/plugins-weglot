@@ -4,6 +4,11 @@ const init_admin_button_preview = function () {
 	const execute = () => {
 
 		$("#api_key_private").blur(function() {
+			// A readonly field holds a masked copy of the WEGLOT_API_KEY_PRIVATE constant: there is
+			// nothing to validate, and checking the mask would disable the submit button.
+			if ( $(this).prop("readonly") ) {
+				return;
+			}
 			var key = $(this).val();
 			if( key.length === 0){
                 $(".weglot-keyres").remove();

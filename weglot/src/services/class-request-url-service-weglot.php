@@ -26,6 +26,23 @@ class Request_Url_Service_Weglot {
 	protected $weglot_url = null;
 
 	/**
+	 * The request URL as it was received, before any rewriting.
+	 *
+	 * prepare_request_uri() strips the language prefix from $_SERVER['REQUEST_URI'] so WordPress
+	 * routes to the untranslated page. Anything rebuilding the Url object from $_SERVER after
+	 * that point resolves the request to the original language, which is how the switcher and
+	 * the hreflang tags end up announcing the wrong language on a translated page.
+	 *
+	 * Static rather than per-instance so that a service instantiated later in the request still
+	 * sees the URL the visitor actually requested.
+	 *
+	 * @since 6.5
+	 *
+	 * @var string|null
+	 */
+	protected static $initial_full_url = null;
+
+	/**
 	 * @var Language_Service_Weglot
 	 */
 	private $language_services;
@@ -66,7 +83,7 @@ class Request_Url_Service_Weglot {
 			if(!is_string($parsed_url_path)){
 				$contains_path = false;
 			}else{
-				$contains_path = $parsed_url_path !== null && strpos($parsed_url_path, $path_to_check) !== false;
+				$contains_path = strpos($parsed_url_path, $path_to_check) !== false;
 			}
 
 			if ($contains_path) {
@@ -82,7 +99,9 @@ class Request_Url_Service_Weglot {
 
 		return new Url(
 			$url,
-			$this->language_services->get_original_language(),
+			// The SDK stores a null original language as-is (unconfigured site), and the ~70
+			// callers of this method rely on getting a Url object back.
+			$this->language_services->get_original_language(), // @phpstan-ignore argument.type
 			$this->language_services->get_destination_languages($this->is_allowed_private(),$this->get_excluded_languages_for_current_url()),
 			$home_directory,
 			$this->option_services->get_exclude_urls(),
@@ -97,9 +116,25 @@ class Request_Url_Service_Weglot {
 	 *
 	 */
 	public function init_weglot_url() {
-		$this->weglot_url = $this->create_url_object( $this->get_full_url() );
+		// An explicit call means "rebuild from the request as it stands now", so it also becomes
+		// the new reference point for any later lazy initialisation.
+		self::$initial_full_url = $this->get_full_url();
+
+		$this->weglot_url = $this->create_url_object( self::$initial_full_url );
 
 		return $this;
+	}
+
+	/**
+	 * Forget the memorised request URL.
+	 *
+	 * Only useful where several requests share one PHP process, such as the test suite.
+	 *
+	 * @since 6.5
+	 * @return void
+	 */
+	public static function reset_initial_full_url() {
+		self::$initial_full_url = null;
 	}
 
 	/**
@@ -109,7 +144,15 @@ class Request_Url_Service_Weglot {
 	 */
 	public function get_weglot_url() {
 		if ( null === $this->weglot_url ) {
-			$this->init_weglot_url();
+			// Deliberately not init_weglot_url(): a lazy initialisation happening after
+			// prepare_request_uri() has stripped the language prefix from $_SERVER['REQUEST_URI']
+			// would resolve the request to the original language. Reuse the URL the visitor
+			// actually requested instead.
+			if ( null === self::$initial_full_url ) {
+				self::$initial_full_url = $this->get_full_url();
+			}
+
+			$this->weglot_url = $this->create_url_object( self::$initial_full_url );
 		}
 
 		return apply_filters( 'weglot_url_object', $this->weglot_url );
@@ -445,7 +488,9 @@ class Request_Url_Service_Weglot {
 	 * @return string The cleaned URL.
 	 */
 	public function clean_url_slashes( $url ) {
-		return preg_replace( '#(?<!:)/{2,}#', '/', $url );
+		$cleaned = preg_replace( '#(?<!:)/{2,}#', '/', $url );
+
+		return null === $cleaned ? $url : $cleaned;
 	}
 }
 

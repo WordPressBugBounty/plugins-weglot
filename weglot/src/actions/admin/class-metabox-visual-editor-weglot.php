@@ -213,22 +213,17 @@ class Metabox_Visual_Editor_Weglot implements Hooks_Interface_Weglot {
 	public function get_weglot_path_status( $path, $list ): void {
 		$wg_path      = $this->request_url_services->create_url_object( $path );
 		$project_slug = $this->option_services->get_option( 'project_slug' );
-		if ( '' === (string) $project_slug ) {
-			$this->user_api_services->get_workspace_info();
-			$project_slug = $this->option_services->get_option('slug');
-		}
-
 		$is_v2        = $this->version_services->get_onboarding_version() === 2;
 
 		if ( $is_v2 ) {
-			$workspace_slug = (string) $this->option_services->get_option( 'workspace_slug' );
-			if ( '' === $workspace_slug ) {
-				return;
-			}
-			$base           = rtrim( Helper_API::get_dashboard_url(), '/' ) . '/' . rawurlencode( $workspace_slug ) . '/' . rawurlencode( (string) $project_slug );
-			$visual_editor  = $base . '/languages';
-			$url_exclusion  = $base . '/exclusions';
+			$workspace_slug = $this->user_api_services->get_workspace_slug();
+			$visual_editor  = Helper_API::build_dashboard_project_url( $workspace_slug, (string) $project_slug, 'languages' );
+			$url_exclusion  = Helper_API::build_dashboard_project_url( $workspace_slug, (string) $project_slug, 'exclusions' );
 		} else {
+			if ( '' === (string) $project_slug ) {
+				$this->user_api_services->get_workspace_info();
+				$project_slug = $this->option_services->get_option('slug');
+			}
 			$organization_slug = $this->option_services->get_option( 'organization_slug' );
 			$dashboard_base    = rtrim( Helper_API::get_dashboard_url(), '/' );
 			$visual_editor     = $dashboard_base . '/workspaces/' . $organization_slug . '/projects/' . $project_slug . '/translations/visual-editor/launch?mode=translations&url=' . $wg_path->getUrl();

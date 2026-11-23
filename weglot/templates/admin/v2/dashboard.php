@@ -22,25 +22,30 @@ include_once __DIR__ . '/section/context.php';
 <div class="main-layout dashboard">
 	<?php include_once 'section/sidebar.php' ?>
 	<div class="container">
-		<h1>General</h1>
+		<h1><?php esc_html_e( 'General', 'weglot' ); ?></h1>
 		<form class="weglot-form" id="weglot-form">
 			<?php $api_key_is_read_only = $option_services->has_api_key_private_constant(); ?>
-			<label for="api-key">API Key</label>
+			<label for="api-key"><?php esc_html_e( 'API Key', 'weglot' ); ?></label>
 			<input
 				type="text"
 				id="api-key"
 				name="api-key"
-				value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+				value="<?php echo esc_attr( $option_services->get_displayed_api_key_private() ); ?>"
 				<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
 			>
-			<span class="error-message" aria-live="polite" style="display: none;">The API key is invalid. Please double check and try again.</span>
+			<span class="error-message" aria-live="polite" style="display: none;"><?php esc_html_e( 'The API key is invalid. Please double check and try again.', 'weglot' ); ?></span>
 			<?php if ( $api_key_is_read_only ) : ?>
 				<p class="description">
-					Defined by the <code>WEGLOT_API_KEY_PRIVATE</code> constant in your server
-					configuration. It is never stored in the database and cannot be edited here.
+					<?php
+					printf(
+						/* translators: %s: name of the PHP constant holding the API key. */
+						esc_html__( 'Defined by the %s constant in your server configuration. It is never stored in the database and cannot be edited here. Only the last 4 characters are shown.', 'weglot' ),
+						'<code>WEGLOT_API_KEY_PRIVATE</code>'
+					);
+					?>
 				</p>
 			<?php endif; ?>
-			<label for="source-lang">Source language</label>
+			<label for="source-lang"><?php esc_html_e( 'Source language', 'weglot' ); ?></label>
 			<div class="source-lang-label wg-<?php echo esc_attr( $language_services->get_original_language()->getExternalCode() ); ?>">
 			</div>
 			<select id="source-lang" name="source-lang" class="weglot-select-source" style="display:none;">
@@ -57,7 +62,7 @@ include_once __DIR__ . '/section/context.php';
 					</option>
 				<?php endforeach; ?>
 			</select>
-			<label for="target-lang">Target language</label>
+			<label for="target-lang"><?php esc_html_e( 'Target language', 'weglot' ); ?></label>
 			<select id="target-lang" name="target-lang[]" class="weglot-select-destination" multiple style="display:none;">
 				<?php
 				$languages             = $language_services->get_all_languages();
@@ -72,7 +77,6 @@ include_once __DIR__ . '/section/context.php';
 					</option>
 				<?php endforeach; ?>
 
-				<!-- Ensuite, toutes les autres langues -->
 				<?php foreach ( $languages as $language ) : ?>
 					<option
 						value="<?php echo esc_attr( $language->getInternalCode() ); ?>"
@@ -83,26 +87,25 @@ include_once __DIR__ . '/section/context.php';
 			</select>
 
 			<p class="weglot-dashboard">
-				Want to make a change?
-				<a href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/' . $project_slug . '/languages'); ?>" target="_blank">Go to Weglot dashboard</a>
+				<?php esc_html_e( 'Want to make a change?', 'weglot' ); ?>
+				<a href="<?php echo esc_url( Helper_API::build_dashboard_project_url( $workspace_slug, $project_slug, 'languages' ) ); ?>" target="_blank"><?php esc_html_e( 'Go to Weglot dashboard', 'weglot' ); ?></a>
 			</p>
 
-			<h1>Language switcher</h1>
-			<div class="caption">The switcher is usually at the bottom right. Feel free to change it up whenever you want.
-			</div>
+			<h1><?php esc_html_e( 'Language switcher', 'weglot' ); ?></h1>
+			<div class="caption"><?php esc_html_e( 'The switcher is usually at the bottom right. Feel free to change it up whenever you want.', 'weglot' ); ?></div>
 			<div class="quick-links fullsize">
 				<div class="card no-hover">
 					<div class="card-top">
 						<img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/menu.svg' ); ?>" width="32"
 							 height="32" alt=""/>
 						<div class="wrapper-card-text">
-							<div class="card-title">In menu</div>
-							<div class="card-desc">Place the button in a menu area.</div>
+							<div class="card-title"><?php esc_html_e( 'In menu', 'weglot' ); ?></div>
+							<div class="card-desc"><?php esc_html_e( 'Place the button in a menu area.', 'weglot' ); ?></div>
 						</div>
 					</div>
 					<div class="wrapper-link-tab">
-						<a target="_blank" href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class="">How to use</a> -
-						<a href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class="grey-btn-action">Go to Menus</a>
+						<a target="_blank" href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class=""><?php esc_html_e( 'How to use', 'weglot' ); ?></a> -
+						<a href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class="grey-btn-action"><?php esc_html_e( 'Go to Menus', 'weglot' ); ?></a>
 					</div>
 				</div>
 				<div class="card no-hover">
@@ -110,14 +113,14 @@ include_once __DIR__ . '/section/context.php';
 						<img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/widget.svg' ); ?>" width="32"
 							 height="32" alt=""/>
 						<div class="wrapper-card-text">
-							<div class="card-title">In widget</div>
-							<div class="card-desc">Add the button to a widget area.</div>
+							<div class="card-title"><?php esc_html_e( 'In widget', 'weglot' ); ?></div>
+							<div class="card-desc"><?php esc_html_e( 'Add the button to a widget area.', 'weglot' ); ?></div>
 						</div>
 					</div>
 
 					<div class="wrapper-link-tab">
-						<a target="_blank" href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class="">How to use</a> -
-						<a href="<?php echo esc_url( $menu_services->weglot_get_widgets_admin_url() ); ?>" class="grey-btn-action">Go to Widget</a>
+						<a target="_blank" href="<?php echo esc_url( $menu_services->weglot_get_navigation_admin_url() ); ?>" class=""><?php esc_html_e( 'How to use', 'weglot' ); ?></a> -
+						<a href="<?php echo esc_url( $menu_services->weglot_get_widgets_admin_url() ); ?>" class="grey-btn-action"><?php esc_html_e( 'Go to Widget', 'weglot' ); ?></a>
 					</div>
 				</div>
 				<div class="card no-hover">
@@ -125,25 +128,30 @@ include_once __DIR__ . '/section/context.php';
 						<img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/code.svg' ); ?>" width="32"
 							 height="32" alt=""/>
 						<div class="wrapper-card-text">
-							<div class="card-title">With a shortcode</div>
-							<div class="card-desc">Use [weglot_switcher] anywhere in your content.</div>
+							<div class="card-title"><?php esc_html_e( 'With a shortcode', 'weglot' ); ?></div>
+							<div class="card-desc">
+								<?php
+								/* translators: %s: the language switcher shortcode. */
+								printf( esc_html__( 'Use %s anywhere in your content.', 'weglot' ), '[weglot_switcher]' );
+								?>
+							</div>
 						</div>
 					</div>
-					<a href="#" data-to-copy="[weglot_switcher]" class="btn-link wg-copy grey-btn-action">Copy shortcode</a>
+					<a href="#" data-to-copy="[weglot_switcher]" class="btn-link wg-copy grey-btn-action"><?php esc_html_e( 'Copy shortcode', 'weglot' ); ?></a>
 				</div>
 				<div class="card no-hover">
 					<div class="card-top">
 						<img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/div-code.svg' ); ?>" width="32"
 							 height="32" alt=""/>
 						<div class="wrapper-card-text">
-							<div class="card-title">In the source code</div>
-							<div class="card-desc">Add a code whenever in the source code of your HTML page.</div>
+							<div class="card-title"><?php esc_html_e( 'In the source code', 'weglot' ); ?></div>
+							<div class="card-desc"><?php esc_html_e( 'Add a code whenever in the source code of your HTML page.', 'weglot' ); ?></div>
 						</div>
 					</div>
-					<a href="#" data-to-copy="<?php echo esc_attr( '<div id="weglot_here"></div>' ); ?>" class="btn-link wg-copy grey-btn-action">Copy snippet</a>
+					<a href="#" data-to-copy="<?php echo esc_attr( '<div id="weglot_here"></div>' ); ?>" class="btn-link wg-copy grey-btn-action"><?php esc_html_e( 'Copy snippet', 'weglot' ); ?></a>
 				</div>
 			</div>
-			<h1>Other options</h1>
+			<h1><?php esc_html_e( 'Other options', 'weglot' ); ?></h1>
 			<div class="options-section">
 				<label class="option-row">
 					<input type="checkbox" name="translate_email" <?php checked( $option_services->get_option_custom_settings( 'translate_email' ), true ); ?>/>
@@ -156,8 +164,8 @@ include_once __DIR__ . '/section/context.php';
 							stroke-linejoin="round"
 						/>
 					</svg>
-					<span class="option-label">Translate WordPress emails</span>
-					<span class="option-desc">Automatically translate all emails sent from your website.</span>
+					<span class="option-label"><?php esc_html_e( 'Translate WordPress emails', 'weglot' ); ?></span>
+					<span class="option-desc"><?php esc_html_e( 'Automatically translate all emails sent from your website.', 'weglot' ); ?></span>
 				</label>
 				<label class="option-row">
 					<input type="checkbox" name="translate_amp" <?php checked( $option_services->get_option_custom_settings( 'translate_amp' ), true ); ?>/>
@@ -170,10 +178,10 @@ include_once __DIR__ . '/section/context.php';
 							stroke-linejoin="round"
 						/>
 					</svg>
-					<span class="option-label">Translate mobile-optimized pages (AMP)</span>
-					<span class="option-desc">Make sure your translated pages load fast and display correctly on mobile devices.</span>
+					<span class="option-label"><?php esc_html_e( 'Translate mobile-optimized pages (AMP)', 'weglot' ); ?></span>
+					<span class="option-desc"><?php esc_html_e( 'Make sure your translated pages load fast and display correctly on mobile devices.', 'weglot' ); ?></span>
 				</label>
-				<label class="option-row" style="display: none;">
+				<label class="option-row">
 					<input type="checkbox" name="translate_search" <?php checked( $option_services->get_option_custom_settings( 'translate_search' ), true ); ?>/>
 					<svg class="check-icon" viewBox="0 0 16 16">
 						<path
@@ -184,13 +192,13 @@ include_once __DIR__ . '/section/context.php';
 							stroke-linejoin="round"
 						/>
 					</svg>
-					<span class="option-label">Enable multilingual search</span>
-					<span class="option-desc">Let visitors search in any language and get corresponding results</span>
+					<span class="option-label"><?php esc_html_e( 'Enable multilingual search', 'weglot' ); ?></span>
+					<span class="option-desc"><?php esc_html_e( 'Let visitors search in any language and get corresponding results', 'weglot' ); ?></span>
 				</label>
 			</div>
 			<div id="save_settings_bar">
-				<a href="#" id="cancel-save-settings">Cancel</a>
-				<a href="#" id="confirm-save-settings">Save</a>
+				<a href="#" id="cancel-save-settings"><?php esc_html_e( 'Cancel', 'weglot' ); ?></a>
+				<a href="#" id="confirm-save-settings"><?php esc_html_e( 'Save', 'weglot' ); ?></a>
 			</div>
 			<div class="toast-container" id="toast-container"></div>
 		</form>

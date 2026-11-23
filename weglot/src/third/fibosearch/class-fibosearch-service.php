@@ -114,7 +114,7 @@ class Fibosearch_Service implements Hooks_Interface_Weglot{
 		$current_language  = $this->request_url_services->get_current_language();
 		$original_language = $this->language_services->get_original_language();
 
-		if ( $current_language->getInternalCode() === $original_language->getInternalCode() ) {
+		if ( null === $original_language || $current_language->getInternalCode() === $original_language->getInternalCode() ) {
 			return $keyword;
 		}
 
@@ -123,17 +123,15 @@ class Fibosearch_Service implements Hooks_Interface_Weglot{
 			return $keyword;
 		}
 
-		$request_url   = home_url();
-		$reversed_term = $this->translate_services->reverseTranslate(
+		$reversed_term = $this->translate_services->reverse_translate_term(
 			$api_key,
 			$current_language->getInternalCode(),
 			$original_language->getInternalCode(),
-			$request_url,
-			$keyword,
-			1
+			home_url(),
+			$keyword
 		);
 
-		if ( null !== $reversed_term && '' !== $reversed_term && is_string( $reversed_term ) ) {
+		if ( is_string( $reversed_term ) && '' !== $reversed_term ) {
 			return $reversed_term;
 		}
 

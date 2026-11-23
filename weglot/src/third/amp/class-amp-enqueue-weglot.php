@@ -111,9 +111,9 @@ class Amp_Enqueue_Weglot implements Hooks_Interface_Weglot {
 			}
 		}
 
-		$html = preg_replace( '#<style amp-custom(.*?)>#', '<style amp-custom$1>' . $css, $html );
+		$with_css = preg_replace( '#<style amp-custom(.*?)>#', '<style amp-custom$1>' . $css, $html );
 
-		return $html;
+		return null === $with_css ? $html : $with_css;
 	}
 
 	/**

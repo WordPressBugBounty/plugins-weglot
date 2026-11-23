@@ -140,6 +140,11 @@ class Register_Widget_Weglot implements Hooks_Interface_Weglot {
 		];
 		foreach ($patterns as $pattern) {
 			$button_html = preg_replace($pattern, '', $button_html);
+			// These patterns sanitize the button: on a PCRE failure, render nothing rather than
+			// unsanitized markup (wp_kses() on the old null result also produced '').
+			if ( null === $button_html ) {
+				return '';
+			}
 		}
 
 		return wp_kses( $button_html, $allowed_html );

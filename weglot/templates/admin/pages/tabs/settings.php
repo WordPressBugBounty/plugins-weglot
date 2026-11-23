@@ -62,13 +62,14 @@ $api_key_is_read_only = $option_services->has_api_key_private_constant();
 				type="text"
 				required
 				placeholder="wg_XXXXXXXXXXXX"
-				value="<?php echo esc_attr( $option_services->get_api_key_private() ); ?>"
+				value="<?php echo esc_attr( $option_services->get_displayed_api_key_private() ); ?>"
 				<?php if ( $api_key_is_read_only ) : ?>readonly<?php endif; ?>
 			>
 			<br>
 			<?php if ( $api_key_is_read_only ) : ?>
 				<p class="description">
 					<?php esc_html_e( 'Defined by the WEGLOT_API_KEY_PRIVATE constant in your server configuration. It is never stored in the database and cannot be edited here.', 'weglot' ); ?>
+					<?php esc_html_e( 'Only the last 4 characters are shown.', 'weglot' ); ?>
 				</p>
 			<?php endif; ?>
 			<?php

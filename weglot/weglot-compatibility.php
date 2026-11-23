@@ -20,6 +20,7 @@ if ( ! function_exists( 'wp_doing_ajax' ) ) {
 		 * @since 4.7.0
 		 *
 		 */
+		// @phpstan-ignore phpstanWP.wpConstant.fetch (this function is the wp_doing_ajax() polyfill itself; calling it here would recurse)
 		return apply_filters( 'wp_doing_ajax', defined( 'DOING_AJAX' ) && DOING_AJAX );
 	}
 }

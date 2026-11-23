@@ -32,64 +32,60 @@ $saved_word_count = is_null( $saved_word_count ) ? 0 : (int) $saved_word_count;
 <div class="main-layout">
     <?php include_once 'section/sidebar.php' ?>
     <div class="container">
-        <!-- Garde ici tout le contenu HTML du bloc central proposé plus haut -->
         <div class="info-panels">
             <div class="panel">
-                <div class="panel-title">Original language</div>
+                <div class="panel-title"><?php esc_html_e( 'Original language', 'weglot' ); ?></div>
                 <div class="panel-value"><div class="wg-<?php echo esc_attr( $language_services->get_original_language()->getExternalCode() ); ?>"><span class="wglanguage-name"><?php echo esc_html( $language_services->get_original_language()->getEnglishName() ); ?></span></div></div>
             </div>
             <div class="panel">
-                <div class="panel-title">Target languages</div>
+                <div class="panel-title"><?php esc_html_e( 'Target languages', 'weglot' ); ?></div>
                 <div class="panel-value"><?php echo esc_html( $target_languages ); ?></div>
             </div>
 			<div class="panel">
-				<div class="panel-title">Total words</div>
+				<div class="panel-title"><?php esc_html_e( 'Total words', 'weglot' ); ?></div>
 				<div class="panel-value" id="total-words-count"><?php echo esc_html( number_format_i18n( $saved_word_count ) ); ?></div>
 			</div>
         </div>
-        <h2>Quick Links</h2>
+        <h2><?php esc_html_e( 'Quick Links', 'weglot' ); ?></h2>
 		<div class="quick-links">
 			<div class="card">
 				<img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/translation-list.svg' ); ?>" width="32" height="32" alt="" />
 				<div class="wrapper-card-text">
-					<div class="card-title">Translation list</div>
-					<div class="card-desc">Edit translations</div>
+					<div class="card-title"><?php esc_html_e( 'Translation list', 'weglot' ); ?></div>
+					<div class="card-desc"><?php esc_html_e( 'Edit translations', 'weglot' ); ?></div>
 				</div>
-				<a target="_blank" href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/' . $project_slug . '/languages'); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
+				<a target="_blank" href="<?php echo esc_url( Helper_API::build_dashboard_project_url( $workspace_slug, $project_slug, 'languages' ) ); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
 			</div>
 			<div class="card">
 				<img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/language-switcher-editor.svg' ); ?>" width="32" height="32" alt="" />
 				<div class="wrapper-card-text">
-					<div class="card-title">Switcher Editor</div>
-					<div class="card-desc">Customize your language switcher</div>
+					<div class="card-title"><?php esc_html_e( 'Switcher Editor', 'weglot' ); ?></div>
+					<div class="card-desc"><?php esc_html_e( 'Customize your language switcher', 'weglot' ); ?></div>
 				</div>
-				<a target="_blank" href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/' . $project_slug . '/visual-editor?mode=switchers'); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
+				<a target="_blank" href="<?php echo esc_url( Helper_API::build_dashboard_project_url( $workspace_slug, $project_slug, 'visual-editor', array( 'mode' => 'switchers' ) ) ); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
 			</div>
 			<div class="card">
 				<img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/language-model.svg' ); ?>" width="32" height="32" alt="" />
 				<div class="wrapper-card-text">
-					<div class="card-title">Language model</div>
-					<div class="card-desc">Create your custom model for translations <br />that match your brand voice.</div>
+					<div class="card-title"><?php esc_html_e( 'Language model', 'weglot' ); ?></div>
+					<div class="card-desc"><?php esc_html_e( 'Create your custom model for translations that match your brand voice.', 'weglot' ); ?></div>
 				</div>
-				<a target="_blank" href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/' . $project_slug . '/language-model'); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
+				<a target="_blank" href="<?php echo esc_url( Helper_API::build_dashboard_project_url( $workspace_slug, $project_slug, 'language-model' ) ); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
 			</div>
 
 			<div class="card">
 				<img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/exclusion.svg' ); ?>" width="32" height="32" alt="" />
 				<div class="wrapper-card-text">
-					<div class="card-title">Translation Exclusions</div>
-					<div class="card-desc">Choose pages or blocks to exclude from translation</div>
+					<div class="card-title"><?php esc_html_e( 'Translation Exclusions', 'weglot' ); ?></div>
+					<div class="card-desc"><?php esc_html_e( 'Choose pages or blocks to exclude from translation', 'weglot' ); ?></div>
 				</div>
-				<a target="_blank" href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/' . $project_slug . '/exclusions'); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
+				<a target="_blank" href="<?php echo esc_url( Helper_API::build_dashboard_project_url( $workspace_slug, $project_slug, 'exclusions' ) ); ?>" class="btn-link"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/arrow-right.svg' ); ?>"  alt="" /></a>
 			</div>
 		</div>
     </div>
 </div>
 <div id="wrap-weglot">
     <?php
-    // Affiche la popup si la première configuration vient d'être faite.
-    // Nous la mettons en commentaire pour l'instant comme demandé.
-
     if ( ! $weglot_options['has_first_settings'] && $weglot_options['show_box_first_settings'] ) :
         $option_services->set_option_by_key( 'show_box_first_settings', false );
         ?>

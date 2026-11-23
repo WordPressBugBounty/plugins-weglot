@@ -19,6 +19,7 @@ use WeglotWP\Services\Noindex_Service_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\Redirect_Service_Weglot;
 use WeglotWP\Services\Request_Url_Service_Weglot;
+use WeglotWP\Services\Slug_Translation_V2_Service_Weglot;
 use WeglotWP\Services\Translate_Service_Weglot;
 use WeglotWP\Services\Feature_Flags_Service_Weglot;
 use WeglotWP\Services\Version_Service_Weglot;
@@ -31,6 +32,11 @@ use WP_Error;
  * @since 2.0
  */
 class Translate_Page_Weglot implements Hooks_Interface_Weglot {
+	/**
+	 * Transient value remembering that versions.json could not provide a template.
+	 */
+	const TEMPLATE_HASH_NOT_FOUND = 'not_found';
+
 	/**
 	 * @var Option_Service_Weglot
 	 */
@@ -280,8 +286,9 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$file_content = file_get_contents( $file ); // phpcs:ignore WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
 			}
 
-			if ( is_string( $file_content ) ) {
-				$this->translate_services->set_original_language( $this->language_services->get_original_language() );
+			$original_language = $this->language_services->get_original_language();
+			if ( is_string( $file_content ) && null !== $original_language ) {
+				$this->translate_services->set_original_language( $original_language );
 				$this->translate_services->set_current_language( $this->request_url_services->get_current_language() );
 				echo $this->translate_services->weglot_treat_page( $file_content ); //phpcs:ignore
 				die;
@@ -341,7 +348,8 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$replacement = '/' . $language . '/';
 				$updated_url = preg_replace($pattern, $replacement, $current_url, 1); // Replace only the first occurrence
 
-				return $updated_url; // Return the updated URL
+				// Never fall back to $current_url: the caller would 301 to the page being requested.
+				return null === $updated_url ? false : $updated_url;
 			}
 		}
 
@@ -390,8 +398,8 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 			return;
 		}
 
-		if ( $redirect ) {
-			$original_language_url = $this->request_url_services->get_weglot_url()->getForLanguage( $this->language_services->get_original_language() );
+		if ( $redirect && null !== $original_language ) {
+			$original_language_url = $this->request_url_services->get_weglot_url()->getForLanguage( $original_language );
 			if (
 				! $this->request_url_services->get_weglot_url()->getForLanguage( $this->current_language ) &&
 				is_string( $original_language_url ) &&
@@ -404,14 +412,87 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		// If we receive a not translated slug we return a 301. For example if we have /fr/products but should have /fr/produits we should redirect to /fr/produits.
-		if ( $this->request_url_services->get_weglot_url()->getRedirect() !== null ) {
-			$redirect_to = $this->request_url_services->get_weglot_url()->getRedirect();
-			wp_safe_redirect( '/' . $this->current_language->getExternalCode() . $redirect_to, 301 );
+		$redirect_path = $this->request_url_services->get_weglot_url()->getRedirect();
+		if ( null === $redirect_path ) {
+			$redirect_path = $this->find_slug_history_redirect_path();
+		}
+		if ( null !== $redirect_path ) {
+			wp_safe_redirect( $this->build_slug_redirect_url( $redirect_path ), 301 );
 			exit;
 		}
 		$_SERVER['REQUEST_URI'] = sanitize_url( $this->request_url_services->get_weglot_url()->getPathPrefix() .
 												$this->request_url_services->get_weglot_url()->getPathAndQuery() );
 
+	}
+
+	/**
+	 * A former translated slug of a Weglot 2 project (/fr/livre-d-or after the page was renamed
+	 * /fr/livre-de-bronze) is sent to the current one.
+	 *
+	 * @return string|null Path to redirect to, without the language segment.
+	 * @since 6.5
+	 */
+	private function find_slug_history_redirect_path() {
+		$slug_translation_v2 = weglot_get_service( Slug_Translation_V2_Service_Weglot::class );
+		if ( ! $slug_translation_v2 instanceof Slug_Translation_V2_Service_Weglot ) {
+			return null;
+		}
+
+		$path = $this->get_requested_translated_path();
+		if ( null === $path ) {
+			return null;
+		}
+
+		$language    = $this->current_language->getInternalCode();
+		$custom_urls = $this->option_services->get_option( 'custom_urls' );
+		$custom_urls = is_array( $custom_urls ) && isset( $custom_urls[ $language ] ) && is_array( $custom_urls[ $language ] )
+			? $custom_urls[ $language ]
+			: array();
+
+		return $slug_translation_v2->find_redirect_path( $path, $language, $custom_urls );
+	}
+
+	/**
+	 * The request path as the visitor typed it, without the install directory nor the language
+	 * segment: Weglot\Util\Url::getPath() has already mapped translated slugs back to original ones.
+	 *
+	 * @return string|null
+	 * @since 6.5
+	 */
+	private function get_requested_translated_path() {
+		$path = wp_parse_url( $this->request_url_services->get_full_url(), PHP_URL_PATH );
+		if ( ! is_string( $path ) ) {
+			return null;
+		}
+
+		// Decoded like Weglot\Util\Url does, so non-ASCII slugs match the API values.
+		$path   = urldecode( $path );
+		$prefix = $this->request_url_services->get_weglot_url()->getPathPrefix() . '/' . $this->current_language->getExternalCode();
+
+		if ( $path !== $prefix && 0 !== strpos( $path, $prefix . '/' ) ) {
+			return null;
+		}
+
+		$path = (string) substr( $path, strlen( $prefix ) );
+
+		return '' === $path ? '/' : $path;
+	}
+
+	/**
+	 * The redirect runs on plugins_loaded, before Redirect_Wp_Weglot filters wp_redirect: the target
+	 * is complete here, with the directory WordPress is installed in and the query string.
+	 *
+	 * @param string $path Path in the current language, without the language segment.
+	 *
+	 * @return string
+	 * @since 6.5
+	 */
+	private function build_slug_redirect_url( $path ) {
+		$weglot_url = $this->request_url_services->get_weglot_url();
+		$query      = $weglot_url->getQuery();
+
+		return $weglot_url->getPathPrefix() . '/' . $this->current_language->getExternalCode() . $path
+			. ( null !== $query && '' !== $query ? '?' . $query : '' );
 	}
 
 	/**
@@ -604,7 +685,9 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		echo '<script type="application/json" id="weglot-data">';
-		echo wp_json_encode( $settings );
+		// The request URL ends up in switcher_links: escape < and > so it can neither close the
+		// block (</script>) nor turn the parser's escape state on (<!--<script>).
+		echo wp_json_encode( $settings, JSON_HEX_TAG );
 		echo '</script>';
 	}
 
@@ -670,8 +753,13 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 				$filename_esc_js = esc_attr( 'weglot-switcher-default-js' );
 				$filename_esc_css = esc_attr( 'weglot-switcher-default-css' );
 				$template_default = $this->get_template_hash('default');
+				$default_hash = is_array( $template_default ) && isset( $template_default['hash'] ) ? $template_default['hash'] : '';
 				$css_to_load = esc_url( Helper_API::get_root_cdn_base() ) . '/weglot.min.css';
-				$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . $template_default['name'] . '.' . $template_default['hash'] ) . '.min.js';
+				if ( '' !== $default_hash ) {
+					$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . 'default.' . $default_hash ) . '.min.js';
+				} else {
+					$file_to_load = esc_url( Helper_API::get_tpl_switchers_url() . 'default' ) . '.min.js';
+				}
 
 				wp_enqueue_style(
 					$filename_esc_css,      // Handle name
@@ -689,11 +777,7 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 					true // Load in the footer
 				);
 
-				$this->set_switcher_integrity(
-					$filename_esc_js,
-					$template_default['name'] ?? '',
-					$template_default['hash'] ?? ''
-				);
+				$this->set_switcher_integrity( $filename_esc_js, 'default', $default_hash );
 			}
 		}
 	}
@@ -770,48 +854,60 @@ class Translate_Page_Weglot implements Hooks_Interface_Weglot {
 	 * The method fetches template version data from a remote JSON file,
 	 * and caches the retrieved data in a transient for a week.
 	 *
+	 * Failures are cached too, for a few minutes: this runs on every page view, and an
+	 * unreachable versions.json would otherwise block each one on the HTTP timeout.
+	 *
 	 * @param string $template_name The name of the template to fetch the hash for.
 	 *
 	 * @return array<string,mixed>|null An array containing the template data if found, or null if the template is not found or if an error occurs.
 	 */
-	public function get_template_hash($template_name) {
-		// Transient key based on the template name
-		$transient_key = 'template_hash_' . sanitize_key($template_name);
+	public function get_template_hash( $template_name ) {
+		$transient_key = 'template_hash_' . sanitize_key( $template_name );
 
-		// Check if the data exists in the transient
-		$template_data = get_transient($transient_key);
-		if ($template_data !== false) {
-			// Return the data if found in transient
-			return $template_data;
+		$template_data = get_transient( $transient_key );
+		if ( self::TEMPLATE_HASH_NOT_FOUND === $template_data ) {
+			return null;
+		}
+		if ( false !== $template_data ) {
+			return is_array( $template_data ) ? $template_data : null;
 		}
 
-		// Fetch JSON data from the URL
-		$url = esc_url(Helper_API::get_tpl_switchers_url() . 'versions.json');
-
-		$response = Helper_API::vip_safe_wp_remote_get( $url );
-		// Check if the request was successful
-		if (is_wp_error($response)) {
-			return null; // Return null on failure
-		}
-
-		$body = wp_remote_retrieve_body($response);
-		$data = json_decode($body, true);
-
-		// Check if templates exist and are an array
-		if (!isset($data['templates']) || !is_array($data['templates'])) {
+		$template = $this->fetch_template_hash( $template_name );
+		if ( null === $template ) {
+			set_transient( $transient_key, self::TEMPLATE_HASH_NOT_FOUND, 5 * MINUTE_IN_SECONDS );
 			return null;
 		}
 
-		// Search for the template by name
-		foreach ($data['templates'] as $template) {
-			if ($template['name'] === $template_name) {
-				// Save the result in a transient for 1 week (7 days)
-				set_transient($transient_key, $template, WEEK_IN_SECONDS);
+		set_transient( $transient_key, $template, WEEK_IN_SECONDS );
+		return $template;
+	}
+
+	/**
+	 * Look a template up in the remote versions.json.
+	 *
+	 * @param string $template_name The name of the template to fetch the hash for.
+	 *
+	 * @return array<string,mixed>|null The template data, or null on any failure.
+	 */
+	private function fetch_template_hash( $template_name ) {
+		$url = esc_url( Helper_API::get_tpl_switchers_url() . 'versions.json' );
+
+		$response = Helper_API::vip_safe_wp_remote_get( $url, array( 'timeout' => 3 ) );
+		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+			return null;
+		}
+
+		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $data ) || ! isset( $data['templates'] ) || ! is_array( $data['templates'] ) ) {
+			return null;
+		}
+
+		foreach ( $data['templates'] as $template ) {
+			if ( is_array( $template ) && isset( $template['name'] ) && $template['name'] === $template_name ) {
 				return $template;
 			}
 		}
 
-		// Return null if not found
 		return null;
 	}
 

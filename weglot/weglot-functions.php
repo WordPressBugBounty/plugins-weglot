@@ -241,7 +241,12 @@ function weglot_create_url_object( $url ) {
  *
  */
 function weglot_get_full_url_no_language() {
-	return weglot_create_url_object( weglot_get_request_url_service()->get_full_url() )->getForLanguage( weglot_get_service(Language_Service_Weglot::class)->get_original_language() );
+	$original_language = weglot_get_service(Language_Service_Weglot::class)->get_original_language();
+	if ( null === $original_language ) {
+		return false;
+	}
+
+	return weglot_create_url_object( weglot_get_request_url_service()->get_full_url() )->getForLanguage( $original_language );
 }
 
 /**

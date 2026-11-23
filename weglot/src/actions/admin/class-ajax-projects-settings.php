@@ -7,7 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use WeglotWP\Helpers\Helper_Is_Admin;
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
 use WeglotWP\Services\Version_Service_Weglot;
@@ -44,10 +43,12 @@ class Ajax_Projects_Settings implements Hooks_Interface_Weglot {
 	 *
 	 */
 	public function hooks() {
-		if ( ! Helper_Is_Admin::is_wp_admin() ) {
-			return;
-		}
-
+		// Registered unconditionally on purpose. The previous is_wp_admin() guard required the
+		// referer to contain "wp-admin", which a site sending Referrer-Policy: origin (or
+		// same-origin, strict-origin, no-referrer) truncates to the bare origin: the action was
+		// then never registered and admin-ajax answered "0" with a 400. A wp_ajax_ hook is only
+		// reachable through admin-ajax.php by a logged-in user, and the callback already checks
+		// manage_options and the nonce, so the guard added no protection.
 		add_action( 'wp_ajax_get_project_settings', array( $this, 'get_project_settings' ) );
 	}
 
@@ -69,6 +70,7 @@ class Ajax_Projects_Settings implements Hooks_Interface_Weglot {
 		}
 
 		$api_key = sanitize_text_field( wp_unslash( $_POST['api_key'] ) ); //phpcs:ignore
+		$api_key = $this->option_services->resolve_submitted_api_key_private( $api_key );
 
 		if ( $this->version_service_weglot->get_version_from_api_key_private( $api_key ) === 2 ) {
 			$response = $this->option_services->get_options_from_api_with_api_key( $api_key, true, true );
@@ -77,7 +79,13 @@ class Ajax_Projects_Settings implements Hooks_Interface_Weglot {
 		}
 
 		$success   = isset( $response['success'] ) && $response['success'] === true;
-		$has_error = isset( $response['result'] ) && is_array( $response['result'] ) && isset( $response['result']['error'] ) && null !== $response['result']['error'];
+		$has_error = isset( $response['result'] ) && is_array( $response['result'] ) && isset( $response['result']['error'] );
+
+		// get_options_from_api_with_api_key() adds the private key to the result; the screens
+		// never read it back, and it must not reach the browser.
+		if ( isset( $response['result'] ) && is_array( $response['result'] ) ) {
+			unset( $response['result']['api_key_private'] );
+		}
 
 		if ( ! $success || $has_error ) {
 			wp_send_json_error( array(

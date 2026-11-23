@@ -202,6 +202,45 @@ abstract class Helper_API {
 	}
 
 	/**
+	 * Weglot 2 dashboard URL of a project page: {dashboard}/{workspace}/{project}/{path}.
+	 *
+	 * Falls back to the dashboard home when a slug is unknown: concatenating an empty slug built
+	 * {dashboard}//… and the dashboard answered 404.
+	 *
+	 * @param string               $workspace_slug
+	 * @param string               $project_slug
+	 * @param string               $path  Dashboard page, e.g. 'languages' or 'visual-editor'.
+	 * @param array<string,string> $query
+	 * @return string
+	 */
+	public static function build_dashboard_project_url( $workspace_slug, $project_slug, $path, $query = array() ) {
+		if ( '' === trim( (string) $project_slug ) ) {
+			return self::get_dashboard_url();
+		}
+
+		return self::build_dashboard_workspace_url( $workspace_slug, rawurlencode( (string) $project_slug ) . '/' . $path, $query );
+	}
+
+	/**
+	 * Weglot 2 dashboard URL of a workspace page: {dashboard}/{workspace}/{path}.
+	 *
+	 * @param string               $workspace_slug
+	 * @param string               $path
+	 * @param array<string,string> $query
+	 * @return string
+	 */
+	public static function build_dashboard_workspace_url( $workspace_slug, $path, $query = array() ) {
+		$dashboard_url = self::get_dashboard_url();
+		if ( '' === trim( (string) $workspace_slug ) ) {
+			return $dashboard_url;
+		}
+
+		$url = untrailingslashit( $dashboard_url ) . '/' . rawurlencode( (string) $workspace_slug ) . '/' . ltrim( $path, '/' );
+
+		return array() === $query ? $url : add_query_arg( array_map( 'rawurlencode', $query ), $url );
+	}
+
+	/**
 	 * Generates the registration URL based on the environment, onboarding version, and randomization settings.
 	 *
 	 * @param bool $random Whether to use a random onboarding version. Defaults to false.

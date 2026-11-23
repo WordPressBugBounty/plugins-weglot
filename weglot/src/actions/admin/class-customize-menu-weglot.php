@@ -94,7 +94,7 @@ class Customize_Menu_Weglot implements Hooks_Interface_Weglot {
 	public function nav_admin_enqueue_scripts() {
 		$screen = get_current_screen();
 
-		if ( 'nav-menus' !== $screen->base ) {
+		if ( null === $screen || 'nav-menus' !== $screen->base ) {
 			return;
 		}
 

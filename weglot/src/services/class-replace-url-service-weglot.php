@@ -82,30 +82,42 @@ class Replace_Url_Service_Weglot {
 
 		if ( $current_url->getForLanguage( $current_language, false ) ) {
 			if ( $current_language->getExternalCode() !== $current_language->getInternalCode() ) {
-				$dom = preg_replace(
+				$replaced = preg_replace(
 					'/<html (.*?)?lang=(\"|\')(\S*)(\"|\')/',
 					'<html $1lang=$2' . $current_language->getExternalCode() . '$4 weglot-lang=$2' . $current_language->getInternalCode() . '$4',
 					$dom
 				);
+				if ( null !== $replaced ) {
+					$dom = $replaced;
+				}
 			} else {
-				$dom = preg_replace(
+				$replaced = preg_replace(
 					'/<html (.*?)?lang=(\"|\')(\S*)(\"|\')/',
 					'<html $1lang=$2' . $current_language->getExternalCode() . '$4',
 					$dom
 				);
+				if ( null !== $replaced ) {
+					$dom = $replaced;
+				}
 			}
 
-			$dom = preg_replace(
+			$replaced = preg_replace(
 				'/property="og:locale" content=(\"|\')(\S*)(\"|\')/',
 				'property="og:locale" content=$1' . $current_language->getExternalCode() . '$3',
 				$dom
 			);
+			if ( null !== $replaced ) {
+				$dom = $replaced;
+			}
 		} else {
-			$dom = preg_replace(
+			$replaced = preg_replace(
 				'/<html (.*?)?lang=(\"|\')(\S*)(\"|\')/',
 				'<html $1lang=$2$3$4 data-excluded-page="true"',
 				$dom
 			);
+			if ( null !== $replaced ) {
+				$dom = $replaced;
+			}
 		}
 
 		return apply_filters( 'weglot_replace_link', $dom );
@@ -165,7 +177,11 @@ class Replace_Url_Service_Weglot {
 	 */
 	public function proxify_url( $dom ) {
 		$proxify_urls = apply_filters( 'weglot_proxify_urls', [] );
-		$original_language = $this->language_services->get_original_language()->getInternalCode();
+		$original_language_entry = $this->language_services->get_original_language();
+		if ( null === $original_language_entry ) {
+			return $dom;
+		}
+		$original_language = $original_language_entry->getInternalCode();
 		$current_language = $this->request_url_services->get_current_language()->getInternalCode();
 		if( $original_language === $current_language){
 			return $dom;
@@ -202,11 +218,16 @@ class Replace_Url_Service_Weglot {
 		preg_match_all( $pattern, $translated_page, $out, PREG_PATTERN_ORDER );
 		$count_out_0 = count( $out[0] );
 		for ( $i = 0; $i < $count_out_0; $i ++ ) {
-			$sometags    = ( isset( $out[1] ) ) ? $out[1][ $i ] : null;
-			$quote1      = ( isset( $out[2] ) ) ? $out[2][ $i ] : null;
+			$sometags    = ( isset( $out[1] ) ) ? $out[1][ $i ] : '';
+			$quote1      = ( isset( $out[2] ) ) ? $out[2][ $i ] : '';
 			$current_url = ( isset( $out[3] ) ) ? $out[3][ $i ] : null;
-			$quote2      = ( isset( $out[4] ) ) ? $out[4][ $i ] : null;
-			$sometags2   = ( isset( $out[5] ) ) ? $out[5][ $i ] : null;
+			$quote2      = ( isset( $out[4] ) ) ? $out[4][ $i ] : '';
+			$sometags2   = ( isset( $out[5] ) ) ? $out[5][ $i ] : '';
+
+			// A pattern filtered through weglot_get_replace_modify_link may capture fewer groups.
+			if ( null === $current_url ) {
+				continue;
+			}
 
 			$length_link = apply_filters( 'weglot_length_replace_a', 1500 ); // Prevent error on long URL (preg_match_all Compilation failed: regular expression is too large at offset).
 			if ( strlen( $current_url ) >= $length_link ) {
@@ -264,6 +285,9 @@ class Replace_Url_Service_Weglot {
 		for ( $i = 0; $i < $count_out_0; $i ++ ) {
 
 			$current_url = ( isset( $out[1] ) ) ? $out[1][ $i ] : null;
+			if ( null === $current_url ) {
+				continue;
+			}
 			$length_link = apply_filters( 'weglot_length_replace_a', 1500 ); // Prevent error on long URL (preg_match_all Compilation failed: regular expression is too large at offset).
 			if ( strlen( $current_url ) >= $length_link ) {
 				continue;
@@ -319,7 +343,8 @@ class Replace_Url_Service_Weglot {
 						// NOTE: la valeur de $not_other_site peut être écrasée par la condition suivante.
 						$not_other_site = ! in_array( '/' . $paths[1] . '/', $this->multisite_other_paths, true );
 					}
-					if ( strlen( $this->request_url_services->get_home_wordpress_directory() ) > 1 && ( ! isset( $paths[1] ) || ( '/' . $paths[1] !== $this->request_url_services->get_home_wordpress_directory() ) ) ) {
+					$home_directory = $this->request_url_services->get_home_wordpress_directory() ?? '';
+					if ( strlen( $home_directory ) > 1 && ( ! isset( $paths[1] ) || ( '/' . $paths[1] !== $home_directory ) ) ) {
 						$not_other_site = false;
 					}
 				}

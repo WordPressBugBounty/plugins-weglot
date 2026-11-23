@@ -16,6 +16,13 @@ use WeglotWP\Helpers\Helper_API;
  * @since 2.3.0
  */
 class Translate_Service_Weglot {
+
+	/**
+	 * Route of the Weglot 2 reverse translate endpoint, which is not covered by the public
+	 * API reference.
+	 */
+	const REVERSE_TRANSLATE_V2_ROUTE = 'reverse-translate';
+
 	/**
 	 * @var Parser_Service_Weglot
 	 */
@@ -129,7 +136,7 @@ class Translate_Service_Weglot {
 	 * @return boolean
 	 */
 	public function check_ajax_exclusion_before_treat() { //phpcs:ignore
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string( wp_get_referer() ) ) {
+		if ( wp_doing_ajax() && is_string( wp_get_referer() ) ) {
 			if ( ! $this->request_url_services->create_url_object( wp_get_referer() )->getForLanguage( $this->request_url_services->get_current_language(), false ) ) {
 				return true;
 			}
@@ -170,10 +177,11 @@ class Translate_Service_Weglot {
 		}
 
 		$active_translation = apply_filters( 'weglot_active_translation', true );
-		if ( empty( $content ) || ! $active_translation ) {
+		$original_language = $this->language_services->get_original_language();
+		if ( empty( $content ) || ! $active_translation || null === $original_language ) {
 			return $content;
 		}
-		$this->set_original_language( $this->language_services->get_original_language() );
+		$this->set_original_language( $original_language );
 		$this->set_current_language( $this->request_url_services->get_current_language() ); // Need to reset.
 
 		$content = apply_filters(
@@ -203,7 +211,7 @@ class Translate_Service_Weglot {
 			|| $this->check_404_exclusion_before_treat()
 			|| ! $this->request_url_services->get_weglot_url()->getForLanguage( $this->request_url_services->get_current_language(), false )
 		) {
-			if ( defined( 'DOING_AJAX' ) && DOING_AJAX && is_string( wp_get_referer() ) ) {
+			if ( wp_doing_ajax() && is_string( wp_get_referer() ) ) {
 				if ( ! $this->request_url_services->create_url_object( wp_get_referer() )->getForLanguage( $this->request_url_services->get_current_language(), false ) ) { //phpcs:ignore
 					// do nothing because the ajax referer are not exclude!
 				} else {
@@ -355,7 +363,11 @@ class Translate_Service_Weglot {
 	 * @since 2.3.0
 	 */
 	private function remove_comments( $html ) {
-		return preg_replace( '/<!--(.*)-->/Uis', '', $html );
+		$without_comments = preg_replace( '/<!--(.*)-->/Uis', '', $html );
+
+		// The result is printed inside an HTML comment: on a PCRE failure, the raw message could
+		// carry a "-->" and leak the rest of it into the page.
+		return null === $without_comments ? '' : $without_comments;
 	}
 
 	/**
@@ -432,7 +444,7 @@ class Translate_Service_Weglot {
 		}
 
 		$target_element = $elements->item( 0 );
-		if ( $target_element ) {
+		if ( $target_element instanceof \DOMNode ) {
 			$text_node = $doc->createTextNode( $disclaimer_text );
 			$target_element->appendChild( $text_node );
 		}
@@ -506,14 +518,21 @@ class Translate_Service_Weglot {
 			$canonical   = urldecode( $canonical );
 			$current_url = $this->request_url_services->get_weglot_url();
 			if ( $current_url->getPath() !== $this->request_url_services->create_url_object( $canonical )->getPath() ) {
-				$dom = preg_replace( '/<link rel="alternate" href=(\"|\')([^\s\>]+?)(\"|\') hreflang=(\"|\')([^\s\>]+?)(\"|\')\/>/', '', $dom );
+				$without_hreflang = preg_replace( '/<link rel="alternate" href=(\"|\')([^\s\>]+?)(\"|\') hreflang=(\"|\')([^\s\>]+?)(\"|\')\/>/', '', $dom );
+				if ( null !== $without_hreflang ) {
+					$dom = $without_hreflang;
+				}
 			}
 
 			// update canonical if page excluded page.
-			if ( ! $current_url->getForLanguage( $this->request_url_services->get_current_language(), false ) ) {
-				$original_language_url = $current_url->getForLanguage( $this->language_services->get_original_language() );
+			$original_language = $this->language_services->get_original_language();
+			if ( null !== $original_language && ! $current_url->getForLanguage( $this->request_url_services->get_current_language(), false ) ) {
+				$original_language_url = $current_url->getForLanguage( $original_language );
 				if ( is_string( $original_language_url ) ) {
-					$dom = preg_replace( '/<link rel="canonical"(.*?)?href=(\"|\')([^\s\>]+?)(\"|\')/', '<link rel="canonical" href="' . esc_url( $original_language_url ) . '"', $dom );
+					$with_canonical = preg_replace( '/<link rel="canonical"(.*?)?href=(\"|\')([^\s\>]+?)(\"|\')/', '<link rel="canonical" href="' . esc_url( $original_language_url ) . '"', $dom );
+					if ( null !== $with_canonical ) {
+						$dom = $with_canonical;
+					}
 				}
 			}
 		}
@@ -535,13 +554,21 @@ class Translate_Service_Weglot {
 			$pattern     = '/<html(\s*>|\s+)/i';
 			$replacement = '<html translate="no"$1';
 
-			return preg_replace( $pattern, $replacement, $html );
+			$result = preg_replace( $pattern, $replacement, $html );
+
+			return null === $result ? $html : $result;
 		}
 
 		return $html;
 	}
 
 	/**
+	 * Kept for code calling it through weglot_get_service(): it still returns a string, with an
+	 * error message on failure, which callers used to mistake for the translated term.
+	 * On Weglot 2, $l_to and $t are ignored: the target is the project original language.
+	 *
+	 * @deprecated 6.5 Use reverse_translate_term(), which returns null on failure.
+	 *
 	 * @param string $api_key Weglot API key
 	 * @param string $l_from Source language
 	 * @param string $l_to Target language
@@ -553,8 +580,44 @@ class Translate_Service_Weglot {
 	 * @since 2.4.0
 	 */
 	public function reverseTranslate( $api_key, $l_from, $l_to, $request_url, $word, $t ) {
+		return $this->reverse_translate_term( $api_key, $l_from, $l_to, $request_url, $word, $t ) ?? 'Error: Invalid response from API';
+	}
 
-		$requestBody = wp_json_encode( [
+	/**
+	 * Translate a search term back into the original language, on Weglot 1 or Weglot 2.
+	 *
+	 * @param string $api_key Weglot private API key
+	 * @param string $l_from Language the term is written in
+	 * @param string $l_to Original language of the project
+	 * @param string $request_url Request URL, sent to Weglot 1 only
+	 * @param string $term Term to reverse translate
+	 * @param int $t Text type, sent to Weglot 1 only
+	 *
+	 * @return string|null The reversed term, or null when the API gave none.
+	 * @since 6.5
+	 */
+	public function reverse_translate_term( $api_key, $l_from, $l_to, $request_url, $term, $t = 1 ) {
+		if ( 2 === $this->version_services->get_version_from_api_key_private( $api_key ) ) {
+			// Weglot 2 infers the target language from the project.
+			return $this->reverse_translate_weglot_2( $api_key, $l_from, $term );
+		}
+
+		return $this->reverse_translate_weglot_1( $api_key, $l_from, $l_to, $request_url, $term, $t );
+	}
+
+	/**
+	 * @param string $api_key Weglot private API key
+	 * @param string $l_from Source language
+	 * @param string $l_to Target language
+	 * @param string $request_url Request URL
+	 * @param string $word Word to translate
+	 * @param int $t Text type
+	 *
+	 * @return string|null
+	 * @since 6.5
+	 */
+	private function reverse_translate_weglot_1( $api_key, $l_from, $l_to, $request_url, $word, $t ) {
+		$request_body = wp_json_encode( [
 			"l_from"      => $l_from,
 			"l_to"        => $l_to,
 			"request_url" => $request_url,
@@ -563,46 +626,144 @@ class Translate_Service_Weglot {
 			]
 		] );
 
-		if ( ! is_string( $requestBody ) ) {
-			return "Error: Invalid request body";
+		if ( ! is_string( $request_body ) ) {
+			return null;
 		}
 
-		$api_version = $this->version_services->get_version_from_api_key_private( $api_key );
-
-		$headers = [
-			'Content-Type' => 'application/json',
-		];
-
-		if ( 2 === $api_version ) {
-			// v2 authenticates on the project API domain via an Authorization header, not a ?api_key= query param.
-			$url                     = sprintf( '%s/translate', Helper_API::get_api_domain( $api_key ) );
-			$headers['Authorization'] = 'Key ' . $api_key;
-		} else {
-			$url = sprintf( '%s/translate?api_key=%s', Helper_API::get_api_url(), $api_key );
-		}
-
-		$args = [
-			'body'        => $requestBody,
-			'headers'     => $headers,
-			'method'      => 'POST',
-			'data_format' => 'body',
-		];
-
-		$response = wp_remote_post( $url, $args );
+		$url      = sprintf( '%s/translate', Helper_API::get_api_url() );
+		$response = wp_remote_post(
+			add_query_arg( 'api_key', $api_key, $url ),
+			[
+				'body'        => $request_body,
+				'headers'     => [ 'Content-Type' => 'application/json' ],
+				'method'      => 'POST',
+				'data_format' => 'body',
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
-			return "WP Error: " . $response->get_error_message();
+			$this->log_reverse_translate( 'v1 transport error', $url, $request_body, $response->get_error_message() );
+
+			return null;
 		}
 
-		$response_body = wp_remote_retrieve_body( $response );
+		$status        = wp_remote_retrieve_response_code( $response );
+		$body          = wp_remote_retrieve_body( $response );
+		$response_data = json_decode( $body, true );
+		$reversed      = is_array( $response_data ) && isset( $response_data['to_words'][0] ) ? $response_data['to_words'][0] : null;
 
-		$responseData = json_decode( $response_body, true );
+		if ( 200 !== $status || ! is_string( $reversed ) || '' === $reversed ) {
+			$this->log_reverse_translate( sprintf( 'v1 unexpected response (HTTP %s)', $status ), $url, $request_body, $body );
 
-		if ( ! $responseData || ! isset( $responseData['ids'] ) ) {
-			return "Error: Invalid response from API";
+			return null;
 		}
 
-		return $responseData['to_words'][0];
+		$this->log_reverse_translate( sprintf( 'v1 translated (HTTP %s)', $status ), $url, $request_body, $body );
+
+		return $reversed;
+	}
+
+	/**
+	 * Reverse translate a content with the Weglot 2 API.
+	 *
+	 * The v2 route takes the source language and a raw string, and answers with a bare JSON
+	 * string holding the content translated back into the project original language — unlike
+	 * /translate there is no l_to, no words array, and no object wrapping the result.
+	 *
+	 * Returns null rather than an error string on failure, so a caller guarding with
+	 * is_string() falls back to the untranslated term instead of searching for the error.
+	 *
+	 * @param string $api_key Weglot private API key
+	 * @param string $l_from Language the content is written in
+	 * @param string $content Content to reverse translate
+	 *
+	 * @return string|null
+	 * @since 6.5
+	 */
+	public function reverse_translate_weglot_2( $api_key, $l_from, $content ) {
+		$request_body = wp_json_encode(
+			array(
+				'l_from'  => $l_from,
+				'content' => $content,
+			)
+		);
+
+		if ( ! is_string( $request_body ) ) {
+			return null;
+		}
+
+		$url = sprintf( '%s/%s', Helper_API::get_api_domain( $api_key ), self::REVERSE_TRANSLATE_V2_ROUTE );
+
+		$response = wp_remote_post(
+			$url,
+			array(
+				'body'        => $request_body,
+				'headers'     => array(
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Key ' . $api_key,
+				),
+				'method'      => 'POST',
+				'data_format' => 'body',
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			$this->log_reverse_translate( 'v2 transport error', $url, $request_body, $response->get_error_message() );
+
+			return null;
+		}
+
+		$status = wp_remote_retrieve_response_code( $response );
+		$body   = wp_remote_retrieve_body( $response );
+		$decoded = json_decode( $body, true );
+
+		if ( ! is_string( $decoded ) || '' === $decoded ) {
+			$this->log_reverse_translate( sprintf( 'v2 unexpected response (HTTP %s)', $status ), $url, $request_body, $body );
+
+			return null;
+		}
+
+		$this->log_reverse_translate( sprintf( 'v2 translated (HTTP %s)', $status ), $url, $request_body, $body );
+
+		return $decoded;
+	}
+
+	/**
+	 * Trace a reverse translate call when the weglot_reverse_translate_debug filter is on.
+	 *
+	 * Both routes return null on failure, so a wrong host, payload shape or quota shows up as a
+	 * silent "term left untranslated" on the front. This is the only place that says why.
+	 *
+	 * @param string $outcome
+	 * @param string $url
+	 * @param string $request_body
+	 * @param string $response_body
+	 *
+	 * @return void
+	 * @since 6.5
+	 */
+	private function log_reverse_translate( $outcome, $url, $request_body, $response_body ) {
+		/**
+		 * Log every reverse translate call (Weglot 1 and Weglot 2) to the PHP error log.
+		 *
+		 * @since 6.5
+		 *
+		 * @param bool $enabled
+		 */
+		if ( true !== apply_filters( 'weglot_reverse_translate_debug', false ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- opt-in diagnostic for an undocumented endpoint; off unless the filter is enabled.
+		error_log(
+			sprintf(
+				'[weglot reverse-translate] %s | url=%s | request=%s | response=%s',
+				$outcome,
+				$url,
+				$request_body,
+				$response_body
+			)
+		);
 	}
 }
 

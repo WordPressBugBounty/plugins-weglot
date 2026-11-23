@@ -95,13 +95,14 @@ class Admin_Enqueue_Weglot implements Hooks_Interface_Weglot {
 			$limit = $user_info['languages_limit'];
 		}
 
+		$original_language = $this->language_services->get_original_language();
 		wp_localize_script(
 			'weglot-admin',
 			'weglot_languages',
 			array(
 				'available' => $this->language_services->get_all_languages(),
 				'limit'     => $limit,
-				'original'  => $this->language_services->get_original_language()->getInternalCode(),
+				'original'  => null !== $original_language ? $original_language->getInternalCode() : '',
 				'selected'  => array_map(function($lang) {
 					return $lang->getInternalCode();
 				}, $this->language_services->get_destination_languages(true))
@@ -116,6 +117,21 @@ class Admin_Enqueue_Weglot implements Hooks_Interface_Weglot {
 					'save_settings_v2'    => wp_create_nonce( 'weglot_save_settings_v2' ),
 					'get_project_settings' => wp_create_nonce( 'weglot_get_project_settings' ),
 					'get_workspace_info'  => wp_create_nonce( 'weglot_get_workspace_info' ),
+				),
+				// Plain __() and not esc_html__(): wp_localize_script() only decodes entities on
+				// top-level values, so an escaped apostrophe here would reach the page as &#039;.
+				// The scripts write these strings as text, never as HTML.
+				'i18n'   => array(
+					'changes_saved'      => __( 'Changes saved!', 'weglot' ),
+					'settings_not_saved' => __( 'Settings could not be saved.', 'weglot' ),
+					'copied'             => __( 'Copied!', 'weglot' ),
+					'checking'           => __( 'Checking...', 'weglot' ),
+					'connect'            => __( 'Connect Weglot', 'weglot' ),
+					'invalid_api_key'    => __( 'Invalid API Key', 'weglot' ),
+					'error_try_again'    => __( 'Error - Please try again', 'weglot' ),
+					'activating'         => __( 'Activating...', 'weglot' ),
+					/* translators: %s: name of the Weglot subscription plan, e.g. Starter. */
+					'plan'               => __( 'Plan %s', 'weglot' ),
 				),
 			)
 		);

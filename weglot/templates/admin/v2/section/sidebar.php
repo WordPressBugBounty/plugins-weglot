@@ -12,8 +12,8 @@ $current_tab = isset( $_GET['tabs'] ) ? sanitize_key( $_GET['tabs'] ) : ''; // p
 <nav class="sidebar">
 	<div class="sidebar-logo"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/logo-wg.svg' ); ?>"></div>
 	<div class="menu">
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=weglot-settings&tabs=home' ) ); ?>" class="menu-item <?php if ( '' === $current_tab || 'home' === $current_tab || 'settings' === $current_tab ) : ?>selected<?php endif; ?>"><img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/home.svg' ); ?>">Home</a>
-		<a href="<?php echo esc_url( admin_url( 'admin.php?page=weglot-settings&tabs=dashboard' ) ); ?>" class="menu-item <?php if ( 'dashboard' === $current_tab ) : ?>selected<?php endif; ?>"><img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/settings.svg' ); ?>">Settings</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=weglot-settings&tabs=home' ) ); ?>" class="menu-item <?php if ( '' === $current_tab || 'home' === $current_tab || 'settings' === $current_tab ) : ?>selected<?php endif; ?>"><img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/home.svg' ); ?>"><?php esc_html_e( 'Home', 'weglot' ); ?></a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=weglot-settings&tabs=dashboard' ) ); ?>" class="menu-item <?php if ( 'dashboard' === $current_tab ) : ?>selected<?php endif; ?>"><img src="<?php echo esc_url( WEGLOT_DIRURL . 'app/images/v2/settings.svg' ); ?>"><?php esc_html_e( 'Settings', 'weglot' ); ?></a>
 	</div>
 
 	<div id="wrapper-plan">
@@ -33,14 +33,29 @@ $current_tab = isset( $_GET['tabs'] ) ? sanitize_key( $_GET['tabs'] ) : ''; // p
 		</div>
 
 		<div class="plan-card plan-card-warning" style="display: none;">
-			<div class="panel-title">Plan Starter</div>
+			<div class="panel-title">
+				<?php
+				/* translators: %s: name of the Weglot subscription plan, e.g. Starter. */
+				printf( esc_html__( 'Plan %s', 'weglot' ), 'Starter' );
+				?>
+			</div>
 			<div class="progress-bar-bg">
 				<div class="progress-bar-fill" style="width: 0%;"></div>
 			</div>
-			<div class="info-word-used">Words used <span>0 / 0</span></div>
-			<a href="<?php echo esc_url(Helper_API::get_dashboard_url(). '/' . $workspace_slug . '/modal?tab=billing'); ?>" class="upgrade-btn" target="_blank"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/bolt.svg' ); ?>" alt="">Upgrade</a>
+			<div class="info-word-used"><?php esc_html_e( 'Words used', 'weglot' ); ?> <span>0 / 0</span></div>
+			<a href="<?php echo esc_url( Helper_API::build_dashboard_workspace_url( $workspace_slug, 'modal', array( 'tab' => 'billing' ) ) ); ?>" class="upgrade-btn" target="_blank"><img src="<?php echo esc_url(WEGLOT_DIRURL.'app/images/v2/bolt.svg' ); ?>" alt=""><?php esc_html_e( 'Upgrade', 'weglot' ); ?></a>
 		</div>
-		<div class="faq-link">Looking for assistance?<br>Ask our team at<br><b>help@weglot.com</b><br>or check out the <a href="https://help.weglot.com/" target="_blank" title="Weglot FAQ">FAQ</a></div>
+		<div class="faq-link">
+			<?php esc_html_e( 'Looking for assistance?', 'weglot' ); ?><br>
+			<?php
+			/* translators: %s: support email address, shown on its own line. */
+			printf( esc_html__( 'Ask our team at %s', 'weglot' ), '<br><b>help@weglot.com</b><br>' );
+			?>
+			<?php
+			/* translators: %s: link to the FAQ. */
+			printf( esc_html__( 'or check out the %s', 'weglot' ), '<a href="https://help.weglot.com/" target="_blank" title="' . esc_attr__( 'Weglot FAQ', 'weglot' ) . '">' . esc_html__( 'FAQ', 'weglot' ) . '</a>' );
+			?>
+		</div>
 	</div>
 
 </nav>

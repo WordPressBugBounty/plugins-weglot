@@ -87,11 +87,17 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		$query_vars_check = apply_filters( 'weglot_query_vars_check', 's' );
-		if ( empty( $query->query_vars[ $query_vars_check ] ) ) {
+		$search           = $query->get( $query_vars_check );
+		if ( ! is_string( $search ) || '' === trim( $search ) ) {
 			return;
 		}
 
-		$original_language = $this->language_services->get_original_language()->getInternalCode();
+		$original_language_entry = $this->language_services->get_original_language();
+		if ( null === $original_language_entry ) {
+			return;
+		}
+
+		$original_language = $original_language_entry->getInternalCode();
 		$current_language  = $this->request_url_services->get_current_language()->getInternalCode();
 
 		$prevent_translation = apply_filters( 'weglot_prevent_search_translation', false, $current_language, $query );
@@ -101,11 +107,16 @@ class Search_Weglot implements Hooks_Interface_Weglot {
 
 		try {
 			$api_key_private = $this->option_services->get_api_key_private();
-			$this->new_search = $this->translate_services->reverseTranslate($api_key_private, $current_language, $original_language, home_url('/'), $query->query_vars[ $query_vars_check ], 1);
-
-			if ( empty( $this->new_search ) ) {
+			if ( ! is_string( $api_key_private ) || '' === $api_key_private ) {
 				return;
 			}
+
+			$reversed = $this->translate_services->reverse_translate_term( $api_key_private, $current_language, $original_language, home_url( '/' ), $search );
+			if ( ! is_string( $reversed ) || '' === $reversed ) {
+				return;
+			}
+
+			$this->new_search = $reversed;
 
 			$query->set( $query_vars_check, $this->new_search ); //phpcs:ignore
 			if ( isset( $query->query[ $query_vars_check ] ) ) {

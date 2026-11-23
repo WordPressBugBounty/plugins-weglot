@@ -24,7 +24,7 @@ class Replace_Link_Service_Weglot {
 	private $request_url_services;
 
 	/**
-	 * @var array<int|string,mixed>|null
+	 * @var array<int|string,mixed>
 	 */
 	private $multisite_other_paths;
 
@@ -34,7 +34,7 @@ class Replace_Link_Service_Weglot {
 	public function __construct() {
 		$this->multisite_service     = weglot_get_service( Multisite_Service_Weglot::class );
 		$this->request_url_services  = weglot_get_service( Request_Url_Service_Weglot::class );
-		$this->multisite_other_paths = null;
+		$this->multisite_other_paths = array();
 		if ( is_multisite() ) {
 			$this->multisite_other_paths = array_filter(
 				$this->multisite_service->get_list_of_network_path(),
@@ -136,8 +136,9 @@ class Replace_Link_Service_Weglot {
 	 * @version 2.0.4
 	 * @since 2.0
 	 */
-	public function replace_a( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_a( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language     = $this->request_url_services->get_current_language();
+		$replaced             = null;
 		$no_replace_condition = apply_filters( 'weglot_no_replace_a_href', 'wp-content/uploads' );
 
 		if ( strpos( $current_url, $no_replace_condition ) !== false ) {
@@ -173,19 +174,19 @@ class Replace_Link_Service_Weglot {
 				$paths      = explode( '/', $parsed_url['path'] );
 				$other_site = in_array( '/' . $paths[1] . '/', $this->multisite_other_paths );
 				if ( $other_site ) {
-					$replace_url_other_site = preg_replace( '#(?<!https:)\/\/+#', '/', 'wg-' . esc_url( $replace_url_other_site ) );
-					$translated_page        = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', 'a' . $sometags . 'href=' . $quote1 . $this->esc_preg_replacement( $replace_url_other_site ) . $quote2 . $sometags2 . '>', $translated_page );
+					$replace_url_other_site = (string) preg_replace( '#(?<!https:)\/\/+#', '/', 'wg-' . esc_url( $replace_url_other_site ) );
+					$replaced               = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', 'a' . $sometags . 'href=' . $quote1 . $this->esc_preg_replacement( $replace_url_other_site ) . $quote2 . $sometags2 . '>', $translated_page );
 				} else {
-					$translated_page = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', '<a' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2 . $sometags2 . '>', $translated_page );
+					$replaced = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', '<a' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2 . $sometags2 . '>', $translated_page );
 				}
 
 			}
 
 		} else {
-			$translated_page = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', '<a' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2 . $sometags2 . '>', $translated_page );
+			$replaced = preg_replace( '/<a' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . preg_quote( $sometags2, '/' ) . '>/', '<a' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2 . $sometags2 . '>', $translated_page );
 		}
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -201,8 +202,9 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_datalink( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_datalink( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
+		$replaced         = null;
 		$regex_limit_default = 200000;
 
 		// Check if the filter exists.
@@ -214,7 +216,7 @@ class Replace_Link_Service_Weglot {
 			if ( strlen( $sometags ) > $regex_limit ) {
 				// Skip the preg_replace; leave $translated_page as is.
 			} else {
-				$translated_page = preg_replace(
+				$replaced = preg_replace(
 					'/<' . preg_quote( $sometags, '/' ) . 'data-link=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/',
 					'<' . $sometags . 'data-link=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2,
 					$translated_page
@@ -222,13 +224,13 @@ class Replace_Link_Service_Weglot {
 			}
 		} else {
 			// No filter exists; use the default behavior.
-			$translated_page = preg_replace(
+			$replaced = preg_replace(
 				'/<' . preg_quote( $sometags, '/' ) . 'data-link=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/',
 				'<' . $sometags . 'data-link=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2,
 				$translated_page
 			);
 		}
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -244,11 +246,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_dataurl( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_dataurl( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<' . preg_quote( $sometags, '/' ) . 'data-url=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<' . $sometags . 'data-url=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<' . preg_quote( $sometags, '/' ) . 'data-url=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<' . $sometags . 'data-url=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -264,11 +266,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_datacart( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_datacart( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<' . preg_quote( $sometags, '/' ) . 'data-cart-url=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<' . $sometags . 'data-cart-url=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<' . preg_quote( $sometags, '/' ) . 'data-cart-url=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<' . $sometags . 'data-cart-url=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -284,11 +286,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_form( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_form( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<form' . preg_quote( $sometags, '/' ) . 'action=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<form ' . $sometags . 'action=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language, false ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<form' . preg_quote( $sometags, '/' ) . 'action=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<form ' . $sometags . 'action=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language, false ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -304,11 +306,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_canonical( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_canonical( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<link rel="canonical"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="canonical"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<link rel="canonical"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="canonical"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -324,11 +326,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_next( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_next( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<link rel="next"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="next"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<link rel="next"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="next"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -344,11 +346,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_prev( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_prev( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<link rel="prev"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="prev"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<link rel="prev"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="prev"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -364,11 +366,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_amp( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_amp( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<link rel="amphtml"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="amphtml"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<link rel="amphtml"' . preg_quote( $sometags, '/' ) . 'href=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<link rel="amphtml"' . $sometags . 'href=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -384,11 +386,11 @@ class Replace_Link_Service_Weglot {
 	 * @return string
 	 * @since 2.0
 	 */
-	public function replace_meta( $translated_page, $current_url, $quote1, $quote2, $sometags = null, $sometags2 = null ) {
+	public function replace_meta( $translated_page, $current_url, $quote1, $quote2, $sometags = '', $sometags2 = '' ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<meta property="og:url"' . preg_quote( $sometags, '/' ) . 'content=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<meta property="og:url"' . $sometags . 'content=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
+		$replaced         = preg_replace( '/<meta property="og:url"' . preg_quote( $sometags, '/' ) . 'content=' . preg_quote( $quote1 . $current_url . $quote2, '/' ) . '/', '<meta property="og:url"' . $sometags . 'content=' . $quote1 . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . $quote2, $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 
 	/**
@@ -403,8 +405,8 @@ class Replace_Link_Service_Weglot {
 	 */
 	public function replace_loc( $translated_page, $current_url ) {
 		$current_language = $this->request_url_services->get_current_language();
-		$translated_page  = preg_replace( '/<loc>' . preg_quote( $current_url, '/' ) . '<\/loc>/', '<loc>' . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . '</loc>', $translated_page );
+		$replaced         = preg_replace( '/<loc>' . preg_quote( $current_url, '/' ) . '<\/loc>/', '<loc>' . $this->esc_replacement( $this->replace_url( $current_url, $current_language ) ) . '</loc>', $translated_page );
 
-		return $translated_page;
+		return null === $replaced ? $translated_page : $replaced;
 	}
 }

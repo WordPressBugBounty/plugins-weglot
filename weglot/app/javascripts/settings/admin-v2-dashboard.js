@@ -1,3 +1,5 @@
+import t from './admin-i18n';
+
 const init_v2_dashboard = function () {
 	document.addEventListener('DOMContentLoaded', () => {
 
@@ -119,21 +121,21 @@ const init_v2_dashboard = function () {
 			// Crée le toast
 			const toast = $('<div>')
 				.addClass('wg-inline-toast')
-				.html('<span class="wg-inline-toast__icon">✓</span> Copied!');
+				.append(
+					$('<span>').addClass('wg-inline-toast__icon').text('✓'),
+					document.createTextNode(' ' + t('copied', 'Copied!'))
+				);
 
-			// Positionne le toast à gauche du bouton
-			const $button = $(buttonElement);
-			const buttonOffset = $button.offset();
-			const toastWidth = 90; // largeur approximative du toast
+			// Appended before it is positioned: a translated label has no fixed width.
+			$('body').append(toast);
+
+			const buttonOffset = $(buttonElement).offset();
 
 			toast.css({
 				position: 'absolute',
 				top: buttonOffset.top,
-				left: buttonOffset.left - toastWidth - 8
+				left: buttonOffset.left - toast.outerWidth() - 8
 			});
-
-			// Ajoute au body
-			$('body').append(toast);
 
 			// Animation d'apparition
 			setTimeout(() => toast.addClass('wg-inline-toast--show'), 10);
@@ -377,11 +379,11 @@ const init_v2_dashboard = function () {
 							bar.classList.remove('active');
 
 							initialSnapshot = snapshotForm(form);
-							showToast('Changes saved!', '', 'success')
+							showToast(t('changes_saved', 'Changes saved!'), '', 'success')
 
 						} else {
 							const message = response && response.data && response.data.message ? response.data.message : '';
-							showToast('Settings saved failed!', '', 'danger')
+							showToast(t('settings_not_saved', 'Settings could not be saved.'), '', 'danger')
 
 							if (message === 'Invalid API key.') {
 								apiKeyInput.removeClass('is-valid').addClass('is-invalid');

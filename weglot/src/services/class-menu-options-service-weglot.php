@@ -66,7 +66,7 @@ class Menu_Options_Service_Weglot {
 	}
 
 	/**
-	 * @return string|null.
+	 * @return string|null
 	 */
 	function weglot_get_widgets_admin_url() {
 		if ( ! current_user_can( 'edit_theme_options' ) ) {

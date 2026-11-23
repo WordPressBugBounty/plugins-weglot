@@ -158,6 +158,9 @@ class Button_Service_Weglot {
 		$amp_regex                 = $this->amp_services->get_regex( true );
 		$current_language          = $this->request_url_services->get_current_language();
 		$original_language         = $this->language_services->get_original_language();
+		if ( null === $original_language ) {
+			return apply_filters( 'weglot_button_html', '', $add_class );
+		}
 		$is_dropdown               = $this->option_services->get_option_button( 'is_dropdown' );
 		$display_original_language = $this->request_url_services->get_weglot_url()->getExcludeOption( $original_language, 'language_button_displayed' );
 		$language_button_displayed = $this->request_url_services->get_weglot_url()->getExcludeOption( $weglot_url->getCurrentLanguage(), 'language_button_displayed' );
@@ -229,7 +232,7 @@ class Button_Service_Weglot {
 			}
 
 			if ( ! $language_button_displayed ) {
-				if ( ! $is_dropdown && $this->language_services->get_original_language()->getInternalCode() === $language->getInternalCode() && $display_first ) {
+				if ( ! $is_dropdown && $original_language->getInternalCode() === $language->getInternalCode() && $display_first ) {
 					$link_button = $this->request_url_services->get_weglot_url()->getForLanguage( $language, true );
 				} else {
 					$link_button = $this->request_url_services->get_weglot_url()->getForLanguage( $language, false );

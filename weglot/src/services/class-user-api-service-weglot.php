@@ -13,6 +13,10 @@ use WeglotWP\Helpers\Helper_API;
  * @since 2.0
  */
 class User_Api_Service_Weglot {
+	const WORKSPACE_SLUG_OPTION     = 'weglot-translate-workspace-slug';
+	const WORKSPACE_SLUG_KEY_OPTION = 'weglot-translate-workspace-slug-key';
+	const WORKSPACE_SLUG_THROTTLE   = 'weglot_workspace_slug_fetch_throttle';
+
 	/**
 	 * @var array<string,mixed>|null $user_info Information about the user.
 	 */
@@ -105,6 +109,47 @@ class User_Api_Service_Weglot {
 	}
 
 	/**
+	 * Slug of the Weglot 2 workspace the current private key belongs to, '' when unknown.
+	 *
+	 * The slug is stored with a fingerprint of the key it was fetched with: the key can change
+	 * through several settings screens or the WEGLOT_API_KEY_PRIVATE constant, and a slug kept
+	 * from another key would link to someone else's workspace. A missing or stale slug is fetched
+	 * again, at most once every five minutes.
+	 *
+	 * @return string
+	 */
+	public function get_workspace_slug() {
+		$slug        = get_option( self::WORKSPACE_SLUG_OPTION );
+		$fingerprint = $this->api_key_fingerprint( \weglot_get_api_key() );
+
+		if ( is_string( $slug ) && '' !== trim( $slug ) && get_option( self::WORKSPACE_SLUG_KEY_OPTION ) === $fingerprint ) {
+			return $slug;
+		}
+
+		if ( false === get_transient( self::WORKSPACE_SLUG_THROTTLE ) ) {
+			set_transient( self::WORKSPACE_SLUG_THROTTLE, 1, MINUTE_IN_SECONDS * 5 );
+			$this->get_workspace_info();
+
+			$slug = get_option( self::WORKSPACE_SLUG_OPTION );
+			if ( is_string( $slug ) && '' !== trim( $slug ) && get_option( self::WORKSPACE_SLUG_KEY_OPTION ) === $fingerprint ) {
+				return $slug;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * hash(), not wp_hash(): this can run before pluggable.php is loaded (Yoast SEO Premium early include).
+	 *
+	 * @param mixed $api_key
+	 * @return string
+	 */
+	private function api_key_fingerprint( $api_key ) {
+		return hash( 'sha256', is_string( $api_key ) ? $api_key : '' );
+	}
+
+	/**
 	 * Get workspace information from Weglot API.
 	 *
 	 * @since 4.0.0
@@ -127,11 +172,10 @@ class User_Api_Service_Weglot {
 				throw new \Exception( 'Unknown error with Weglot Api (workspace-0001) : ' . \json_last_error() );
 			}
 
-			$option_key = sprintf('%s-%s', WEGLOT_SLUG, 'workspace-slug');
-
 			$slug = isset($json['slug']) && is_string($json['slug']) ? sanitize_key(trim($json['slug'])) : '';
 			if ($slug !== '') {
-				update_option($option_key, $slug);
+				update_option( self::WORKSPACE_SLUG_OPTION, $slug );
+				update_option( self::WORKSPACE_SLUG_KEY_OPTION, $this->api_key_fingerprint( $api_key ) );
 			}
 
 			if ( isset( $json['uuid'] ) ) {

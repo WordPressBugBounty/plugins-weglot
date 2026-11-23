@@ -115,7 +115,10 @@ class Redirect_Service_Weglot {
 	public function get_best_available_language( $navigator_languages, $available_languages ) {
 
 		// We add the original in the list of available languages.
-		$available_languages[] = $this->language_services->get_original_language()->getExternalCode();
+		$original_language = $this->language_services->get_original_language();
+		if ( null !== $original_language ) {
+			$available_languages[] = $original_language->getExternalCode();
+		}
 
 		// We check if user add a custom languages code
 		$navigator_languages = apply_filters('weglot_navigator_language', $navigator_languages);
@@ -164,7 +167,7 @@ class Redirect_Service_Weglot {
 		$navigator_languages            = $this->get_navigator_languages();
 		$destination_languages_external = $this->language_services->get_destination_languages_external( $this->request_url_services->is_allowed_private(), $this->request_url_services->get_excluded_languages_for_current_url() );
 		$best_external_language         = $this->get_best_available_language( $navigator_languages, $destination_languages_external );
-		$best_language                  = $this->language_services->get_language_from_external( $best_external_language );
+		$best_language                  = null !== $best_external_language ? $this->language_services->get_language_from_external( $best_external_language ) : null;
 
 
 		// Redirect using the best language.
@@ -183,12 +186,16 @@ class Redirect_Service_Weglot {
 		}
 
 		// If there is no best language, we redirect using the auto switch fallback if there is one in the options.
-		if ( empty($best_language) || ( ! in_array( $this->language_services->get_original_language()->getExternalCode(), $navigator_languages ) &&
+		$original_language = $this->language_services->get_original_language();
+		if ( null === $original_language ) {
+			return;
+		}
+		if ( empty($best_language) || ( ! in_array( $original_language->getExternalCode(), $navigator_languages ) &&
 			$this->option_services->get_option( 'autoswitch_fallback' ) !== null )
 		) {
 			$fallback_language = $this->language_services->get_language_from_internal( $this->option_services->get_option( 'autoswitch_fallback' ) );
 			//Cancel redirect if excluded page.
-			if ( ! $this->request_url_services->get_weglot_url()->getForLanguage( $fallback_language, false ) ){
+			if ( null === $fallback_language || ! $this->request_url_services->get_weglot_url()->getForLanguage( $fallback_language, false ) ){
 				return;
 			}
 			$url_auto_redirect = apply_filters( 'weglot_url_auto_redirect', $this->request_url_services->get_weglot_url()->getForLanguage( $fallback_language, true ) );
@@ -222,11 +229,19 @@ class Redirect_Service_Weglot {
 				// Remove the 'wg-choose-original' parameter from the query string
 				$request_uri = preg_replace( '/([&?])wg-choose-original=[^&]*(&|$)/', '$1', $request_uri );
 
+				// Redirecting with the parameter still in the URL would set the cookie and redirect again, forever.
+				if ( null === $request_uri ) {
+					return;
+				}
+
 				// Remove any trailing '&' or '?' left in the query string
 				$request_uri = rtrim( $request_uri, '&?' );
 
 				// Ensure the URL doesn't end with a '?' if no other query parameters are present
-				$request_uri = preg_replace( '/\?$/', '', $request_uri );
+				$without_question_mark = preg_replace( '/\?$/', '', $request_uri );
+				if ( null !== $without_question_mark ) {
+					$request_uri = $without_question_mark;
+				}
 
 				$_SERVER['REQUEST_URI'] = $request_uri;
 

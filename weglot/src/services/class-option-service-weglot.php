@@ -140,7 +140,7 @@ class Option_Service_Weglot {
 	 *
 	 * @param string $api_key
 	 * @return void
-	 * @since 6.4
+	 * @since 6.4.1
 	 */
 	private function purge_options_cache_if_key_changed( $api_key ) {
 		$fingerprint        = hash( 'sha256', $api_key );
@@ -352,7 +352,7 @@ class Option_Service_Weglot {
 
 		$active_slugs = apply_filters( 'weglot_active_slugs', true );
 		if ( $this->slugs_from_api || ! $active_slugs ) {
-			return $this->slugs_from_api;
+			return $this->slugs_from_api ?? array();
 		}
 
 		// Prevent infinite recursion: get_options() below can call back into slug loading.
@@ -473,11 +473,16 @@ class Option_Service_Weglot {
 	 */
 	public function get_version() {
 		$options = $this->get_options();
-		if ( ! isset( $options['versions']['translation'] ) ) {
+		// Weglot 2 project settings name the field in the plural, the Weglot 1 CDN in the singular.
+		$field = 2 === $this->version_service_weglot->get_version_from_api_key_private( $this->get_api_key_private() )
+			? 'translations'
+			: 'translation';
+
+		if ( ! isset( $options['versions'][ $field ] ) ) {
 			return apply_filters( 'weglot_get_version', 1 );
 		}
 
-		return apply_filters( 'weglot_get_version', $options['versions']['translation'] );
+		return apply_filters( 'weglot_get_version', $options['versions'][ $field ] );
 	}
 
 	/**
@@ -534,7 +539,7 @@ class Option_Service_Weglot {
 					$response = $this->get_options_from_cdn_with_api_key( $api_key_private );
 					if(
 						! $response['success'] ||
-						( isset( $response['result']['error'] ) && null !== $response['result']['error'] ) ||
+						isset( $response['result']['error'] ) ||
 						( isset( $response['result']['status'] ) && 200 !== (int) $response['result']['status'] )
 					){
 						return $this->get_options_from_v2();
@@ -599,7 +604,14 @@ class Option_Service_Weglot {
 
 		$destinations_languages = array_column( $options['destination_language'], 'language_to' );
 
-		if ( Helper_Is_Admin::is_wp_admin() && $api_key_private && $is_weglot_settings_page ) {
+		if ( $is_v2 ) {
+			// Exclusive: a site moved from Weglot 1 keeps its public key and a weglot_slugs_cache
+			// that never expires, whose slugs must not be mixed with the Weglot 2 ones.
+			$slug_translation_v2 = weglot_get_service( Slug_Translation_V2_Service_Weglot::class );
+			if ( $slug_translation_v2 instanceof Slug_Translation_V2_Service_Weglot ) {
+				$slugs = $slug_translation_v2->get_slugs( $options, $api_key_private, array_map( 'strval', $destinations_languages ) );
+			}
+		} elseif ( Helper_Is_Admin::is_wp_admin() && $api_key_private && $is_weglot_settings_page ) {
 			$slugs = $this->get_slugs_from_api_with_api_key( $api_key_private, $destinations_languages );
 		} else {
 			if ( ( ! Helper_Is_Admin::is_wp_admin() && $api_key ) || ( Helper_Is_Admin::is_wp_admin() && ! $is_weglot_settings_page ) ) {
@@ -617,7 +629,7 @@ class Option_Service_Weglot {
 	 * @param array<int|string,mixed> $array1
 	 * @param array<int|string,mixed> $array2
 	 *
-	 * @return array<string,mixed>
+	 * @return array<int|string,mixed>
 	 * @throws Exception
 	 * @since 2.0
 	 * @version 3.0.0
@@ -697,6 +709,53 @@ class Option_Service_Weglot {
 	}
 
 	/**
+	 * Masks an API key down to its last 4 characters, keeping the "wg_" version prefix.
+	 *
+	 * The mask has the same length as the key: the v2 onboarding script rejects shorter values
+	 * before asking the server to validate them.
+	 *
+	 * @param string $api_key
+	 * @return string
+	 * @since 6.5
+	 */
+	public function mask_api_key( $api_key ) {
+		$prefix = 0 === strpos( $api_key, 'wg_' ) ? 'wg_' : '';
+		$secret = (string) substr( $api_key, strlen( $prefix ) );
+
+		if ( strlen( $secret ) <= 4 ) {
+			return $prefix . str_repeat( '•', strlen( $secret ) );
+		}
+
+		return $prefix . str_repeat( '•', strlen( $secret ) - 4 ) . substr( $secret, -4 );
+	}
+
+	/**
+	 * The API key as the settings screens display it: masked when it comes from the constant.
+	 *
+	 * @return string
+	 * @since 6.5
+	 */
+	public function get_displayed_api_key_private() {
+		$api_key_private = (string) $this->get_api_key_private();
+
+		return $this->has_api_key_private_constant() ? $this->mask_api_key( $api_key_private ) : $api_key_private;
+	}
+
+	/**
+	 * The API key a settings form submitted, or the constant when one is defined.
+	 *
+	 * The screens only display a masked copy of the constant, so whatever the browser sends back
+	 * must never be used in its place.
+	 *
+	 * @param string $submitted_api_key
+	 * @return string
+	 * @since 6.5
+	 */
+	public function resolve_submitted_api_key_private( $submitted_api_key ) {
+		return $this->has_api_key_private_constant() ? $this->get_api_key_private() : $submitted_api_key;
+	}
+
+	/**
 	 * Persists the API key, unless it is supplied by the WEGLOT_API_KEY_PRIVATE constant.
 	 *
 	 * @param string $api_key_private
@@ -713,7 +772,7 @@ class Option_Service_Weglot {
 
 
 	/**
-	 * @param array<string,mixed> $options
+	 * @param array<int|string,mixed> $options
 	 *
 	 * @return array<string,mixed>
 	 * @since 3.0.0
@@ -760,7 +819,7 @@ class Option_Service_Weglot {
 	}
 
 	/**
-	 * @param array<string,mixed> $options
+	 * @param array<int|string,mixed> $options
 	 *
 	 * @return array<string,mixed>
 	 * @since 3.0.0

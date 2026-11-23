@@ -125,7 +125,7 @@ class Noindex_Service_Weglot {
 			return false;
 		}
 
-		$path = $this->request_url_services->get_weglot_url()->getPath();
+		$path = $this->request_url_services->get_weglot_url()->getPath() ?? '';
 
 		foreach ( $this->get_noindex_urls() as $rule ) {
 			if ( null !== $rule[1] && ! $this->has_language( $rule[1], $language ) ) {

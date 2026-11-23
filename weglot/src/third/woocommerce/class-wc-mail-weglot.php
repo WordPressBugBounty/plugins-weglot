@@ -66,11 +66,13 @@ class WC_Mail_Weglot implements Hooks_Interface_Weglot {
 	 */
 	public function translate_following_mail( $args, $mail ) {
 
-		$translate_email = apply_filters( 'weglot_translate_email', weglot_get_option( 'email_translate' ), $args );
+		$translate_email   = apply_filters( 'weglot_translate_email', weglot_get_option( 'email_translate' ), $args );
+		$original_language = $this->language_services->get_original_language();
 		/** @var \WC_Email $mail */
 
 		if (
 			$translate_email
+			&& null !== $original_language
 			&& property_exists( $mail, 'object' )
 			&& is_object( $mail->object )
 			&& (
@@ -91,7 +93,7 @@ class WC_Mail_Weglot implements Hooks_Interface_Weglot {
 					$language = $this->language_services->get_language_from_external( $woocommerce_order_language );
 					if ( null !== $language ) {
 						$current_and_original_language = array(
-							'original' => $this->language_services->get_original_language()->getInternalCode(),
+							'original' => $original_language->getInternalCode(),
 							'current'  => $language->getInternalCode(),
 						);
 
@@ -108,7 +110,7 @@ class WC_Mail_Weglot implements Hooks_Interface_Weglot {
 				if ( $mail->object->get_billing_email() === $mail->get_recipient() ) {
 					$woocommerce_order_language               = get_post_meta( $mail->object->get_id(), 'weglot_language', true );
 					$current_and_original_language            = array(
-						'original' => $this->language_services->get_original_language()->getInternalCode(),
+						'original' => $original_language->getInternalCode(),
 						'current'  => $this->request_url_services->get_current_language()->getInternalCode(),
 					);
 					if( ! empty($this->language_services->get_language_from_external( $woocommerce_order_language ) ) ){
@@ -118,7 +120,7 @@ class WC_Mail_Weglot implements Hooks_Interface_Weglot {
 					}
 
 				} else {
-					$current_and_original_language['original'] = $this->language_services->get_original_language()->getInternalCode();
+					$current_and_original_language['original'] = $original_language->getInternalCode();
 					$current_and_original_language['current']  = $current_and_original_language['original'];
 				}
 

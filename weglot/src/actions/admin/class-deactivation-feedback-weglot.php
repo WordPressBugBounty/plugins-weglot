@@ -108,7 +108,6 @@ class Deactivation_Feedback_Weglot implements Hooks_Interface_Weglot {
 		);
 
 		// Send email
-		// @phpstan-ignore-next-line -- WordPress stubs not resolved in current PHPStan config
 		$sent = wp_mail( 'help@weglot.com', $email_subject, $email_body, $headers ); // phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_mail_wp_mail -- single transactional email, not bulk
 
 		if ( $sent ) {

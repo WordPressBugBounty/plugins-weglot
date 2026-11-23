@@ -1,3 +1,5 @@
+import t from './admin-i18n';
+
 
 const init_workspace_info = function () {
 	document.addEventListener('DOMContentLoaded', () => {
@@ -82,7 +84,7 @@ const init_workspace_info = function () {
 			const wordLimit = subscription.wordLimit || 0;
 
 			// Formater le nom du plan (première lettre en majuscule)
-			const planName = 'Plan ' + plan.charAt(0).toUpperCase() + plan.slice(1);
+			const planName = t('plan', 'Plan %s').replace(/%(?:1\$)?s/, plan.charAt(0).toUpperCase() + plan.slice(1));
 
 			// Mettre à jour le titre du plan
 			$planCard.find('.panel-title').text(planName);

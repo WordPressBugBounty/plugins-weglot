@@ -54,12 +54,13 @@ class Email_Translate_Service_Weglot {
 		$api_version     = $this->version_services->get_version_from_api_key_private( $api_key_private );
 		$api_key         = ( 2 === $api_version ) ? $api_key_private : $this->option_services->get_api_key( true );
 
-		if ( ! $api_key ) {
+		$original_language_entry = $this->language_services->get_original_language();
+		if ( ! $api_key || null === $original_language_entry ) {
 			return $args;
 		}
 
 		try {
-			$original_language = $this->language_services->get_original_language()->getInternalCode();
+			$original_language = $original_language_entry->getInternalCode();
 			$exclude_blocks    = $this->option_services->get_exclude_blocks();
 
 			$config             = new ServerConfigProvider();

@@ -4,7 +4,7 @@ Tags: translate, translation, multilingual, automatic translation, AI translatio
 Requires at least: 5.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 6.4.3
+Stable tag: 6.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -208,11 +208,24 @@ See changelog for upgrade changes.
 
 == Changelog ==
 
-= 6.4.3 (15/10/2026) =
-* Security: translated-page link URLs are now escaped on output, fixing a stored cross-site scripting (XSS) issue where a crafted URL could break out of a link attribute on translated pages.
-
-= 6.4.2 (01/10/2026) =
-* Fix: Weglot no longer causes a fatal error (Call to undefined function wp_hash()) on the front end of sites running Yoast SEO Premium, a regression of 6.4.1.
+= 6.5 (23/11/2026) =
+* Security: Harden HTML parser placeholder handling. Purging your page cache after updating is recommended.
+* Security: The language data block embedded in translated pages now escapes < and >, so a crafted URL can no longer break the page.
+* New: Translate URL slugs on Weglot 2 projects. Projects that have slug translations get translated URLs as soon as the plugin is updated; former URLs redirect (301) to the new ones. To keep the former URLs, add add_filter( 'weglot_active_slugs', '__return_false' ); in a plugin or mu-plugin.
+* New: Divi: translate the content stored in data-et-multi-view (per-device texts).
+* New: Doofinder: the search query sent to the Doofinder layer can be translated back to the original language (opt in with the weglot_translate_doofinder_search filter).
+* Improvement: An API key defined by constant is masked on the settings screens, except its last 4 characters.
+* Improvement: The Weglot 2 admin screens are translatable.
+* Fix: The WordPress search on Weglot 2 projects no longer searches for an API error message.
+* Fix: Redirects to the WordPress admin no longer get a language prefix (redirect loop on /fr/wp-admin/).
+* Fix: Relative redirects (e.g. WooCommerce add to cart) no longer send visitors to the homepage.
+* Fix: The language switcher and hreflang tags keep the requested language when the request URI is rewritten.
+* Fix: Validating an API key on the settings screen no longer fails with a 400 error.
+* Fix: The API key is no longer wiped when saving another settings tab.
+* Fix: Pages no longer slow down when the switcher CDN is unreachable (versions.json is no longer fetched on every view).
+* Fix: Links to the Weglot 2 dashboard are no longer malformed.
+* Fix: The rollback no longer offers 6.4.1.
+* Fix: Stray files in the plugin folder (e.g. .DS_Store, macOS ._ copies, .php.bak backups) no longer cause a fatal error on translated pages.
 
 = Older versions =
 

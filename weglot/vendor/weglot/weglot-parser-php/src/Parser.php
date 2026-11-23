@@ -18,6 +18,7 @@ use Weglot\Parser\Formatter\JsonFormatter;
 use Weglot\Parser\Util\SourceType;
 use Weglot\Parser\Util\Text;
 use WGSimpleHtmlDom\simple_html_dom;
+use WGSimpleHtmlDom\simple_html_dom_node;
 
 /**
  * @phpstan-type HtmlTree = array{
@@ -104,6 +105,11 @@ class Parser
      * @var IgnoredNodes
      */
     protected $ignoredNodesFormatter;
+
+    /**
+     * @var array<string>
+     */
+    protected $mergedSelectorsRemove = [];
 
     /**
      * @param array<string>                    $excludeBlocks
@@ -199,6 +205,33 @@ class Parser
         $this->translateInsideExclusionsBlocks = $translateInsideExclusionsBlocks;
 
         return $this;
+    }
+
+    /**
+     * Elements matching one of these selectors, and everything inside them, are never merged into
+     * the surrounding sentence (translation engines 2 and 3), as the JS integration does.
+     *
+     * @since 0.1.3
+     *
+     * @param array<string> $mergedSelectorsRemove
+     *
+     * @return $this
+     */
+    public function setMergedSelectorsRemove(array $mergedSelectorsRemove)
+    {
+        $this->mergedSelectorsRemove = $mergedSelectorsRemove;
+
+        return $this;
+    }
+
+    /**
+     * @since 0.1.3
+     *
+     * @return array<string>
+     */
+    public function getMergedSelectorsRemove()
+    {
+        return $this->mergedSelectorsRemove;
     }
 
     /**
@@ -383,7 +416,10 @@ class Parser
     {
         if (2 == $this->translationEngine) {
             $ignoredNodesFormatter = $this->getIgnoredNodesFormatter();
-            $ignoredNodesFormatter->setSource($source)->handle();
+            $ignoredNodesFormatter
+                ->setSource($source)
+                ->setPreservedFragments($this->findUnmergeableFragments($source, $ignoredNodesFormatter->getIgnoredNodes()))
+                ->handle();
             $source = $ignoredNodesFormatter->getSource();
         }
 
@@ -418,6 +454,69 @@ class Parser
             'nodes' => $nodes,
             'regexes' => $regexes,
         ];
+    }
+
+    /**
+     * Engine 2 merges by escaping inline tags in the raw source, which cannot evaluate a CSS
+     * selector. The source is parsed on a throwaway DOM to find the matching tags, and only their
+     * raw markup is kept: re-serialising the DOM would change the bytes, hence the words sent.
+     *
+     * Matching on markup has two known limits, both falling back on the usual merge: identical
+     * markup outside the selector context is kept apart too, and uppercase tag or attribute names
+     * never match, since the DOM lowercases them.
+     *
+     * @param string             $source
+     * @param array<int, string> $ignoredNodes
+     *
+     * @return array<int, string>
+     */
+    protected function findUnmergeableFragments($source, array $ignoredNodes)
+    {
+        if (empty($this->mergedSelectorsRemove)) {
+            return [];
+        }
+
+        $dom = \WGSimpleHtmlDom\str_get_html(
+            $source,
+            true,
+            true,
+            WG_DEFAULT_TARGET_CHARSET,
+            false
+        );
+
+        if (false === $dom) {
+            return [];
+        }
+
+        $fragments = [];
+        foreach ($this->mergedSelectorsRemove as $selector) {
+            foreach ($dom->find($selector) as $match) {
+                $fragments = array_merge($fragments, $this->findIgnoredFragments($match, $ignoredNodes));
+            }
+        }
+
+        $dom->clear();
+
+        return array_values(array_unique($fragments));
+    }
+
+    /**
+     * Walks the whole subtree: find('*') only returns the direct children in simplehtmldom.
+     *
+     * @param simple_html_dom_node $node
+     * @param array<int, string>   $ignoredNodes
+     *
+     * @return array<int, string>
+     */
+    private function findIgnoredFragments($node, array $ignoredNodes): array
+    {
+        $fragments = \in_array($node->tag, $ignoredNodes, true) ? [$node->outertext()] : [];
+
+        foreach ($node->nodes as $child) {
+            $fragments = array_merge($fragments, $this->findIgnoredFragments($child, $ignoredNodes));
+        }
+
+        return $fragments;
     }
 
     /**

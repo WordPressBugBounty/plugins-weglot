@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WeglotWP\Models\Hooks_Interface_Weglot;
 use WeglotWP\Helpers\Helper_Post_Meta_Weglot;
 use WeglotWP\Services\Option_Service_Weglot;
+use WeglotWP\Services\Version_Service_Weglot;
 
 /**
  *
@@ -22,10 +23,16 @@ class Metabox_Url_Translate_Weglot implements Hooks_Interface_Weglot {
 	private $option_services;
 
 	/**
+	 * @var Version_Service_Weglot
+	 */
+	private $version_services;
+
+	/**
 	 * @since 2.1.0
 	 */
 	public function __construct() {
 		$this->option_services    = weglot_get_service( Option_Service_Weglot::class );
+		$this->version_services   = weglot_get_service( Version_Service_Weglot::class );
 	}
 
 	/**
@@ -45,6 +52,11 @@ class Metabox_Url_Translate_Weglot implements Hooks_Interface_Weglot {
 	public function add_meta_boxes_url_translate() {
 		global $post;
 		if ( ! $post ) {
+			return;
+		}
+
+		// Its only content is a link to a v1 dashboard route, which Weglot 2 does not have.
+		if ( 2 === $this->version_services->get_onboarding_version() ) {
 			return;
 		}
 

@@ -103,6 +103,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 
 
 		$api_key_private = isset( $_POST['api_key_private'] ) ? sanitize_text_field( wp_unslash( $_POST['api_key_private'] ) ) : '';
+		$api_key_private = $this->option_services->resolve_submitted_api_key_private( $api_key_private );
 
 		if ( '' === $api_key_private || strlen( $api_key_private ) < 10 ) {
 			wp_send_json_error( array( 'message' => 'Invalid API key.' ) );
@@ -188,10 +189,29 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 		}
 
 		$tab = $_GET[ 'tab' ]; //phpcs:ignore
-		$options = $_POST[ WEGLOT_SLUG ]; //phpcs:ignore
+		$options = isset( $_POST[ WEGLOT_SLUG ] ) && is_array( $_POST[ WEGLOT_SLUG ] ) ? $_POST[ WEGLOT_SLUG ] : array(); //phpcs:ignore
 		$keep_api_key_private = "";
 
 		$api_key_private = isset( $options['api_key_private'] ) ? (string) $options['api_key_private'] : '';
+		if ( $this->option_services->has_api_key_private_constant() ) {
+			// The form only carries a masked copy of the constant, and save_options_to_weglot()
+			// builds its request URL from $options['api_key_private'].
+			$api_key_private            = $this->option_services->resolve_submitted_api_key_private( $api_key_private );
+			$options['api_key_private'] = $api_key_private;
+		}
+
+		// Only the Settings tab renders the API key field, so an empty value here means "not
+		// submitted", never "cleared on purpose". Without this fallback, saving any other tab
+		// wrote an empty key to the database and forced the stored API version back to 1, which
+		// locked the site on the legacy settings screen and made it happen again on the next save.
+		if ( '' === trim( $api_key_private ) ) {
+			$stored_api_key_private = get_option( sprintf( '%s-%s', WEGLOT_SLUG, 'api_key_private' ) );
+
+			if ( is_string( $stored_api_key_private ) && '' !== trim( $stored_api_key_private ) ) {
+				$api_key_private = $stored_api_key_private;
+			}
+		}
+
 		$api_version = $this->version_services->get_version_from_api_key_private($api_key_private);
 		update_option( $this->version_services::API_VERSION_OPTION_NAME, $api_version );
 		if($api_version === 2){
@@ -352,7 +372,7 @@ class Options_Weglot implements Hooks_Interface_Weglot {
 	 * @param array<string|int,mixed> $options
 	 * @param mixed $has_first_settings
 	 * @param int $version_api
-	 * @return array<string,mixed>
+	 * @return array<int|string,mixed>
 	 */
 
 	public function sanitize_options_settings( $options, $has_first_settings = false, $version_api = 1 ) {

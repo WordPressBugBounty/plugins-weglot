@@ -62,17 +62,15 @@ class Language_Service_Weglot {
 
 		$languages = new LanguagesList( $client );
 
-		$this->languages = $languages->handle();
-
 		// We add the weglot_language_code_replace filter for custom code
-		$this->languages = $this->languages->jsonSerialize();
+		$languages_data = $languages->handle()->jsonSerialize();
 
 		if ( isset( $params['sort'] ) && $params['sort'] ) {
-			usort( $this->languages, array( $this, 'compare_language' ) );
+			usort( $languages_data, array( $this, 'compare_language' ) );
 		}
 
 		$language_collection = new LanguageCollection();
-		foreach ( $this->languages as $language ) {
+		foreach ( $languages_data as $language ) {
 			$language_code_rewrited = apply_filters( 'weglot_language_code_replace', array() );
 			$external_code          = array_key_exists( $language['internal_code'], $language_code_rewrited ) ? $language_code_rewrited[ $language['internal_code'] ] : $language['external_code'];
 			$entry                  = new LanguageEntry( $language['internal_code'], $external_code, $language['english'], $language['local'], $language['rtl'] );
@@ -92,7 +90,7 @@ class Language_Service_Weglot {
 	 * @param LanguageEntry|string $local_name
 	 * @param bool $is_rtl
 	 *
-	 * @return LanguageCollection|null
+	 * @return LanguageCollection
 	 */
 	public function add_language( $internal_code, $external_code, $english_name, $local_name, $is_rtl = false ) {
 		if ($english_name instanceof LanguageEntry) {
@@ -103,16 +101,17 @@ class Language_Service_Weglot {
 			$local_name = $local_name->getLocalName();
 		}
 
-		$entry = new LanguageEntry( $internal_code, $external_code, $english_name, $local_name, $is_rtl );
-		$this->languages->addOne( $entry );
+		$entry     = new LanguageEntry( $internal_code, $external_code, $english_name, $local_name, $is_rtl );
+		$languages = $this->get_languages_available();
+		$languages->addOne( $entry );
 
-		return $this->languages;
+		return $languages;
 	}
 
 	/**
 	 * Get all languages : list of 109 default languages merged with custom languages taken from options
 	 *
-	 * @return LanguageCollection|null
+	 * @return LanguageCollection
 	 * @throws \Exception
 	 */
 
@@ -135,7 +134,7 @@ class Language_Service_Weglot {
 
 		foreach ( $destination_languages as $d ) {
 			/** @var LanguageEntry|null $language_data */
-			$language_data = $this->languages->getCode( $d['language_to'] );
+			$language_data = $this->get_languages_available()->getCode( $d['language_to'] );
 			if ( ! $language_data ) {
 				$this->languages = $this->add_language( $d['language_to'], $d['custom_code'], $d['custom_name'], $d['custom_local_name'] );
 			} else {
@@ -265,8 +264,11 @@ class Language_Service_Weglot {
 	 * @return LanguageEntry[]
 	 */
 	public function get_original_and_destination_languages( $allowed_private = false, $excluded_languages = array() ) {
-		$languages = $this->get_destination_languages( $allowed_private, $excluded_languages );
-		array_unshift( $languages, $this->get_original_language() );
+		$languages         = $this->get_destination_languages( $allowed_private, $excluded_languages );
+		$original_language = $this->get_original_language();
+		if ( null !== $original_language ) {
+			array_unshift( $languages, $original_language );
+		}
 
 		return $languages;
 	}
